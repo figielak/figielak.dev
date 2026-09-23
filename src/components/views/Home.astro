@@ -5,6 +5,8 @@ import LiveDot from '../ui/LiveDot.astro';
 import Pill from '../ui/Pill.astro';
 import IconLink from '../ui/IconLink.astro';
 import Icon from '../ui/Icon.astro';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
 const lang = getLangFromUrl(Astro.url);
@@ -22,10 +24,25 @@ const name = 'Krystian Figiela';
 /* The CV follows the page language (koncept.md §3.1). */
 const cvHref = `/cv/cv-${lang}.pdf`;
 
+const email = 'kontakt@example.com';
+
+/* Drop a square photo at src/assets/avatar.{jpg,png,webp,avif}; until one
+   exists the card shows the empty placeholder frame. */
+const avatarFiles = import.meta.glob<{ default: ImageMetadata }>(
+	'../../assets/avatar.{jpg,jpeg,png,webp,avif}',
+	{ eager: true },
+);
+const avatar = Object.values(avatarFiles)[0]?.default;
+
 const socials = [
-	{ label: 'GitHub', icon: 'github', href: 'https://github.com/' },
-	{ label: 'LinkedIn', icon: 'linkedin', href: 'https://linkedin.com/in/' },
-	{ label: 'E-mail', icon: 'mail', href: 'mailto:hello@figielak.dev' },
+	{ label: 'GitHub', icon: 'github', href: 'https://github.com/figielak', external: true },
+	{
+		label: 'LinkedIn',
+		icon: 'linkedin',
+		href: 'https://www.linkedin.com/in/krystian-figiela/',
+		external: true,
+	},
+	{ label: 'E-mail', icon: 'mail', href: `mailto:${email}`, external: false },
 ] as const;
 
 const experience = [{ period: '2024–' }, { period: '2023–2024' }, { period: '2022–2023' }];
@@ -45,7 +62,20 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 <div class="dossier">
 	<Tile class="profile">
 		<div class="profile-inner">
-			<div class="profile-avatar" aria-hidden="true"></div>
+			{
+				avatar ? (
+					<Image
+						class="profile-avatar"
+						src={avatar}
+						alt={name}
+						widths={[72, 144, 216]}
+						sizes="72px"
+						loading="eager"
+					/>
+				) : (
+					<div class="profile-avatar" aria-hidden="true" />
+				)
+			}
 
 			<div class="profile-identity">
 				<h1 class="profile-name">{name}</h1>
@@ -62,7 +92,7 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 			<p class="profile-bio">{t('state.placeholder')}</p>
 
 			<div class="profile-actions">
-				<a class="button button-primary" href="mailto:hello@figielak.dev">{t('home.write')}</a>
+				<a class="button button-primary" href={`mailto:${email}`}>{t('home.write')}</a>
 				<a class="button" href={cvHref}>{t('home.cv')}</a>
 			</div>
 
@@ -70,7 +100,7 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 				{
 					socials.map((social) => (
 						<li>
-							<IconLink href={social.href} label={social.label} external>
+							<IconLink href={social.href} label={social.label} external={social.external}>
 								<Icon name={social.icon} size={22} />
 							</IconLink>
 						</li>
@@ -189,6 +219,7 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 		border-radius: var(--radius-inset);
 		border: 1px solid var(--border);
 		background: var(--surface-inset);
+		object-fit: cover;
 	}
 
 	.profile-name {
