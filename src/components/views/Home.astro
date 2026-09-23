@@ -68,8 +68,8 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 						class="profile-avatar"
 						src={avatar}
 						alt={name}
-						widths={[72, 144, 216]}
-						sizes="72px"
+						widths={[96, 192, 288]}
+						sizes="96px"
 						loading="eager"
 					/>
 				) : (
@@ -89,7 +89,7 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 
 			<p class="profile-location">{t('home.location')}</p>
 
-			<p class="profile-bio">{t('state.placeholder')}</p>
+			<p class="profile-bio">{t('home.bio')}</p>
 
 			<div class="profile-actions">
 				<a class="button button-primary" href={`mailto:${email}`}>{t('home.write')}</a>
