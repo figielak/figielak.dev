@@ -1,0 +1,55 @@
+---
+import Tile from '../ui/Tile.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+/*
+ * The project list is dynamic, so it does not use named grid areas like the
+ * other views — cards flow, and `featured` ones take a 2x2 cell (koncept.md
+ * §3.2). Real entries arrive with the content collection in step 3.
+ */
+const placeholders = [
+	{ featured: true },
+	{ featured: false },
+	{ featured: false },
+	{ featured: false },
+	{ featured: false },
+] as const;
+---
+
+<div class="projects">
+	{
+		placeholders.map((project) => (
+			<Tile class="project-card" data-featured={project.featured ? '' : undefined} label={t('tile.projects')}>
+				<p class="placeholder">{t('state.placeholder')}</p>
+			</Tile>
+		))
+	}
+</div>
+
+<style>
+	.projects {
+		display: grid;
+		gap: var(--grid-gap);
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-auto-rows: minmax(var(--project-card-min), auto);
+	}
+
+	@media (min-width: 640px) {
+		.projects {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	.projects :global(.project-card[data-featured]) {
+		grid-column: span 2;
+		grid-row: span 2;
+	}
+
+	.placeholder {
+		margin: 0;
+		color: var(--text-subtle);
+	}
+</style>

@@ -1,0 +1,243 @@
+---
+import {
+	defaultLang,
+	getLangFromUrl,
+	languages,
+	localizePath,
+	stripLang,
+	useTranslations,
+	type Lang,
+} from '../../i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const current = stripLang(Astro.url.pathname).replace(/\/$/, '') || '/';
+
+const items = [
+	{ path: '/', key: 'nav.home' },
+	{ path: '/projects', key: 'nav.projects' },
+	{ path: '/dashboard', key: 'nav.dashboard' },
+	{ path: '/maths', key: 'nav.maths' },
+] as const;
+
+/* /maths is Polish-only for now (koncept.md §11), so it never takes a prefix
+   and there is no other language to switch to while on it. */
+const polishOnly: string[] = ['/maths'];
+const hrefFor = (path: string) => (polishOnly.includes(path) ? path : localizePath(path, lang));
+const canSwitchLang = !polishOnly.includes(current);
+
+const isActive = (path: string) => current === path || current.startsWith(`${path}/`);
+
+/* The language switch keeps the reader on the same view. */
+const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== lang);
+---
+
+<nav class="nav" aria-label={t('nav.label')}>
+	<a class="nav-brand" href={localizePath('/', lang)}>figielak</a>
+
+	<ul class="nav-items">
+		{
+			items.map((item) => (
+				<li>
+					<a
+						href={hrefFor(item.path)}
+						class="nav-link"
+						data-active={isActive(item.path) ? '' : undefined}
+						aria-current={isActive(item.path) ? 'page' : undefined}
+					>
+						{t(item.key)}
+					</a>
+				</li>
+			))
+		}
+	</ul>
+
+	<div class="nav-end">
+		{
+			otherLangs.map((code) =>
+				canSwitchLang ? (
+					<a
+						class="nav-control"
+						href={code === defaultLang ? current : localizePath(current, code)}
+						hreflang={code}
+						aria-label={t('nav.language')}
+					>
+						{languages[code]}
+					</a>
+				) : (
+					<button
+						class="nav-control"
+						type="button"
+						disabled
+						title={t('nav.languageUnavailable')}
+						aria-label={t('nav.languageUnavailable')}
+					>
+						{languages[code]}
+					</button>
+				),
+			)
+		}
+
+		<button
+			class="nav-control"
+			type="button"
+			disabled
+			aria-label={t('nav.theme')}
+			title={t('nav.theme')}
+		>
+			<svg
+				viewBox="0 0 24 24"
+				width="16"
+				height="16"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path>
+			</svg>
+		</button>
+	</div>
+</nav>
+
+<style>
+	/*
+	 * Three separate pieces on the page background: wordmark left, link pill
+	 * centred, controls right. Only the two groups carry a border — the bar
+	 * itself is transparent.
+	 */
+	.nav {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		grid-template-areas: 'brand items end';
+		align-items: center;
+		gap: var(--grid-gap);
+		width: var(--nav-width);
+		min-width: min(100% - 2 * var(--page-gutter), var(--nav-min-width));
+		margin: 0 auto;
+		padding: var(--grid-gap) 0;
+	}
+
+	.nav-brand {
+		grid-area: brand;
+		justify-self: start;
+		font-family: var(--font-sans);
+		font-size: var(--size-title);
+		font-weight: 700;
+		letter-spacing: -0.015em;
+		color: var(--text);
+		text-decoration: none;
+		transition: color var(--duration-hover) var(--ease-out);
+	}
+
+	.nav-brand:hover {
+		color: var(--accent);
+	}
+
+	/* The two bordered groups share one shape. */
+	.nav-items,
+	.nav-end {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2xs);
+		padding: var(--space-2xs);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: var(--surface);
+	}
+
+	.nav-items {
+		grid-area: items;
+		justify-self: center;
+		margin: 0;
+		list-style: none;
+		max-width: 100%;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
+	.nav-items::-webkit-scrollbar {
+		display: none;
+	}
+
+	.nav-end {
+		grid-area: end;
+		justify-self: end;
+	}
+
+	.nav-link {
+		display: block;
+		padding: var(--space-xs) var(--nav-link-padding-x);
+		border-radius: var(--radius-pill);
+		font-size: var(--size-body);
+		color: var(--text-muted);
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.nav-link:hover {
+		color: var(--text);
+		background: var(--surface-hover);
+	}
+
+	.nav-link[data-active] {
+		color: var(--accent);
+		background: var(--accent-soft);
+	}
+
+	.nav-control {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		height: var(--size-nav-control);
+		min-width: calc(var(--size-nav-control) + var(--space-2xs));
+		padding: 0 var(--space-sm);
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: transparent;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		color: var(--text-muted);
+		text-decoration: none;
+		cursor: pointer;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.nav-control:hover:not(:disabled) {
+		color: var(--text);
+		background: var(--surface-hover);
+	}
+
+	/* Only one theme exists so far (koncept.md §12) — the control stays in place
+	   but inert until a second set of token values lands. */
+	.nav-control:disabled {
+		cursor: default;
+		color: var(--text-subtle);
+	}
+
+	/* Phones cannot fit three groups side by side: the wordmark and the controls
+	   share the top row, the link pill takes the one below. */
+	@media (max-width: 639px) {
+		.nav {
+			grid-template-columns: auto auto;
+			grid-template-areas:
+				'brand end'
+				'items items';
+			justify-content: space-between;
+			row-gap: var(--space-sm);
+		}
+
+		.nav-items {
+			justify-self: stretch;
+		}
+	}
+</style>

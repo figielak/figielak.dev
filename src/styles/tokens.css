@@ -1,0 +1,101 @@
+/*
+ * Design tokens — the single source of colour, radius, spacing and type.
+ * See koncept.md §4–§8. Components must never hardcode a hex, rgb or px value
+ * that belongs here.
+ *
+ * A theme is nothing but a different set of values for these tokens; no
+ * component ever knows which theme is active (koncept.md §12).
+ */
+
+:root,
+[data-theme='dark'] {
+	/* Surfaces */
+	--bg: #0e0e10;
+	--surface: #161618;
+	--surface-hover: #1c1c1f;
+	--surface-inset: #111113;
+
+	/* Borders */
+	--border: rgb(255 255 255 / 0.08);
+	--border-hover: rgb(255 255 255 / 0.16);
+	/* Separator line under the navigation. */
+	--border-divider: rgb(255 255 255 / 0.15);
+
+	/* Text */
+	--text: #ededef;
+	--text-muted: #8b8b92;
+	--text-subtle: #5c5c63;
+
+	/* Accent — used sparingly: LIVE dots, progress bars, primary CTAs,
+	   active states, single inline highlights. */
+	--accent: #e5484d;
+	--accent-hover: #ec5d5e;
+	--accent-soft: rgb(229 72 77 / 0.12);
+	/* Text on a full accent background. White on --accent is only 3.9:1, so
+	   the graphite reads on it instead (4.8:1, AA at body size). */
+	--accent-foreground: #0e0e10;
+
+	/* Elevation */
+	--shadow-tile: 0 8px 24px rgb(0 0 0 / 0.32);
+}
+
+:root {
+	/* Radii */
+	--radius-tile: 20px;
+	--radius-inset: 10px;
+	--radius-pill: 999px;
+
+	/* Spacing scale — every gap, margin and padding comes from here. */
+	--space-2xs: 4px;
+	--space-xs: 6px;
+	--space-sm: 8px;
+	--space-md: 10px;
+	--space-lg: 12px;
+	--space-xl: 16px;
+	--space-2xl: 20px;
+
+	/* Tile padding */
+	--tile-padding: var(--space-2xl);
+	--tile-padding-dense: var(--space-xl);
+
+	/* Page frame */
+	--page-gutter: var(--space-xl);
+	--page-max-width: 1200px;
+
+	/* Component sizes */
+	--size-dot: 6px;
+	--size-icon-button: 36px;
+	--size-nav-control: 28px;
+	--size-avatar: 72px;
+	--nav-link-padding-x: 14px;
+	--dossier-profile-width: 320px;
+	--dossier-period-width: 110px;
+	--dashboard-row-min: 84px;
+	--project-card-min: 140px;
+
+	/* Width of the navigation band: the wordmark sits at its left edge and the
+	   controls at its right, so this value sets how far both sit from the
+	   screen edges — 70% puts them at 15% and 85% of the viewport. */
+	--nav-width: 70%;
+	/* Floor for narrow screens, so the link pill is never squeezed. */
+	--nav-min-width: 720px;
+
+	/* Grid gaps */
+	--grid-gap: var(--space-lg);
+	--grid-gap-dense: var(--space-md);
+
+	/* Type scale */
+	--size-label: 11px;
+	--size-body: 14px;
+	--size-title: 17px;
+	--size-hero: clamp(28px, 1.5rem + 1.6vw, 36px);
+	--size-number: clamp(32px, 1.5rem + 2.4vw, 48px);
+	--tracking-label: 0.08em;
+
+	/* Motion */
+	--ease-out: cubic-bezier(0.2, 0.8, 0.4, 1);
+	--duration-hover: 180ms;
+	--duration-pulse: 2s;
+	/* How far a clickable tile rises on hover. */
+	--lift: -2px;
+}

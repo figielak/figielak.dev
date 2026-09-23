@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Projects from '../../../components/views/Projects.astro';
+import { getLangFromUrl, useTranslations } from '../../../i18n';
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+---
+
+<BaseLayout title={t('meta.projects.title')} description={t('meta.projects.description')}>
+	<Projects />
+</BaseLayout>

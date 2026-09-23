@@ -1,11 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Home from '../components/views/Home.astro';
+import Maths from '../components/views/Maths.astro';
 import { getLangFromUrl, useTranslations } from '../i18n';
 
 const t = useTranslations(getLangFromUrl(Astro.url));
 ---
 
-<BaseLayout title={t('meta.home.title')} description={t('meta.home.description')}>
-	<Home />
+<BaseLayout title={t('meta.maths.title')} description={t('meta.maths.description')}>
+	<Maths />
 </BaseLayout>

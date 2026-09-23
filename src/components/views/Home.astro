@@ -1,0 +1,351 @@
+---
+import Tile from '../ui/Tile.astro';
+import TileLabel from '../ui/TileLabel.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import Pill from '../ui/Pill.astro';
+import IconLink from '../ui/IconLink.astro';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+/*
+ * Two-column dossier: a pinned identity card on the left, a stream of sections
+ * on the right. This view deliberately steps outside the bento grid the other
+ * views share — see koncept.md §3.1.
+ *
+ * Content is still placeholder; step 2 fills it in.
+ */
+const name = 'Krystian Figielak';
+
+/* The CV follows the page language (koncept.md §3.1). */
+const cvHref = `/cv/cv-${lang}.pdf`;
+
+const socials = [
+	{ label: 'GitHub', href: 'https://github.com/' },
+	{ label: 'LinkedIn', href: 'https://linkedin.com/in/' },
+	{ label: 'E-mail', href: 'mailto:hello@figielak.dev' },
+] as const;
+
+const experience = [{ period: '2024 —' }, { period: '2023 — 2024' }, { period: '2022 — 2023' }];
+
+const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'];
+---
+
+<div class="dossier">
+	<Tile class="profile">
+		<div class="profile-inner">
+			<div class="profile-avatar" aria-hidden="true"></div>
+
+			<div class="profile-identity">
+				<h1 class="profile-name">{name}</h1>
+				<p class="profile-role">{t('home.role')}</p>
+			</div>
+
+			<p class="profile-status">
+				<LiveDot state="live" />
+				<span>{t('home.status')}</span>
+			</p>
+
+			<p class="profile-location">{t('home.location')}</p>
+
+			<p class="profile-bio">{t('state.placeholder')}</p>
+
+			<div class="profile-actions">
+				<a class="button button-primary" href="mailto:hello@figielak.dev">{t('home.write')}</a>
+				<a class="button" href={cvHref}>{t('home.cv')}</a>
+			</div>
+
+			<ul class="profile-socials">
+				{
+					socials.map((social) => (
+						<li>
+							<IconLink href={social.href} label={social.label} external>
+								<span class="social-initial">{social.label.slice(0, 2)}</span>
+							</IconLink>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</Tile>
+
+	<div class="stream">
+		<section class="section">
+			<header class="section-head">
+				<TileLabel>{t('home.featured')}</TileLabel>
+				<a class="section-action" href={localizePath('/projects', lang)}>
+					{t('home.allProjects')} ↗
+				</a>
+			</header>
+
+			<Tile class="featured">
+				<div class="featured-inner">
+					<div class="featured-cover" aria-hidden="true"></div>
+					<p class="placeholder">{t('state.placeholder')}</p>
+				</div>
+			</Tile>
+		</section>
+
+		<section class="section">
+			<header class="section-head">
+				<TileLabel>{t('tile.experience')}</TileLabel>
+				<a class="section-action" href={cvHref}>{t('home.fullCv')} ↗</a>
+			</header>
+
+			<ul class="rows">
+				{
+					experience.map((item) => (
+						<li class="row">
+							<span class="row-period">{item.period}</span>
+							<span class="placeholder">{t('state.placeholder')}</span>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		<section class="section">
+			<header class="section-head">
+				<TileLabel>{t('tile.skills')}</TileLabel>
+			</header>
+
+			<ul class="pills">
+				{
+					skills.map((skill) => (
+						<li>
+							<Pill>{skill}</Pill>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		<section class="section">
+			<header class="section-head">
+				<TileLabel>{t('tile.education')}</TileLabel>
+			</header>
+
+			<ul class="rows">
+				<li class="row">
+					<span class="row-period">2023 —</span>
+					<span class="placeholder">{t('state.placeholder')}</span>
+				</li>
+			</ul>
+		</section>
+
+		<Tile
+			class="teaser"
+			label={t('tile.dashboard')}
+			href={localizePath('/dashboard', lang)}
+			dense
+		>
+			<LiveDot slot="meta" state="offline" />
+			<p class="placeholder">{t('home.moreAboutMe')}</p>
+		</Tile>
+	</div>
+</div>
+
+<style>
+	.dossier {
+		display: grid;
+		grid-template-columns: var(--dossier-profile-width) minmax(0, 1fr);
+		gap: var(--grid-gap);
+		align-items: start;
+	}
+
+	/* The identity card stays in view while the right column scrolls. */
+	.profile {
+		position: sticky;
+		top: var(--grid-gap);
+	}
+
+	.profile-inner {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xl);
+	}
+
+	.profile-avatar {
+		width: var(--size-avatar);
+		height: var(--size-avatar);
+		border-radius: var(--radius-inset);
+		border: 1px solid var(--border);
+		background: var(--surface-inset);
+	}
+
+	.profile-name {
+		margin: 0;
+		font-size: var(--size-hero);
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+	}
+
+	.profile-role {
+		margin: var(--space-2xs) 0 0;
+		color: var(--text-muted);
+	}
+
+	.profile-status {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		margin: 0;
+		color: var(--text);
+	}
+
+	.profile-location,
+	.profile-bio {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.profile-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+	}
+
+	.button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--space-md) var(--space-xl);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		color: var(--text);
+		font-size: var(--size-body);
+		text-decoration: none;
+		transition:
+			background-color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out);
+	}
+
+	.button:hover {
+		background: var(--surface-hover);
+		border-color: var(--border-hover);
+	}
+
+	.button-primary {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--accent-foreground);
+		font-weight: 500;
+	}
+
+	.button-primary:hover {
+		background: var(--accent-hover);
+		border-color: var(--accent-hover);
+	}
+
+	.profile-socials {
+		display: flex;
+		gap: var(--space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.social-initial {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+	}
+
+	.stream {
+		display: flex;
+		flex-direction: column;
+		gap: var(--grid-gap);
+	}
+
+	.section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+		padding-bottom: var(--grid-gap);
+		border-bottom: 1px solid var(--border-divider);
+	}
+
+	.section-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-lg);
+	}
+
+	.section-action {
+		font-size: var(--size-label);
+		font-family: var(--font-mono);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+		text-decoration: none;
+		white-space: nowrap;
+		transition: color var(--duration-hover) var(--ease-out);
+	}
+
+	.section-action:hover {
+		color: var(--accent);
+	}
+
+	.featured-inner {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+	}
+
+	.featured-cover {
+		aspect-ratio: 16 / 9;
+		border-radius: var(--radius-inset);
+		border: 1px solid var(--border);
+		background: var(--surface-inset);
+	}
+
+	.rows {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.row {
+		display: grid;
+		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr);
+		gap: var(--space-xl);
+		align-items: baseline;
+	}
+
+	.row-period {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-subtle);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.placeholder {
+		margin: 0;
+		color: var(--text-subtle);
+	}
+
+	@media (max-width: 1023px) {
+		.dossier {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.profile {
+			position: static;
+		}
+	}
+</style>

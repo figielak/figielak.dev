@@ -1,0 +1,37 @@
+---
+interface Props {
+	href: string;
+	label: string;
+	external?: boolean;
+	class?: string;
+}
+
+const { href, label, external = false, class: className } = Astro.props;
+const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+
+<a class:list={['icon-link', className]} href={href} aria-label={label} title={label} {...externalAttrs}>
+	<slot />
+</a>
+
+<style>
+	.icon-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--size-icon-button);
+		height: var(--size-icon-button);
+		border-radius: var(--radius-inset);
+		border: 1px solid var(--border);
+		background: var(--surface-inset);
+		color: var(--text-muted);
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out);
+	}
+
+	.icon-link:hover {
+		color: var(--text);
+		border-color: var(--border-hover);
+	}
+</style>

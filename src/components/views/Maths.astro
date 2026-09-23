@@ -1,0 +1,58 @@
+---
+import BentoLayout from '../ui/BentoLayout.astro';
+import Tile from '../ui/Tile.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+/* koncept.md §3.3 — this view may scroll, so no forced row sizing. */
+const lg = [
+	'photo   about   about   contact',
+	'photo   about   about   contact',
+	'scope   scope   format  price',
+	'lesson  lesson  reviews reviews',
+	'faq     faq     faq     faq',
+];
+
+const base = [
+	'photo   photo',
+	'about   about',
+	'contact contact',
+	'scope   scope',
+	'format  price',
+	'lesson  lesson',
+	'reviews reviews',
+	'faq     faq',
+];
+
+const tiles = [
+	{ area: 'photo', label: 'tile.photo' },
+	{ area: 'about', label: 'tile.about' },
+	{ area: 'contact', label: 'tile.contact' },
+	{ area: 'scope', label: 'tile.scope' },
+	{ area: 'format', label: 'tile.format' },
+	{ area: 'price', label: 'tile.price' },
+	{ area: 'lesson', label: 'tile.lesson' },
+	{ area: 'reviews', label: 'tile.reviews' },
+	{ area: 'faq', label: 'tile.faq' },
+] as const;
+---
+
+<BentoLayout base={{ areas: base, columns: 2 }} md={{ areas: lg, columns: 4 }} lg={{ areas: lg, columns: 4 }}>
+	{
+		tiles.map((tile) => (
+			<Tile area={tile.area} label={t(tile.label)}>
+				<p class="placeholder">{t('state.placeholder')}</p>
+			</Tile>
+		))
+	}
+</BentoLayout>
+
+<style>
+	.placeholder {
+		margin: 0;
+		min-height: 64px;
+		color: var(--text-subtle);
+	}
+</style>

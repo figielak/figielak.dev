@@ -1,0 +1,123 @@
+---
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/global.css';
+import Nav from '../components/ui/Nav.astro';
+import { getLangFromUrl, useTranslations } from '../i18n';
+
+interface Props {
+	title: string;
+	description: string;
+	/** Drops the content cap so the view spans the full viewport — the
+	    dashboard's six-column grid uses every pixel it can get. */
+	wide?: boolean;
+}
+
+const { title, description, wide = false } = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang={lang} data-theme="dark">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" href="/favicon.ico" />
+		<link rel="canonical" href={canonical} />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+
+		<link
+			rel="preload"
+			href="/fonts/Satoshi-Variable.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+
+		<title>{title}</title>
+		<meta name="description" content={description} />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta name="twitter:card" content="summary_large_image" />
+
+		{/* Applies the stored theme before first paint, so it never flashes. */}
+		<script is:inline>
+			(() => {
+				/* Storage can throw (private mode, blocked site data) — fall back to
+				   the default theme set on <html>. */
+				try {
+					const stored = localStorage.getItem('theme');
+					if (stored) document.documentElement.dataset.theme = stored;
+				} catch {}
+			})();
+		</script>
+	</head>
+
+	<body>
+		<a href="#main" class="skip-link">{t('nav.skip')}</a>
+
+		<header class="topbar">
+			<Nav />
+		</header>
+
+		<div class:list={['shell', wide && 'shell-wide']}>
+			<main id="main" class="shell-main">
+				<slot />
+			</main>
+		</div>
+	</body>
+</html>
+
+<style>
+	/* Full-bleed: the rule under the navigation runs the whole width of the
+	   screen, while the navigation itself stays in the middle half. */
+	.topbar {
+		width: 100%;
+		border-bottom: 1px solid var(--border-divider);
+	}
+
+	.shell {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		width: 100%;
+		max-width: var(--page-max-width);
+		min-height: 0;
+		margin: 0 auto;
+		padding: var(--grid-gap) var(--page-gutter) var(--page-gutter);
+	}
+
+	.shell-wide {
+		max-width: none;
+	}
+
+	.shell-main {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	.skip-link {
+		position: absolute;
+		left: -9999px;
+	}
+
+	.skip-link:focus {
+		left: var(--page-gutter);
+		top: var(--page-gutter);
+		z-index: 50;
+		padding: var(--space-sm) var(--space-xl);
+		border-radius: var(--radius-pill);
+		background: var(--surface);
+		color: var(--text);
+	}
+</style>

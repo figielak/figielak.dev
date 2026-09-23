@@ -1,0 +1,44 @@
+---
+/**
+ * Status dot for live tiles. Only `live` uses the accent and pulses; stale and
+ * offline stay subtle — the palette stays monochrome plus one accent
+ * (koncept.md §5).
+ */
+interface Props {
+	state?: 'live' | 'stale' | 'offline';
+	label?: string;
+}
+
+const { state = 'live', label } = Astro.props;
+---
+
+<span class="live-dot" data-state={state} role={label ? 'img' : undefined} aria-label={label}
+></span>
+
+<style>
+	.live-dot {
+		display: inline-block;
+		width: var(--size-dot);
+		height: var(--size-dot);
+		border-radius: var(--radius-pill);
+		background: var(--text-subtle);
+		flex: none;
+	}
+
+	.live-dot[data-state='live'] {
+		background: var(--accent);
+		animation: pulse var(--duration-pulse) var(--ease-out) infinite;
+	}
+
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 0.45;
+			transform: scale(0.8);
+		}
+	}
+</style>

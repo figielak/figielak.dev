@@ -1,0 +1,171 @@
+---
+import TileLabel from './TileLabel.astro';
+
+/**
+ * The one building block every tile is made of (koncept.md §4).
+ * Layout inside a tile is always: label on top, content, detail or action at
+ * the bottom. Clickable tiles get the ↗ affordance and the hover treatment.
+ */
+interface Props {
+	/** Name of the `grid-template-areas` slot this tile occupies. */
+	area?: string;
+	label?: string;
+	href?: string;
+	external?: boolean;
+	/** Full accent background — at most one or two tiles per view. */
+	accent?: boolean;
+	/** Denser padding, used by the dashboard. */
+	dense?: boolean;
+	class?: string;
+	/** Anything else lands on the root element (data-*, aria-*, style...). */
+	[key: string]: unknown;
+}
+
+const {
+	area,
+	label,
+	href,
+	external = false,
+	accent = false,
+	dense = false,
+	class: className,
+	...rest
+} = Astro.props;
+
+const Tag = href ? 'a' : 'div';
+const interactive = Boolean(href);
+const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+
+<Tag
+	class:list={['tile', className]}
+	style={area ? `grid-area: ${area};` : undefined}
+	data-interactive={interactive ? '' : undefined}
+	data-accent={accent ? '' : undefined}
+	data-dense={dense ? '' : undefined}
+	href={href}
+	{...externalAttrs}
+	{...rest}
+>
+	{
+		(label || Astro.slots.has('label') || interactive) && (
+			<header class="tile-header">
+				{label ? <TileLabel>{label}</TileLabel> : <slot name="label" />}
+				<span class="tile-header-end">
+					<slot name="meta" />
+					{interactive && (
+						<svg
+							class="tile-arrow"
+							viewBox="0 0 24 24"
+							width="14"
+							height="14"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M7 17 17 7M9 7h8v8" />
+						</svg>
+					)}
+				</span>
+			</header>
+		)
+	}
+
+	<div class="tile-body"><slot /></div>
+
+	{
+		Astro.slots.has('footer') && (
+			<footer class="tile-footer">
+				<slot name="footer" />
+			</footer>
+		)
+	}
+</Tag>
+
+<style>
+	.tile {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+		min-width: 0;
+		padding: var(--tile-padding);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-tile);
+		background: var(--surface);
+		color: var(--text);
+		text-decoration: none;
+		overflow: hidden;
+	}
+
+	.tile[data-dense] {
+		padding: var(--tile-padding-dense);
+		gap: var(--space-md);
+	}
+
+	.tile[data-interactive] {
+		transition:
+			background-color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out),
+			transform var(--duration-hover) var(--ease-out),
+			box-shadow var(--duration-hover) var(--ease-out);
+	}
+
+	.tile[data-interactive]:hover {
+		background: var(--surface-hover);
+		border-color: var(--border-hover);
+		transform: translateY(var(--lift));
+		box-shadow: var(--shadow-tile);
+	}
+
+	.tile[data-accent] {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--accent-foreground);
+	}
+
+	.tile[data-accent]:hover {
+		background: var(--accent-hover);
+		border-color: var(--accent-hover);
+	}
+
+	.tile-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-sm);
+	}
+
+	.tile-header-end {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-sm);
+		color: var(--text-subtle);
+	}
+
+	.tile[data-interactive]:hover .tile-arrow {
+		color: var(--text);
+	}
+
+	.tile-arrow {
+		transition: color var(--duration-hover) var(--ease-out);
+	}
+
+	.tile-body {
+		flex: 1;
+		min-height: 0;
+	}
+
+	.tile-footer {
+		color: var(--text-muted);
+		font-size: var(--size-label);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.tile[data-interactive]:hover {
+			transform: none;
+		}
+	}
+</style>

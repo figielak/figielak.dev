@@ -1,0 +1,96 @@
+---
+/**
+ * The bento grid (koncept.md §7).
+ *
+ * Every breakpoint gets its own explicit `grid-template-areas`, so tile order
+ * never depends on the order of the markup. Phones always get two columns —
+ * never a single stacked column.
+ *
+ * Areas are passed as arrays of rows, e.g.
+ *   lg={['about about featured featured', 'exp skills skills social']}
+ */
+interface Breakpoint {
+	areas: string[];
+	columns: number;
+	/** Track size for every row, e.g. `minmax(0, 1fr)` to fill a viewport. */
+	rowSize?: string;
+}
+
+interface Props {
+	/** < 640px — two columns by rule. */
+	base: Breakpoint;
+	/** 640–1023px */
+	md: Breakpoint;
+	/** >= 1024px */
+	lg: Breakpoint;
+	dense?: boolean;
+	/** Stretch to fill the remaining height of a flex parent. */
+	fill?: boolean;
+	class?: string;
+}
+
+const { base, md, lg, dense = false, fill = false, class: className } = Astro.props;
+
+const toAreas = (rows: string[]) => rows.map((row) => `"${row}"`).join(' ');
+const toColumns = (count: number) => `repeat(${count}, minmax(0, 1fr))`;
+/* `grid-template-areas` defines the explicit rows, so they are sized here —
+   `grid-auto-rows` would not reach them. */
+const toRows = ({ areas, rowSize }: Breakpoint) =>
+	rowSize ? `repeat(${areas.length}, ${rowSize})` : 'auto';
+
+const vars = [
+	`--areas-base: ${toAreas(base.areas)}`,
+	`--columns-base: ${toColumns(base.columns)}`,
+	`--rows-base: ${toRows(base)}`,
+	`--areas-md: ${toAreas(md.areas)}`,
+	`--columns-md: ${toColumns(md.columns)}`,
+	`--rows-md: ${toRows(md)}`,
+	`--areas-lg: ${toAreas(lg.areas)}`,
+	`--columns-lg: ${toColumns(lg.columns)}`,
+	`--rows-lg: ${toRows(lg)}`,
+].join('; ');
+---
+
+<div
+	class:list={['bento', className]}
+	data-dense={dense ? '' : undefined}
+	data-fill={fill ? '' : undefined}
+	style={vars}
+>
+	<slot />
+</div>
+
+<style>
+	.bento {
+		display: grid;
+		gap: var(--grid-gap);
+		grid-template-columns: var(--columns-base);
+		grid-template-areas: var(--areas-base);
+		grid-template-rows: var(--rows-base);
+	}
+
+	.bento[data-dense] {
+		gap: var(--grid-gap-dense);
+	}
+
+	.bento[data-fill] {
+		flex: 1;
+		min-height: 0;
+	}
+
+	@media (min-width: 640px) {
+		.bento {
+			grid-template-columns: var(--columns-md);
+			grid-template-areas: var(--areas-md);
+			grid-template-rows: var(--rows-md);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.bento {
+			grid-template-columns: var(--columns-lg);
+			grid-template-areas: var(--areas-lg);
+			grid-template-rows: var(--rows-lg);
+		}
+	}
+</style>

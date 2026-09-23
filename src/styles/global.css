@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+/*
+ * Satoshi is not on Fontsource, so it is self-hosted (koncept.md §6).
+ * Drop the variable woff2 into public/fonts/ — until then the stack falls
+ * through to the system sans and nothing else breaks.
+ */
+@font-face {
+	font-family: 'Satoshi';
+	src: url('/fonts/Satoshi-Variable.woff2') format('woff2-variations');
+	font-weight: 400 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+/*
+ * `inline` keeps the utilities pointing at the live custom properties, so a
+ * theme swap on <html data-theme> re-colours everything without a rebuild.
+ */
+@theme inline {
+	--font-sans: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-hover: var(--surface-hover);
+	--color-surface-inset: var(--surface-inset);
+
+	--color-border: var(--border);
+	--color-border-hover: var(--border-hover);
+	--color-border-divider: var(--border-divider);
+
+	--color-text: var(--text);
+	--color-text-muted: var(--text-muted);
+	--color-text-subtle: var(--text-subtle);
+
+	--color-accent: var(--accent);
+	--color-accent-hover: var(--accent-hover);
+	--color-accent-soft: var(--accent-soft);
+	--color-accent-foreground: var(--accent-foreground);
+
+	--radius-tile: var(--radius-tile);
+	--radius-inset: var(--radius-inset);
+	--radius-pill: var(--radius-pill);
+
+	--text-label: var(--size-label);
+	--text-body: var(--size-body);
+	--text-title: var(--size-title);
+	--text-hero: var(--size-hero);
+	--text-number: var(--size-number);
+
+	--shadow-tile: var(--shadow-tile);
+
+	--ease-out: var(--ease-out);
+}
+
+html {
+	color-scheme: dark;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100dvh;
+	background-color: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-size: var(--size-body);
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Numbers must not jitter as live tiles refresh (koncept.md §6). */
+.tabular,
+[data-numeric] {
+	font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+::selection {
+	background: var(--accent-soft);
+	color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

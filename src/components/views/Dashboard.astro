@@ -1,0 +1,82 @@
+---
+import BentoLayout from '../ui/BentoLayout.astro';
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+/* koncept.md §3.4 */
+const lg = [
+	'clock   weather github  github  github  visits',
+	'pc      lab     sched   sched   music   uptime',
+	'pc      lab     sched   sched   waka    links',
+	'now     now     coffee  fact    term    term',
+];
+
+const md = [
+	'clock   weather github  github',
+	'visits  uptime  github  github',
+	'pc      pc      lab     lab',
+	'sched   sched   sched   links',
+	'music   waka    now     now',
+	'coffee  fact    term    term',
+];
+
+const base = [
+	'clock   weather',
+	'github  github',
+	'visits  uptime',
+	'pc      pc',
+	'lab     lab',
+	'sched   sched',
+	'links   links',
+	'music   waka',
+	'now     now',
+	'coffee  fact',
+	'term    term',
+];
+
+const tiles = [
+	{ area: 'clock', label: 'tile.clock', live: true },
+	{ area: 'weather', label: 'tile.weather', live: true },
+	{ area: 'github', label: 'tile.github', live: true },
+	{ area: 'visits', label: 'tile.visits', live: true },
+	{ area: 'pc', label: 'tile.pc', live: true },
+	{ area: 'lab', label: 'tile.lab', live: true },
+	{ area: 'sched', label: 'tile.schedule', live: true },
+	{ area: 'uptime', label: 'tile.uptime', live: true },
+	{ area: 'music', label: 'tile.music', live: true },
+	{ area: 'waka', label: 'tile.waka', live: true },
+	{ area: 'links', label: 'tile.links', live: false },
+	{ area: 'now', label: 'tile.now', live: false },
+	{ area: 'coffee', label: 'tile.coffee', live: false },
+	{ area: 'fact', label: 'tile.fact', live: false },
+	{ area: 'term', label: 'tile.terminal', live: false },
+] as const;
+---
+
+<BentoLayout
+	fill
+	dense
+	base={{ areas: base, columns: 2 }}
+	md={{ areas: md, columns: 4 }}
+	lg={{ areas: lg, columns: 6, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
+>
+	{
+		tiles.map((tile) => (
+			<Tile area={tile.area} label={t(tile.label)} dense>
+				{tile.live && <LiveDot slot="meta" state="offline" />}
+				<p class="placeholder">{t('state.placeholder')}</p>
+			</Tile>
+		))
+	}
+</BentoLayout>
+
+<style>
+	.placeholder {
+		margin: 0;
+		color: var(--text-subtle);
+	}
+</style>

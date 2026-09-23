@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Dashboard from '../../components/views/Dashboard.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+---
+
+<BaseLayout title={t('meta.dashboard.title')} description={t('meta.dashboard.description')} wide>
+	<Dashboard />
+</BaseLayout>

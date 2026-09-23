@@ -1,0 +1,21 @@
+---
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span class:list={['tile-label', className]}><slot /></span>
+
+<style>
+	.tile-label {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+</style>
