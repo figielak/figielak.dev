@@ -1,58 +1,300 @@
 ---
-import BentoLayout from '../ui/BentoLayout.astro';
 import Tile from '../ui/Tile.astro';
-import { getLangFromUrl, useTranslations } from '../../i18n';
+import CopyValue from '../ui/CopyValue.astro';
+import Dossier from '../ui/Dossier.astro';
+import DossierSection from '../ui/DossierSection.astro';
+import ProfileCard from '../ui/ProfileCard.astro';
+import type { Social } from '../ui/ProfileCard.astro';
+import {
+	emailEncoded,
+	instagramHandle,
+	instagramUrl,
+	messengerUrl,
+	phoneEncoded,
+} from '../../lib/contact';
+import { ageOn, studyYearOn } from '../../lib/profile';
+import { getLangFromUrl, pluralPl, useTranslations } from '../../i18n';
+import type { TranslationKey } from '../../i18n';
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
+const t = useTranslations(getLangFromUrl(Astro.url));
 
-/* koncept.md §3.3 — this view may scroll, so no forced row sizing. */
-const lg = [
-	'photo   about   about   contact',
-	'photo   about   about   contact',
-	'scope   scope   format  price',
-	'lesson  lesson  reviews reviews',
-	'faq     faq     faq     faq',
+/*
+ * Same dossier as the home page, written for pupils and parents instead of
+ * recruiters: who I am, what I teach, how, and how to reach me
+ * (koncept.md §3.3). Polish only for now.
+ */
+const name = 'Krystian Figiela';
+
+/* TODO: real price per 60 minutes. */
+const price = 'XX';
+
+const age = ageOn();
+const ageText = `${age} ${pluralPl(age, {
+	one: t('maths.age.one'),
+	few: t('maths.age.few'),
+	many: t('maths.age.many'),
+})}`;
+const intro = t('maths.about.intro')
+	.replace('{age}', ageText)
+	.replace('{year}', String(studyYearOn()));
+
+/* href / data-* are filled in by CopyValue's script from the encoded values. */
+const socials: Social[] = [
+	{ label: t('maths.contact.whatsapp'), icon: 'whatsapp', external: true, attrs: { 'data-whatsapp': phoneEncoded } },
+	{ label: t('maths.contact.messenger'), icon: 'messenger', href: messengerUrl, external: true },
+	{ label: t('maths.contact.instagram'), icon: 'instagram', href: instagramUrl, external: true },
+	{ label: t('maths.contact.email'), icon: 'mail', attrs: { 'data-mailto': emailEncoded } },
 ];
 
-const base = [
-	'photo   photo',
-	'about   about',
-	'contact contact',
-	'scope   scope',
-	'format  price',
-	'lesson  lesson',
-	'reviews reviews',
-	'faq     faq',
+type Row = { tag: TranslationKey; title: TranslationKey; detail: TranslationKey; muted?: boolean };
+
+const offer: Row[] = [
+	{ tag: 'maths.offer.e8.tag', title: 'maths.offer.e8.title', detail: 'maths.offer.e8.detail' },
+	{ tag: 'maths.offer.basic.tag', title: 'maths.offer.basic.title', detail: 'maths.offer.basic.detail' },
+	{
+		tag: 'maths.offer.extended.tag',
+		title: 'maths.offer.extended.title',
+		detail: 'maths.offer.extended.detail',
+		muted: true,
+	},
 ];
 
-const tiles = [
-	{ area: 'photo', label: 'tile.photo' },
-	{ area: 'about', label: 'tile.about' },
-	{ area: 'contact', label: 'tile.contact' },
-	{ area: 'scope', label: 'tile.scope' },
-	{ area: 'format', label: 'tile.format' },
-	{ area: 'price', label: 'tile.price' },
-	{ area: 'lesson', label: 'tile.lesson' },
-	{ area: 'reviews', label: 'tile.reviews' },
-	{ area: 'faq', label: 'tile.faq' },
+const paths = [
+	{ title: 'maths.path.basics.title', detail: 'maths.path.basics.detail' },
+	{ title: 'maths.path.school.title', detail: 'maths.path.school.detail' },
+	{ title: 'maths.path.exam.title', detail: 'maths.path.exam.detail' },
+	{ title: 'maths.path.adhoc.title', detail: 'maths.path.adhoc.detail' },
 ] as const;
+
+const format: Row[] = [
+	{ tag: 'maths.format.online.tag', title: 'maths.format.online.title', detail: 'maths.format.online.detail' },
+	{
+		tag: 'maths.format.inPerson.tag',
+		title: 'maths.format.inPerson.title',
+		detail: 'maths.format.inPerson.detail',
+	},
+];
 ---
 
-<BentoLayout base={{ areas: base, columns: 2 }} md={{ areas: lg, columns: 4 }} lg={{ areas: lg, columns: 4 }}>
-	{
-		tiles.map((tile) => (
-			<Tile area={tile.area} label={t(tile.label)}>
-				<p class="placeholder">{t('state.placeholder')}</p>
-			</Tile>
-		))
-	}
-</BentoLayout>
+<Dossier>
+	<ProfileCard
+		slot="profile"
+		name={name}
+		role={t('maths.role')}
+		status={t('maths.status')}
+		location={t('maths.location')}
+		bio={t('maths.bio')}
+		socials={socials}
+	>
+		<Fragment slot="actions">
+			<a class="button button-primary" href="#kontakt">{t('maths.book')}</a>
+			<a class="button" data-tel={phoneEncoded}>{t('maths.call')}</a>
+		</Fragment>
+	</ProfileCard>
+
+	<DossierSection label={t('maths.free.label')} action={{ href: '#kontakt', label: t('maths.free.action') }}>
+		<Tile class="free">
+			<div class="free-inner">
+				<span class="free-amount" data-numeric>{t('maths.free.amount')}</span>
+				<div class="free-copy">
+					<h2 class="free-title">{t('maths.free.title')}</h2>
+					<p class="free-text">{t('maths.free.text')}</p>
+				</div>
+			</div>
+		</Tile>
+	</DossierSection>
+
+	<DossierSection label={t('maths.about.label')}>
+		<div class="prose">
+			<p>{intro}</p>
+			<p>{t('maths.about.text')}</p>
+		</div>
+	</DossierSection>
+
+	<DossierSection label={t('maths.offer.label')}>
+		<ul class="rows">
+			{
+				offer.map((item) => (
+					<li class="row" data-muted={item.muted ? '' : undefined}>
+						<span class="row-period">{t(item.tag)}</span>
+						<span class="row-main">
+							<span class="row-title">{t(item.title)}</span>
+							<span class="row-detail">{t(item.detail)}</span>
+						</span>
+					</li>
+				))
+			}
+		</ul>
+	</DossierSection>
+
+	<DossierSection label={t('maths.method.label')}>
+		<p class="lead">{t('maths.method.text')}</p>
+		<ol class="rows">
+			{
+				paths.map((item, index) => (
+					<li class="row">
+						<span class="row-period">{String(index + 1).padStart(2, '0')}</span>
+						<span class="row-main">
+							<span class="row-title">{t(item.title)}</span>
+							<span class="row-detail">{t(item.detail)}</span>
+						</span>
+					</li>
+				))
+			}
+		</ol>
+	</DossierSection>
+
+	<DossierSection label={t('maths.format.label')}>
+		<ul class="rows">
+			{
+				format.map((item) => (
+					<li class="row">
+						<span class="row-period">{t(item.tag)}</span>
+						<span class="row-main">
+							<span class="row-title">{t(item.title)}</span>
+							<span class="row-detail">{t(item.detail)}</span>
+						</span>
+					</li>
+				))
+			}
+			<li class="row">
+				<span class="row-period">{t('maths.format.price.tag')}</span>
+				<span class="row-main">
+					<span class="row-title price" data-numeric>{t('maths.format.price.title').replace('{price}', price)}</span>
+					<span class="row-detail">{t('maths.format.price.detail')}</span>
+				</span>
+			</li>
+		</ul>
+	</DossierSection>
+
+	<DossierSection label={t('maths.contact.label')} id="kontakt">
+		<p class="lead">{t('maths.contact.text')}</p>
+		<ul class="rows contact-rows">
+			<li class="row">
+				<span class="row-period">{t('maths.contact.phone')}</span>
+				<CopyValue encoded={phoneEncoded} kind="phone" />
+			</li>
+			<li class="row">
+				<span class="row-period">{t('maths.contact.email')}</span>
+				<CopyValue encoded={emailEncoded} />
+			</li>
+			<li class="row">
+				<span class="row-period">{t('maths.contact.whatsapp')}</span>
+				<a class="contact-link" data-whatsapp={phoneEncoded} target="_blank" rel="noopener noreferrer">
+					{t('maths.contact.whatsappAction')} ↗
+				</a>
+			</li>
+			<li class="row">
+				<span class="row-period">{t('maths.contact.messenger')}</span>
+				<a class="contact-link" href={messengerUrl} target="_blank" rel="noopener noreferrer">
+					{t('maths.contact.messengerAction')} ↗
+				</a>
+			</li>
+			<li class="row">
+				<span class="row-period">{t('maths.contact.instagram')}</span>
+				<a class="contact-link" href={instagramUrl} target="_blank" rel="noopener noreferrer">
+					@{instagramHandle} ↗
+				</a>
+			</li>
+		</ul>
+	</DossierSection>
+</Dossier>
 
 <style>
-	.placeholder {
+	/* The one framed section in the stream, tinted to mark the offer. */
+	.free {
+		background: var(--accent-soft);
+		border-color: var(--accent-soft);
+	}
+
+	.free-inner {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2xl);
+	}
+
+	.free-amount {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: var(--size-number);
+		font-weight: 700;
+		line-height: 1;
+		color: var(--accent);
+	}
+
+	.free-copy {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+	}
+
+	.free-title {
 		margin: 0;
-		min-height: 64px;
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.free-text,
+	.lead {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.prose {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		max-width: 68ch;
+	}
+
+	.prose p {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	/* First paragraph is the introduction, read first. */
+	.prose p:first-child {
+		color: var(--text);
+	}
+
+	.lead {
+		max-width: 68ch;
+	}
+
+	/* Not offered yet: the whole row steps back. */
+	.row[data-muted] .row-title,
+	.row[data-muted] .row-detail {
 		color: var(--text-subtle);
+	}
+
+	.price {
+		font-family: var(--font-mono);
+	}
+
+	/* Contact rows hold a control, not text, so they centre on it. */
+	.contact-rows > .row {
+		align-items: center;
+	}
+
+	.contact-rows :global(.copy-value) {
+		max-width: 360px;
+	}
+
+	.contact-link {
+		color: var(--text);
+		text-decoration: none;
+		transition: color var(--duration-hover) var(--ease-out);
+	}
+
+	.contact-link:hover {
+		color: var(--accent);
+	}
+
+	@media (max-width: 639px) {
+		.free-inner {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: var(--space-lg);
+		}
 	}
 </style>

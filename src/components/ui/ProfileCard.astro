@@ -1,0 +1,159 @@
+---
+import Tile from './Tile.astro';
+import LiveDot from './LiveDot.astro';
+import IconLink from './IconLink.astro';
+import Icon from './Icon.astro';
+import type { IconName } from './Icon.astro';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+/**
+ * Identity card for the left column of a dossier (koncept.md §3.1): avatar,
+ * name and role, status, location, bio, then the view's own actions and a
+ * row of monochrome social icons. Each view decides what those say.
+ */
+export interface Social {
+	label: string;
+	icon: IconName;
+	href?: string;
+	external?: boolean;
+	/** Extra attributes for the link, e.g. `data-mailto` filled in by CopyValue. */
+	attrs?: Record<string, string>;
+}
+
+interface Props {
+	name: string;
+	role: string;
+	status: string;
+	location: string;
+	bio: string;
+	socials: readonly Social[];
+}
+
+const { name, role, status, location, bio, socials } = Astro.props;
+
+/* Drop a square photo at src/assets/avatar.{jpg,png,webp,avif}; until one
+   exists the card shows the empty placeholder frame. */
+const avatarFiles = import.meta.glob<{ default: ImageMetadata }>(
+	'../../assets/avatar.{jpg,jpeg,png,webp,avif}',
+	{ eager: true },
+);
+const avatar = Object.values(avatarFiles)[0]?.default;
+---
+
+<Tile>
+	<div class="profile">
+		{
+			avatar ? (
+				<Image
+					class="profile-avatar"
+					src={avatar}
+					alt={name}
+					widths={[96, 192, 288]}
+					sizes="96px"
+					loading="eager"
+				/>
+			) : (
+				<div class="profile-avatar" aria-hidden="true" />
+			)
+		}
+
+		<div>
+			<h1 class="profile-name">{name}</h1>
+			<p class="profile-role">{role}</p>
+		</div>
+
+		<p class="profile-status">
+			<LiveDot state="live" />
+			<span>{status}</span>
+		</p>
+
+		<p class="profile-muted">{location}</p>
+
+		<p class="profile-muted">{bio}</p>
+
+		{
+			Astro.slots.has('actions') && (
+				<div class="profile-actions">
+					<slot name="actions" />
+				</div>
+			)
+		}
+
+		<slot />
+
+		<ul class="profile-socials">
+			{
+				socials.map((social) => (
+					<li>
+						<IconLink
+							href={social.href}
+							label={social.label}
+							external={social.external}
+							{...social.attrs}
+						>
+							<Icon name={social.icon} size={22} />
+						</IconLink>
+					</li>
+				))
+			}
+		</ul>
+	</div>
+</Tile>
+
+<style>
+	.profile {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xl);
+	}
+
+	.profile-avatar {
+		width: var(--size-avatar);
+		height: var(--size-avatar);
+		border-radius: var(--radius-inset);
+		border: 1px solid var(--border);
+		background: var(--surface-inset);
+		object-fit: cover;
+	}
+
+	.profile-name {
+		margin: 0;
+		font-size: var(--size-hero);
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+	}
+
+	.profile-role {
+		margin: var(--space-2xs) 0 0;
+		color: var(--text-muted);
+	}
+
+	.profile-status {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		margin: 0;
+		color: var(--text);
+	}
+
+	.profile-muted {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.profile-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+	}
+
+	.profile-socials {
+		display: flex;
+		gap: var(--space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+</style>

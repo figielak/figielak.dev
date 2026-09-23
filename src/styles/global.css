@@ -89,6 +89,40 @@ body {
 	color: var(--text);
 }
 
+/* Pill-shaped action button; `.button-primary` is the full-accent CTA. */
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-md) var(--space-xl);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-pill);
+	background: var(--surface-inset);
+	color: var(--text);
+	font-size: var(--size-body);
+	text-decoration: none;
+	transition:
+		background-color var(--duration-hover) var(--ease-out),
+		border-color var(--duration-hover) var(--ease-out);
+}
+
+.button:hover {
+	background: var(--surface-hover);
+	border-color: var(--border-hover);
+}
+
+.button-primary {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--accent-foreground);
+	font-weight: 500;
+}
+
+.button-primary:hover {
+	background: var(--accent-hover);
+	border-color: var(--accent-hover);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

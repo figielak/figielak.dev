@@ -10,8 +10,8 @@
 Osobista strona w stylu **bento grid**: ciemne, grafitowe tło, zaokrąglone kafle, jeden czerwony akcent, wszystko poza nim monochromatyczne.
 Strona składa się z kilku **widoków** dla różnych odbiorców. Wszystkie dzielą ten sam **system wizualny** (tokeny, kafle, typografia, akcent), ale nie ten sam układ.
 
-- **Bento grid** to układ domyślny: projekty, korepetycje i dashboard.
-- **Wizytówka jest świadomym wyjątkiem** — dwukolumnowe „dossier” opisane w 3.1. Powód: bento dobrze pokazuje *wiele równorzędnych* rzeczy naraz, a wizytówka ma jedną rzecz najważniejszą (kto to jest i jak się skontaktować) i resztę jako uzupełnienie. Siatka równych kafli spłaszczała tę hierarchię.
+- **Bento grid** to układ domyślny: projekty i dashboard.
+- **Wizytówka i korepetycje są świadomym wyjątkiem** — dwukolumnowe „dossier” opisane w 3.1 (korepetycje: 3.3). Powód: bento dobrze pokazuje *wiele równorzędnych* rzeczy naraz, a wizytówka ma jedną rzecz najważniejszą (kto to jest i jak się skontaktować) i resztę jako uzupełnienie. Siatka równych kafli spłaszczała tę hierarchię.
 
 System wizualny obowiązuje w obu układach: te same tokeny, ten sam `Tile`, te same etykiety mono i ten sam akcent.
 
@@ -107,32 +107,50 @@ Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama lin
 ### 3.3 Korepetycje (`/maths`)
 
 - **Ton:** ciepły, prosty, budzący zaufanie. Odbiorcą są także rodzice, więc piszę bez żargonu IT.
-- **Siatka:** 4 kolumny. Strona może scrollować, bo ma więcej treści.
+- **Układ:** to samo **dossier** co wizytówka (3.1): te same komponenty (`Dossier`, `ProfileCard`, `DossierSection`), te same proporcje i zachowanie. Zmienia się treść — mniej zawodowo, bardziej osobiście.
 - **Język:** na start tylko PL.
 
 ```
-"photo   about   about   contact"
-"photo   about   about   contact"
-"scope   scope   format  price"
-"lesson  lesson  reviews reviews"
-"faq     faq     faq     faq"
+┌──────────────┬──────────────────────────┐
+│  [ avatar ]  │  PIERWSZA LEKCJA         │
+│              │  ┌────────────────────┐  │
+│  Krystian    │  │ 0 zł · 1. godzina  │  │
+│  Figiela     │  │ za darmo           │  │
+│  Korepetycje │  └────────────────────┘  │
+│  z matematyki│  ──────────────────────  │
+│  ● Przyjmuję │  O MNIE                  │
+│    uczniów   │  ──────────────────────  │
+│              │  CO OFERUJĘ              │
+│ [Umów lekcję]│  ──────────────────────  │
+│ [ Zadzwoń ]  │  JAK UCZĘ                │
+│  wa ms ig @  │  ──────────────────────  │
+│              │  FORMA I CENA            │
+│              │  ──────────────────────  │
+│              │  KONTAKT                 │
+└──────────────┴──────────────────────────┘
+     sticky              scroll
 ```
 
-| Kafel | Zawartość |
+**Lewa kolumna — karta tożsamości:** avatar, imię, rola „Korepetycje z matematyki”, status „Przyjmuję nowych uczniów”, lokalizacja, krótkie bio; akcje „Umów darmową lekcję” (pełny akcent, prowadzi do sekcji kontaktu) i „Zadzwoń”; ikony WhatsApp, Messenger, Instagram, e-mail. Bez CV, GitHuba i LinkedIna.
+
+**Prawa kolumna — strumień sekcji:**
+
+| Sekcja | Zawartość |
 |---|---|
-| `photo` | prawdziwe zdjęcie (ma być jasne, jak wyglądam) |
-| `about` | imię, uczelnia, kierunek, rok studiów, 2–3 zdania o podejściu do nauki |
-| `contact` | szybki kontakt: telefon, e-mail (kopiuj), komunikator, duży przycisk „Umów lekcję” |
-| `scope` | zakres: podstawówka, liceum, matura podstawowa i rozszerzona, studia |
-| `format` | online lub stacjonarnie, gdzie |
-| `price` | cennik lub „od X zł / 60 min” |
-| `lesson` | jak wygląda lekcja (3–4 kroki) |
-| `reviews` | opinie uczniów (opcjonalnie, gdy będą) |
-| `faq` | najczęstsze pytania |
+| Pierwsza lekcja | jedyna sekcja w ramce (tło `--accent-soft`): pierwsza godzina za darmo, na zapoznanie i decyzję, czy odpowiadam uczniowi |
+| O mnie | kim jestem, wiek (liczony przy buildzie z daty urodzenia), kierunek i rok studiów, kilka zdań osobiście |
+| Co oferuję | egzamin ósmoklasisty (tylko klasa 8), matura podstawowa (dowolna klasa); matura rozszerzona jako „wkrótce” |
+| Jak uczę | metodyka + tryby nauki: od podstaw, na bieżąco z lekcjami, przed egzaminem, doraźnie |
+| Forma i cena | online / stacjonarnie (gdzie), „od X zł / 60 min” |
+| Kontakt | telefon i e-mail (kopiowanie jednym kliknięciem), WhatsApp, Messenger, Instagram |
+
+Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak jak e-mail na wizytówce.
 
 **W przyszłości:**
-- rząd `"avail avail booking booking"` z tygodniową dostępnością i rezerwacją online (np. Cal.com, embed lub API);
-- opcjonalny kafel „Zadanie tygodnia” ze wzorem w KaTeX.
+- matura rozszerzona w ofercie;
+- sekcje: opinie uczniów, FAQ;
+- tygodniowa dostępność i rezerwacja online (np. Cal.com, embed lub API);
+- opcjonalna sekcja „Zadanie tygodnia” ze wzorem w KaTeX.
 
 ### 3.4 Dashboard (`/dashboard`)
 
@@ -236,11 +254,11 @@ Zasady:
 
 ## 7. Siatka i responsywność
 
-Reguły poniżej dotyczą **widoków w bento**: projektów, korepetycji i dashboardu.
-**Wizytówka rządzi się własnymi zasadami** — patrz 3.1 i podsumowanie na końcu tej sekcji.
+Reguły poniżej dotyczą **widoków w bento**: projektów i dashboardu.
+**Wizytówka i korepetycje rządzą się własnymi zasadami** — patrz 3.1, 3.3 i podsumowanie na końcu tej sekcji.
 
 - **Kolumny:**
-  - projekty i korepetycje mają 4 kolumny;
+  - projekty mają 4 kolumny;
   - dashboard ma 6 kolumn.
 - **Odstęp między kaflami:** 12px (dashboard: 10px).
 - **„Mieści się na jednym ekranie”** dotyczy desktopu. Dashboard ma się zmieścić bez scrolla od 1280×720 w górę, a docelowy widok to 1440×900. Poniżej tego scroll jest dozwolony.
@@ -251,9 +269,9 @@ Reguły poniżej dotyczą **widoków w bento**: projektów, korepetycji i dashbo
   - małe kafle (social, zegar, pogoda, CV) zajmują 1×1 parami obok siebie.
 - Kolejność kafli na mobile ustawiam jawnie osobnymi `grid-template-areas` dla każdego breakpointu; nie polegam na kolejności w HTML.
 
-**Wizytówka — trzy odstępstwa:**
+**Dossier (wizytówka i korepetycje) — trzy odstępstwa:**
 
-| Reguła bento | Wizytówka |
+| Reguła bento | Dossier |
 |---|---|
 | siatka 4 kolumn z `grid-template-areas` | dwie kolumny: 320px + reszta |
 | mieści się na jednym ekranie | scrolluje celowo, lewa kolumna jest przyklejona |

@@ -1,0 +1,125 @@
+---
+import TileLabel from './TileLabel.astro';
+
+/**
+ * One section of the dossier stream: a mono label with an optional ↗ action,
+ * then the content, closed by a hairline divider. Sections carry no frame of
+ * their own, so the one framed section in a stream stands out (koncept.md §3.1).
+ *
+ * Also styles the shared building blocks placed inside: `.rows` / `.row`
+ * (period · title + detail) and `.pills`.
+ */
+interface Props {
+	label: string;
+	action?: { href: string; label: string };
+	id?: string;
+	class?: string;
+}
+
+const { label, action, id, class: className } = Astro.props;
+---
+
+<section class:list={['section', className]} id={id}>
+	<header class="section-head">
+		<TileLabel>{label}</TileLabel>
+		{action && <a class="section-action" href={action.href}>{action.label} ↗</a>}
+	</header>
+	<slot />
+</section>
+
+<style>
+	.section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+		padding-bottom: var(--grid-gap);
+		border-bottom: 1px solid var(--border-divider);
+		scroll-margin-top: var(--grid-gap);
+	}
+
+	.section-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-lg);
+	}
+
+	.section-action {
+		font-size: var(--size-label);
+		font-family: var(--font-mono);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+		text-decoration: none;
+		white-space: nowrap;
+		transition: color var(--duration-hover) var(--ease-out);
+	}
+
+	.section-action:hover {
+		color: var(--accent);
+	}
+
+	.section :global(.rows) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.section :global(.row) {
+		display: grid;
+		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr);
+		gap: var(--space-xl);
+		align-items: baseline;
+	}
+
+	.section :global(.row-period) {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-subtle);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Ongoing entry: an active state, so it may take the accent (koncept.md §4). */
+	.section :global(.row[data-current] .row-period) {
+		color: var(--accent);
+	}
+
+	/* Inline-block, not flex, so the period keeps the text baseline the row
+	   aligns on. */
+	.section :global(.row[data-current] .row-period::before) {
+		content: '';
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: var(--space-xs);
+		width: var(--size-dot);
+		height: var(--size-dot);
+		border-radius: var(--radius-pill);
+		background: currentColor;
+	}
+
+	.section :global(.row-main) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+	}
+
+	.section :global(.row-title) {
+		font-weight: 500;
+	}
+
+	.section :global(.row-detail) {
+		color: var(--text-muted);
+	}
+
+	.section :global(.pills) {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+</style>

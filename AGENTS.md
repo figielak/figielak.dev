@@ -13,7 +13,7 @@ rehype-mermaid, Typst (CV). Hosting: Cloudflare.
 - Każdy kafel to osobny komponent w src/components/tiles/, zbudowany na `<Tile>`.
 - Kafle z danymi na żywo: najpierw mock, zawsze 4 stany (ładowanie, OK, nieaktualne, błąd), stały rozmiar.
 - Sekrety tylko w zmiennych środowiskowych po stronie serwera, nigdy w kodzie klienta.
-- Mobile: w widokach bento siatka 2 kolumny, nigdy jedna kolumna. Wizytówka jest wyjątkiem (układ dossier, patrz koncept.md 3.1).
+- Mobile: w widokach bento siatka 2 kolumny, nigdy jedna kolumna. Wizytówka i korepetycje są wyjątkiem (układ dossier, patrz koncept.md 3.1 i 3.3).
 - Kod i nazwy po angielsku, teksty UI przez i18n (PL/EN).
 - Szanuj prefers-reduced-motion i kontrast AA.
 - Zapytaj, zanim dodasz nową zależność albo zmienisz coś, co jest sprzeczne z koncept.md.

@@ -3,39 +3,45 @@ import Icon from './Icon.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 
 /**
- * One-click e-mail copy with a "Copied ✓" confirmation (koncept.md §3.1).
+ * One-click copy of an e-mail address or phone number with a "Copied ✓"
+ * confirmation (koncept.md §3.1).
  *
- * The address never appears in the HTML: it ships base64-encoded and is
+ * The value never appears in the HTML: it ships base64-encoded and is
  * assembled in the browser, which keeps it away from simple scraping bots.
- * The same script also fills in every `a[data-mailto]` on the page, so
- * mailto links can stay hidden the same way.
+ * The same script also fills in every `a[data-mailto]`, `a[data-tel]` and
+ * `a[data-whatsapp]` on the page, so those links stay hidden the same way.
  */
 interface Props {
-	/** Base64 of the address — `emailEncoded` from src/lib/contact.ts. */
+	/** Base64 of the value — `emailEncoded` / `phoneEncoded` from src/lib/contact.ts. */
 	encoded: string;
+	kind?: 'email' | 'phone';
 	class?: string;
 }
 
-const { encoded, class: className } = Astro.props;
+const { encoded, kind = 'email', class: className } = Astro.props;
 
 const t = useTranslations(getLangFromUrl(Astro.url));
+const labels = {
+	email: { action: t('contact.copyEmail'), hidden: t('contact.emailHidden') },
+	phone: { action: t('contact.copyPhone'), hidden: t('contact.phoneHidden') },
+}[kind];
 ---
 
 <button
 	type="button"
-	class:list={['copy-email', className]}
-	data-copy-email={encoded}
+	class:list={['copy-value', className]}
+	data-copy-value={encoded}
 	data-label-copied={t('contact.copied')}
 	data-label-failed={t('contact.copyFailed')}
-	aria-label={t('contact.copyEmail')}
+	aria-label={labels.action}
 >
-	<span class="copy-email-address" data-email-text>{t('contact.emailHidden')}</span>
-	<span class="copy-email-status" aria-live="polite">
-		<span class="copy-email-idle">
+	<span class="copy-value-text" data-value-text>{labels.hidden}</span>
+	<span class="copy-value-status" aria-live="polite">
+		<span class="copy-value-idle">
 			<Icon name="copy" size={14} />
 			{t('contact.copy')}
 		</span>
-		<span class="copy-email-done">
+		<span class="copy-value-done">
 			<Icon name="check" size={14} />
 			<span data-status-text>{t('contact.copied')}</span>
 		</span>
@@ -68,16 +74,25 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 		link.href = `mailto:${decode(link.dataset.mailto!)}`;
 	}
 
-	for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-email]')) {
-		const email = decode(button.dataset.copyEmail!);
+	/* tel: and wa.me want the bare number: digits, plus a leading + for tel:. */
+	for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-tel]')) {
+		link.href = `tel:${decode(link.dataset.tel!).replace(/[^\d+]/g, '')}`;
+	}
+
+	for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-whatsapp]')) {
+		link.href = `https://wa.me/${decode(link.dataset.whatsapp!).replace(/\D/g, '')}`;
+	}
+
+	for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-value]')) {
+		const value = decode(button.dataset.copyValue!);
 		const status = button.querySelector<HTMLElement>('[data-status-text]')!;
-		button.querySelector('[data-email-text]')!.textContent = email;
+		button.querySelector('[data-value-text]')!.textContent = value;
 
 		let timer: number | undefined;
 		button.addEventListener('click', async () => {
 			let copied = true;
 			try {
-				await copyText(email);
+				await copyText(value);
 			} catch {
 				copied = false;
 			}
@@ -90,7 +105,7 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 </script>
 
 <style>
-	.copy-email {
+	.copy-value {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -107,11 +122,11 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 		transition: border-color var(--duration-hover) var(--ease-out);
 	}
 
-	.copy-email:hover {
+	.copy-value:hover {
 		border-color: var(--border-hover);
 	}
 
-	.copy-email-address {
+	.copy-value-text {
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -120,7 +135,7 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 		font-size: var(--size-label);
 	}
 
-	.copy-email-status {
+	.copy-value-status {
 		flex: none;
 		font-family: var(--font-mono);
 		font-size: var(--size-label);
@@ -128,8 +143,8 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 		text-transform: uppercase;
 	}
 
-	.copy-email-idle,
-	.copy-email-done {
+	.copy-value-idle,
+	.copy-value-done {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-2xs);
@@ -137,31 +152,31 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 		border-radius: var(--radius-pill);
 	}
 
-	.copy-email-idle {
+	.copy-value-idle {
 		color: var(--text-muted);
 	}
 
-	.copy-email:hover .copy-email-idle {
+	.copy-value:hover .copy-value-idle {
 		color: var(--text);
 	}
 
 	/* Confirmation is an active state, so it takes the accent. */
-	.copy-email-done {
+	.copy-value-done {
 		display: none;
 		color: var(--accent);
 		background: var(--accent-soft);
 	}
 
-	.copy-email[data-state] .copy-email-idle {
+	.copy-value[data-state] .copy-value-idle {
 		display: none;
 	}
 
-	.copy-email[data-state] .copy-email-done {
+	.copy-value[data-state] .copy-value-done {
 		display: inline-flex;
 	}
 
 	/* No tick when the copy did not happen. */
-	.copy-email[data-state='failed'] .copy-email-done :global(svg) {
+	.copy-value[data-state='failed'] .copy-value-done :global(svg) {
 		display: none;
 	}
 </style>

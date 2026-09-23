@@ -1,16 +1,14 @@
 ---
 import Tile from '../ui/Tile.astro';
-import TileLabel from '../ui/TileLabel.astro';
-import LiveDot from '../ui/LiveDot.astro';
 import Pill from '../ui/Pill.astro';
-import IconLink from '../ui/IconLink.astro';
-import Icon from '../ui/Icon.astro';
-import CopyEmail from '../ui/CopyEmail.astro';
+import CopyValue from '../ui/CopyValue.astro';
+import Dossier from '../ui/Dossier.astro';
+import DossierSection from '../ui/DossierSection.astro';
+import ProfileCard from '../ui/ProfileCard.astro';
+import type { Social } from '../ui/ProfileCard.astro';
 import DashboardTeaserTile from '../tiles/DashboardTeaserTile.astro';
 import { mockWeather } from '../../lib/mocks/weather';
-import { emailEncoded } from '../../lib/contact';
-import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
+import { emailEncoded, githubUrl } from '../../lib/contact';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
 const lang = getLangFromUrl(Astro.url);
@@ -20,33 +18,23 @@ const t = useTranslations(lang);
  * Two-column dossier: a pinned identity card on the left, a stream of sections
  * on the right. This view deliberately steps outside the bento grid the other
  * views share — see koncept.md §3.1.
- *
- * Content is still placeholder; step 2 fills it in.
  */
 const name = 'Krystian Figiela';
 
 /* The CV follows the page language (koncept.md §3.1). */
 const cvHref = `/cv/cv-${lang}.pdf`;
 
-/* Drop a square photo at src/assets/avatar.{jpg,png,webp,avif}; until one
-   exists the card shows the empty placeholder frame. */
-const avatarFiles = import.meta.glob<{ default: ImageMetadata }>(
-	'../../assets/avatar.{jpg,jpeg,png,webp,avif}',
-	{ eager: true },
-);
-const avatar = Object.values(avatarFiles)[0]?.default;
-
-const socials = [
-	{ label: 'GitHub', icon: 'github', href: 'https://github.com/figielak', external: true },
+const socials: Social[] = [
+	{ label: 'GitHub', icon: 'github', href: githubUrl, external: true },
 	{
 		label: 'LinkedIn',
 		icon: 'linkedin',
 		href: 'https://www.linkedin.com/in/krystian-figiela/',
 		external: true,
 	},
-	/* href is filled in by CopyEmail's script from the encoded address. */
-	{ label: 'E-mail', icon: 'mail', mailto: emailEncoded, external: false },
-] as const;
+	/* href is filled in by CopyValue's script from the encoded address. */
+	{ label: 'E-mail', icon: 'mail', attrs: { 'data-mailto': emailEncoded } },
+];
 
 const experience = [{ period: '2024–' }, { period: '2023–2024' }, { period: '2022–2023' }];
 
@@ -77,279 +65,82 @@ const skills = [
 ];
 ---
 
-<div class="dossier">
-	<Tile class="profile">
-		<div class="profile-inner">
+<Dossier>
+	<ProfileCard
+		slot="profile"
+		name={name}
+		role={t('home.role')}
+		status={t('home.status')}
+		location={t('home.location')}
+		bio={t('home.bio')}
+		socials={socials}
+	>
+		<Fragment slot="actions">
+			<a class="button button-primary" data-mailto={emailEncoded}>{t('home.write')}</a>
+			<a class="button" href={cvHref}>{t('home.cv')}</a>
+		</Fragment>
+
+		<CopyValue encoded={emailEncoded} />
+	</ProfileCard>
+
+	<DossierSection
+		label={t('home.featured')}
+		action={{ href: localizePath('/projects', lang), label: t('home.allProjects') }}
+	>
+		<Tile>
+			<div class="featured">
+				<div class="featured-cover" aria-hidden="true"></div>
+				<p class="placeholder">{t('state.placeholder')}</p>
+			</div>
+		</Tile>
+	</DossierSection>
+
+	<DossierSection label={t('tile.experience')} action={{ href: cvHref, label: t('home.fullCv') }}>
+		<ul class="rows">
 			{
-				avatar ? (
-					<Image
-						class="profile-avatar"
-						src={avatar}
-						alt={name}
-						widths={[96, 192, 288]}
-						sizes="96px"
-						loading="eager"
-					/>
-				) : (
-					<div class="profile-avatar" aria-hidden="true" />
-				)
+				experience.map((item) => (
+					<li class="row">
+						<span class="row-period">{item.period}</span>
+						<span class="placeholder">{t('state.placeholder')}</span>
+					</li>
+				))
 			}
+		</ul>
+	</DossierSection>
 
-			<div class="profile-identity">
-				<h1 class="profile-name">{name}</h1>
-				<p class="profile-role">{t('home.role')}</p>
-			</div>
+	<DossierSection label={t('tile.skills')}>
+		<ul class="pills">
+			{
+				skills.map((skill) => (
+					<li>
+						<Pill>{skill}</Pill>
+					</li>
+				))
+			}
+		</ul>
+	</DossierSection>
 
-			<p class="profile-status">
-				<LiveDot state="live" />
-				<span>{t('home.status')}</span>
-			</p>
+	<DossierSection label={t('tile.education')}>
+		<ul class="rows">
+			{
+				education.map((item) => (
+					<li class="row" data-current={'end' in item ? undefined : ''}>
+						<span class="row-period">{formatPeriod(item.start, 'end' in item ? item.end : undefined)}</span>
+						<span class="row-main">
+							<span class="row-title">{t(item.title)}</span>
+							<span class="row-detail">{t(item.detail)}</span>
+						</span>
+					</li>
+				))
+			}
+		</ul>
+	</DossierSection>
 
-			<p class="profile-location">{t('home.location')}</p>
-
-			<p class="profile-bio">{t('home.bio')}</p>
-
-			<div class="profile-actions">
-				<a class="button button-primary" data-mailto={emailEncoded}>{t('home.write')}</a>
-				<a class="button" href={cvHref}>{t('home.cv')}</a>
-			</div>
-
-			<CopyEmail encoded={emailEncoded} />
-
-			<ul class="profile-socials">
-				{
-					socials.map((social) => (
-						<li>
-							<IconLink
-								href={'href' in social ? social.href : undefined}
-								data-mailto={'mailto' in social ? social.mailto : undefined}
-								label={social.label}
-								external={social.external}
-							>
-								<Icon name={social.icon} size={22} />
-							</IconLink>
-						</li>
-					))
-				}
-			</ul>
-		</div>
-	</Tile>
-
-	<div class="stream">
-		<section class="section">
-			<header class="section-head">
-				<TileLabel>{t('home.featured')}</TileLabel>
-				<a class="section-action" href={localizePath('/projects', lang)}>
-					{t('home.allProjects')} ↗
-				</a>
-			</header>
-
-			<Tile class="featured">
-				<div class="featured-inner">
-					<div class="featured-cover" aria-hidden="true"></div>
-					<p class="placeholder">{t('state.placeholder')}</p>
-				</div>
-			</Tile>
-		</section>
-
-		<section class="section">
-			<header class="section-head">
-				<TileLabel>{t('tile.experience')}</TileLabel>
-				<a class="section-action" href={cvHref}>{t('home.fullCv')} ↗</a>
-			</header>
-
-			<ul class="rows">
-				{
-					experience.map((item) => (
-						<li class="row">
-							<span class="row-period">{item.period}</span>
-							<span class="placeholder">{t('state.placeholder')}</span>
-						</li>
-					))
-				}
-			</ul>
-		</section>
-
-		<section class="section">
-			<header class="section-head">
-				<TileLabel>{t('tile.skills')}</TileLabel>
-			</header>
-
-			<ul class="pills">
-				{
-					skills.map((skill) => (
-						<li>
-							<Pill>{skill}</Pill>
-						</li>
-					))
-				}
-			</ul>
-		</section>
-
-		<section class="section">
-			<header class="section-head">
-				<TileLabel>{t('tile.education')}</TileLabel>
-			</header>
-
-			<ul class="rows">
-				{
-					education.map((item) => (
-						<li class="row" data-current={'end' in item ? undefined : ''}>
-							<span class="row-period">{formatPeriod(item.start, 'end' in item ? item.end : undefined)}</span>
-							<span class="row-main">
-								<span class="row-title">{t(item.title)}</span>
-								<span class="row-detail">{t(item.detail)}</span>
-							</span>
-						</li>
-					))
-				}
-			</ul>
-		</section>
-
-		<DashboardTeaserTile weather={weather} />
-	</div>
-</div>
+	<DashboardTeaserTile weather={weather} />
+</Dossier>
 
 <style>
-	.dossier {
-		display: grid;
-		grid-template-columns: var(--dossier-profile-width) minmax(0, 1fr);
-		gap: var(--grid-gap);
-		align-items: start;
-	}
-
-	/* The identity card stays in view while the right column scrolls. */
-	.profile {
-		position: sticky;
-		top: var(--grid-gap);
-	}
-
-	.profile-inner {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-xl);
-	}
-
-	.profile-avatar {
-		width: var(--size-avatar);
-		height: var(--size-avatar);
-		border-radius: var(--radius-inset);
-		border: 1px solid var(--border);
-		background: var(--surface-inset);
-		object-fit: cover;
-	}
-
-	.profile-name {
-		margin: 0;
-		font-size: var(--size-hero);
-		font-weight: 700;
-		line-height: 1.1;
-		letter-spacing: -0.02em;
-	}
-
-	.profile-role {
-		margin: var(--space-2xs) 0 0;
-		color: var(--text-muted);
-	}
-
-	.profile-status {
-		display: flex;
-		align-items: center;
-		gap: var(--space-sm);
-		margin: 0;
-		color: var(--text);
-	}
-
-	.profile-location,
-	.profile-bio {
-		margin: 0;
-		color: var(--text-muted);
-	}
-
-	.profile-actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-sm);
-	}
-
-	.button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: var(--space-md) var(--space-xl);
-		border: 1px solid var(--border);
-		border-radius: var(--radius-pill);
-		background: var(--surface-inset);
-		color: var(--text);
-		font-size: var(--size-body);
-		text-decoration: none;
-		transition:
-			background-color var(--duration-hover) var(--ease-out),
-			border-color var(--duration-hover) var(--ease-out);
-	}
-
-	.button:hover {
-		background: var(--surface-hover);
-		border-color: var(--border-hover);
-	}
-
-	.button-primary {
-		background: var(--accent);
-		border-color: var(--accent);
-		color: var(--accent-foreground);
-		font-weight: 500;
-	}
-
-	.button-primary:hover {
-		background: var(--accent-hover);
-		border-color: var(--accent-hover);
-	}
-
-	.profile-socials {
-		display: flex;
-		gap: var(--space-sm);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.stream {
-		display: flex;
-		flex-direction: column;
-		gap: var(--grid-gap);
-	}
-
-	.section {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-lg);
-		padding-bottom: var(--grid-gap);
-		border-bottom: 1px solid var(--border-divider);
-	}
-
-	.section-head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: var(--space-lg);
-	}
-
-	.section-action {
-		font-size: var(--size-label);
-		font-family: var(--font-mono);
-		letter-spacing: var(--tracking-label);
-		text-transform: uppercase;
-		color: var(--text-muted);
-		text-decoration: none;
-		white-space: nowrap;
-		transition: color var(--duration-hover) var(--ease-out);
-	}
-
-	.section-action:hover {
-		color: var(--accent);
-	}
-
-	.featured-inner {
+	.featured {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-lg);
@@ -362,82 +153,8 @@ const skills = [
 		background: var(--surface-inset);
 	}
 
-	.rows {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-md);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.row {
-		display: grid;
-		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr);
-		gap: var(--space-xl);
-		align-items: baseline;
-	}
-
-	.row-period {
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
-		color: var(--text-subtle);
-		font-variant-numeric: tabular-nums;
-	}
-
-	/* Ongoing entry: an active state, so it may take the accent (koncept.md §4). */
-	.row[data-current] .row-period {
-		color: var(--accent);
-	}
-
-	/* Inline-block, not flex, so the period keeps the text baseline the row
-	   aligns on. */
-	.row[data-current] .row-period::before {
-		content: '';
-		display: inline-block;
-		vertical-align: middle;
-		margin-right: var(--space-xs);
-		width: var(--size-dot);
-		height: var(--size-dot);
-		border-radius: var(--radius-pill);
-		background: currentColor;
-	}
-
-	.row-main {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2xs);
-	}
-
-	.row-title {
-		font-weight: 500;
-	}
-
-	.row-detail {
-		color: var(--text-muted);
-	}
-
-	.pills {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-sm);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
 	.placeholder {
 		margin: 0;
 		color: var(--text-subtle);
-	}
-
-	@media (max-width: 1023px) {
-		.dossier {
-			grid-template-columns: minmax(0, 1fr);
-		}
-
-		.profile {
-			position: static;
-		}
 	}
 </style>

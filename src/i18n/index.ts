@@ -46,3 +46,14 @@ export function localizePath(path: string, lang: Lang): string {
 	const clean = path === '/' ? '' : path.replace(/\/$/, '');
 	return lang === defaultLang ? clean || '/' : `/${lang}${clean}`;
 }
+
+/**
+ * Polish plural form for a count: `one` (1 rok), `few` (2–4, 22–24… lata),
+ * `many` (everything else: 5 lat, 12 lat, 21 lat).
+ */
+export function pluralPl(n: number, forms: { one: string; few: string; many: string }): string {
+	if (n === 1) return forms.one;
+	const lastDigit = n % 10;
+	const lastTwo = n % 100;
+	return lastDigit >= 2 && lastDigit <= 4 && (lastTwo < 12 || lastTwo > 14) ? forms.few : forms.many;
+}
