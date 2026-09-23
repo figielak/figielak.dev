@@ -72,6 +72,7 @@
 	--dossier-period-width: 110px;
 	--dashboard-row-min: 84px;
 	--project-card-min: 140px;
+	--size-teaser: 44px;
 
 	/* Width of the navigation band: the wordmark sits at its left edge and the
 	   controls at its right, so this value sets how far both sit from the

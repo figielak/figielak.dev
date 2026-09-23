@@ -5,6 +5,10 @@ import LiveDot from '../ui/LiveDot.astro';
 import Pill from '../ui/Pill.astro';
 import IconLink from '../ui/IconLink.astro';
 import Icon from '../ui/Icon.astro';
+import CopyEmail from '../ui/CopyEmail.astro';
+import DashboardTeaserTile from '../tiles/DashboardTeaserTile.astro';
+import { mockWeather } from '../../lib/mocks/weather';
+import { emailEncoded } from '../../lib/contact';
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
@@ -24,8 +28,6 @@ const name = 'Krystian Figiela';
 /* The CV follows the page language (koncept.md §3.1). */
 const cvHref = `/cv/cv-${lang}.pdf`;
 
-const email = 'kontakt@example.com';
-
 /* Drop a square photo at src/assets/avatar.{jpg,png,webp,avif}; until one
    exists the card shows the empty placeholder frame. */
 const avatarFiles = import.meta.glob<{ default: ImageMetadata }>(
@@ -42,7 +44,8 @@ const socials = [
 		href: 'https://www.linkedin.com/in/krystian-figiela/',
 		external: true,
 	},
-	{ label: 'E-mail', icon: 'mail', href: `mailto:${email}`, external: false },
+	/* href is filled in by CopyEmail's script from the encoded address. */
+	{ label: 'E-mail', icon: 'mail', mailto: emailEncoded, external: false },
 ] as const;
 
 const experience = [{ period: '2024–' }, { period: '2023–2024' }, { period: '2022–2023' }];
@@ -55,6 +58,9 @@ const education = [
 
 /* En dash with no spaces, the typographic form for a range: 2020–2025. */
 const formatPeriod = (start: number, end?: number) => `${start}–${end ?? t('edu.present')}`;
+
+/* Mock until /api/weather exists; /dev/tiles previews the other states. */
+const weather = mockWeather('ok');
 
 const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'];
 ---
@@ -92,15 +98,22 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 			<p class="profile-bio">{t('home.bio')}</p>
 
 			<div class="profile-actions">
-				<a class="button button-primary" href={`mailto:${email}`}>{t('home.write')}</a>
+				<a class="button button-primary" data-mailto={emailEncoded}>{t('home.write')}</a>
 				<a class="button" href={cvHref}>{t('home.cv')}</a>
 			</div>
+
+			<CopyEmail encoded={emailEncoded} />
 
 			<ul class="profile-socials">
 				{
 					socials.map((social) => (
 						<li>
-							<IconLink href={social.href} label={social.label} external={social.external}>
+							<IconLink
+								href={'href' in social ? social.href : undefined}
+								data-mailto={'mailto' in social ? social.mailto : undefined}
+								label={social.label}
+								external={social.external}
+							>
 								<Icon name={social.icon} size={22} />
 							</IconLink>
 						</li>
@@ -181,15 +194,7 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 			</ul>
 		</section>
 
-		<Tile
-			class="teaser"
-			label={t('tile.dashboard')}
-			href={localizePath('/dashboard', lang)}
-			dense
-		>
-			<LiveDot slot="meta" state="offline" />
-			<p class="placeholder">{t('home.moreAboutMe')}</p>
-		</Tile>
+		<DashboardTeaserTile weather={weather} />
 	</div>
 </div>
 

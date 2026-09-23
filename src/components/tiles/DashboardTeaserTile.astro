@@ -1,0 +1,161 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
+import type { Weather } from '../../lib/mocks/weather';
+
+/**
+ * Small teaser at the bottom of the home stream: live local time and the
+ * weather, linking to the full dashboard (koncept.md §3.1).
+ *
+ * The clock is local, so it is always live. Weather goes through the four
+ * live-tile states; every state keeps the same footprint (koncept.md §9).
+ */
+interface Props {
+	weather: Weather;
+}
+
+const { weather } = Astro.props;
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const minutesAgo = weather.data
+	? Math.max(1, Math.round((Date.now() - weather.data.updatedAt.getTime()) / 60_000))
+	: 0;
+---
+
+<Tile label={t('tile.dashboard')} href={localizePath('/dashboard', lang)} dense>
+	<LiveDot slot="meta" state="live" />
+
+	<div class="teaser">
+		<time class="teaser-time" data-clock data-locale={lang} data-time-zone="Europe/Warsaw">--:--</time>
+
+		<div class="teaser-weather" data-state={weather.state}>
+			{
+				weather.state === 'loading' && (
+					<>
+						<span class="skeleton skeleton-temp" />
+						<span class="skeleton skeleton-line" />
+						<span class="visually-hidden">{t('state.loading')}</span>
+					</>
+				)
+			}
+			{
+				weather.data && (
+					<>
+						<span class="teaser-temp">{weather.data.tempC}°</span>
+						<span class="teaser-detail">
+							<span>
+								{t(`weather.${weather.data.condition}`)} · {weather.data.city}
+							</span>
+							{weather.state === 'stale' && (
+								<span class="teaser-stale">
+									<LiveDot state="stale" />
+									{t('state.updatedAgo').replace('{n}', String(minutesAgo))}
+								</span>
+							)}
+						</span>
+					</>
+				)
+			}
+			{weather.state === 'error' && <span class="teaser-error">{t('weather.unavailable')}</span>}
+		</div>
+	</div>
+
+	<span slot="footer">{t('home.moreAboutMe')}</span>
+</Tile>
+
+<script>
+	import { startClocks } from '../../scripts/clock';
+
+	startClocks();
+</script>
+
+<style>
+	.teaser {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2xl);
+		/* Same height in every weather state, so the tile never jumps. */
+		min-height: var(--size-teaser);
+	}
+
+	.teaser-time {
+		font-family: var(--font-mono);
+		font-size: var(--size-hero);
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+
+	.teaser-weather {
+		display: flex;
+		align-items: center;
+		gap: var(--space-lg);
+		min-width: 0;
+		padding-left: var(--space-2xl);
+		border-left: 1px solid var(--border);
+	}
+
+	.teaser-temp {
+		font-family: var(--font-mono);
+		font-size: var(--size-title);
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.teaser-detail {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-width: 0;
+		color: var(--text-muted);
+	}
+
+	.teaser-stale {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-subtle);
+	}
+
+	.teaser-error {
+		color: var(--text-subtle);
+	}
+
+	.skeleton {
+		display: block;
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		animation: skeleton-pulse var(--duration-pulse) var(--ease-out) infinite;
+	}
+
+	.skeleton-temp {
+		width: var(--size-icon-button);
+		height: var(--size-title);
+	}
+
+	.skeleton-line {
+		width: var(--dossier-period-width);
+		height: var(--size-body);
+	}
+
+	@keyframes skeleton-pulse {
+		50% {
+			opacity: 0.5;
+		}
+	}
+
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+</style>

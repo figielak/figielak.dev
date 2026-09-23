@@ -1,0 +1,167 @@
+---
+import Icon from './Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+
+/**
+ * One-click e-mail copy with a "Copied ✓" confirmation (koncept.md §3.1).
+ *
+ * The address never appears in the HTML: it ships base64-encoded and is
+ * assembled in the browser, which keeps it away from simple scraping bots.
+ * The same script also fills in every `a[data-mailto]` on the page, so
+ * mailto links can stay hidden the same way.
+ */
+interface Props {
+	/** Base64 of the address — `emailEncoded` from src/lib/contact.ts. */
+	encoded: string;
+	class?: string;
+}
+
+const { encoded, class: className } = Astro.props;
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+---
+
+<button
+	type="button"
+	class:list={['copy-email', className]}
+	data-copy-email={encoded}
+	data-label-copied={t('contact.copied')}
+	data-label-failed={t('contact.copyFailed')}
+	aria-label={t('contact.copyEmail')}
+>
+	<span class="copy-email-address" data-email-text>{t('contact.emailHidden')}</span>
+	<span class="copy-email-status" aria-live="polite">
+		<span class="copy-email-idle">
+			<Icon name="copy" size={14} />
+			{t('contact.copy')}
+		</span>
+		<span class="copy-email-done">
+			<Icon name="check" size={14} />
+			<span data-status-text>{t('contact.copied')}</span>
+		</span>
+	</span>
+</button>
+
+<script>
+	const decode = (value: string) => atob(value);
+
+	/* navigator.clipboard only exists in secure contexts (https, localhost);
+	   the textarea fallback covers plain-http previews such as a LAN address. */
+	async function copyText(text: string) {
+		if (navigator.clipboard && window.isSecureContext) {
+			await navigator.clipboard.writeText(text);
+			return;
+		}
+		const area = document.createElement('textarea');
+		area.value = text;
+		area.setAttribute('readonly', '');
+		area.style.position = 'fixed';
+		area.style.opacity = '0';
+		document.body.append(area);
+		area.select();
+		const ok = document.execCommand('copy');
+		area.remove();
+		if (!ok) throw new Error('copy failed');
+	}
+
+	for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-mailto]')) {
+		link.href = `mailto:${decode(link.dataset.mailto!)}`;
+	}
+
+	for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-email]')) {
+		const email = decode(button.dataset.copyEmail!);
+		const status = button.querySelector<HTMLElement>('[data-status-text]')!;
+		button.querySelector('[data-email-text]')!.textContent = email;
+
+		let timer: number | undefined;
+		button.addEventListener('click', async () => {
+			let copied = true;
+			try {
+				await copyText(email);
+			} catch {
+				copied = false;
+			}
+			status.textContent = copied ? button.dataset.labelCopied! : button.dataset.labelFailed!;
+			button.dataset.state = copied ? 'done' : 'failed';
+			clearTimeout(timer);
+			timer = window.setTimeout(() => delete button.dataset.state, 2000);
+		});
+	}
+</script>
+
+<style>
+	.copy-email {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		width: 100%;
+		padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-lg);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		color: var(--text-muted);
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: border-color var(--duration-hover) var(--ease-out);
+	}
+
+	.copy-email:hover {
+		border-color: var(--border-hover);
+	}
+
+	.copy-email-address {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+	}
+
+	.copy-email-status {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	.copy-email-idle,
+	.copy-email-done {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2xs);
+		padding: var(--space-2xs) var(--space-sm);
+		border-radius: var(--radius-pill);
+	}
+
+	.copy-email-idle {
+		color: var(--text-muted);
+	}
+
+	.copy-email:hover .copy-email-idle {
+		color: var(--text);
+	}
+
+	/* Confirmation is an active state, so it takes the accent. */
+	.copy-email-done {
+		display: none;
+		color: var(--accent);
+		background: var(--accent-soft);
+	}
+
+	.copy-email[data-state] .copy-email-idle {
+		display: none;
+	}
+
+	.copy-email[data-state] .copy-email-done {
+		display: inline-flex;
+	}
+
+	/* No tick when the copy did not happen. */
+	.copy-email[data-state='failed'] .copy-email-done :global(svg) {
+		display: none;
+	}
+</style>

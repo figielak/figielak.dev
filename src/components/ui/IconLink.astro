@@ -1,16 +1,19 @@
 ---
 interface Props {
-	href: string;
+	/** Optional so a script can fill it in later, e.g. `data-mailto`. */
+	href?: string;
 	label: string;
 	external?: boolean;
 	class?: string;
+	/** Anything else lands on the <a> (data-*, aria-*...). */
+	[key: string]: unknown;
 }
 
-const { href, label, external = false, class: className } = Astro.props;
+const { href, label, external = false, class: className, ...rest } = Astro.props;
 const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
 
-<a class:list={['icon-link', className]} href={href} aria-label={label} title={label} {...externalAttrs}>
+<a class:list={['icon-link', className]} href={href} aria-label={label} title={label} {...externalAttrs} {...rest}>
 	<slot />
 </a>
 

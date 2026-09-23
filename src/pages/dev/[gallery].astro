@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TileLabel from '../../components/ui/TileLabel.astro';
+import DashboardTeaserTile from '../../components/tiles/DashboardTeaserTile.astro';
+import { mockWeather, type LiveState } from '../../lib/mocks/weather';
+
+/**
+ * Dev-only gallery: every live tile in all four states side by side
+ * (koncept.md §9). getStaticPaths returns nothing in a build, so the page
+ * never ships.
+ */
+export function getStaticPaths() {
+	return import.meta.env.DEV ? [{ params: { gallery: 'tiles' } }] : [];
+}
+
+const states: LiveState[] = ['loading', 'ok', 'stale', 'error'];
+---
+
+<BaseLayout title="Tiles — dev" description="Live tile states">
+	<div class="gallery">
+		{
+			states.map((state) => (
+				<section class="state">
+					<TileLabel>{state}</TileLabel>
+					<DashboardTeaserTile weather={mockWeather(state)} />
+				</section>
+			))
+		}
+	</div>
+</BaseLayout>
+
+<style>
+	.gallery {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(var(--dossier-profile-width), 1fr));
+		gap: var(--grid-gap);
+	}
+
+	.state {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+	}
+</style>

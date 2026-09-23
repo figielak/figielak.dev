@@ -26,6 +26,11 @@
 	"home.allProjects": "All projects",
 	"home.fullCv": "Full CV",
 	"home.moreAboutMe": "More about me",
+	"contact.copy": "Copy",
+	"contact.copied": "Copied",
+	"contact.copyFailed": "Could not copy",
+	"contact.copyEmail": "Copy e-mail address",
+	"contact.emailHidden": "E-mail address",
 	"edu.university.field": "Data Engineering and Analysis",
 	"edu.university.school": "Rzeszów University of Technology · Rzeszów",
 	"edu.technikum.field": "IT Technician",
@@ -63,5 +68,15 @@
 	"tile.lesson": "How a lesson works",
 	"tile.reviews": "Reviews",
 	"tile.faq": "FAQ",
-	"state.placeholder": "Coming soon"
+	"state.placeholder": "Coming soon",
+	"weather.clear": "clear",
+	"weather.partlyCloudy": "partly cloudy",
+	"weather.cloudy": "cloudy",
+	"weather.fog": "fog",
+	"weather.rain": "rain",
+	"weather.snow": "snow",
+	"weather.storm": "storm",
+	"weather.unavailable": "Weather unavailable right now",
+	"state.updatedAgo": "updated {n} min ago",
+	"state.loading": "Loading"
 }

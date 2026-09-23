@@ -26,6 +26,11 @@
 	"home.allProjects": "Wszystkie projekty",
 	"home.fullCv": "Pełne CV",
 	"home.moreAboutMe": "Więcej o mnie",
+	"contact.copy": "Kopiuj",
+	"contact.copied": "Skopiowano",
+	"contact.copyFailed": "Nie udało się",
+	"contact.copyEmail": "Kopiuj adres e-mail",
+	"contact.emailHidden": "Adres e-mail",
 	"edu.university.field": "Inżynieria i Analiza Danych",
 	"edu.university.school": "Politechnika Rzeszowska · Rzeszów",
 	"edu.technikum.field": "Technik informatyk",
@@ -63,5 +68,15 @@
 	"tile.lesson": "Jak wygląda lekcja",
 	"tile.reviews": "Opinie",
 	"tile.faq": "FAQ",
-	"state.placeholder": "W przygotowaniu"
+	"state.placeholder": "W przygotowaniu",
+	"weather.clear": "bezchmurnie",
+	"weather.partlyCloudy": "częściowe zachmurzenie",
+	"weather.cloudy": "pochmurno",
+	"weather.fog": "mgła",
+	"weather.rain": "deszcz",
+	"weather.snow": "śnieg",
+	"weather.storm": "burza",
+	"weather.unavailable": "Pogoda chwilowo niedostępna",
+	"state.updatedAgo": "aktualizacja {n} min temu",
+	"state.loading": "Ładowanie"
 }
