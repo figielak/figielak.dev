@@ -4,6 +4,7 @@ import TileLabel from '../ui/TileLabel.astro';
 import LiveDot from '../ui/LiveDot.astro';
 import Pill from '../ui/Pill.astro';
 import IconLink from '../ui/IconLink.astro';
+import Icon from '../ui/Icon.astro';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
 const lang = getLangFromUrl(Astro.url);
@@ -16,18 +17,27 @@ const t = useTranslations(lang);
  *
  * Content is still placeholder; step 2 fills it in.
  */
-const name = 'Krystian Figielak';
+const name = 'Krystian Figiela';
 
 /* The CV follows the page language (koncept.md §3.1). */
 const cvHref = `/cv/cv-${lang}.pdf`;
 
 const socials = [
-	{ label: 'GitHub', href: 'https://github.com/' },
-	{ label: 'LinkedIn', href: 'https://linkedin.com/in/' },
-	{ label: 'E-mail', href: 'mailto:hello@figielak.dev' },
+	{ label: 'GitHub', icon: 'github', href: 'https://github.com/' },
+	{ label: 'LinkedIn', icon: 'linkedin', href: 'https://linkedin.com/in/' },
+	{ label: 'E-mail', icon: 'mail', href: 'mailto:hello@figielak.dev' },
 ] as const;
 
-const experience = [{ period: '2024 —' }, { period: '2023 — 2024' }, { period: '2022 — 2023' }];
+const experience = [{ period: '2024–' }, { period: '2023–2024' }, { period: '2022–2023' }];
+
+/* Newest first. A missing `end` means ongoing. */
+const education = [
+	{ start: 2025, title: 'edu.university.field', detail: 'edu.university.school' },
+	{ start: 2020, end: 2025, title: 'edu.technikum.field', detail: 'edu.technikum.school' },
+] as const;
+
+/* En dash with no spaces, the typographic form for a range: 2020–2025. */
+const formatPeriod = (start: number, end?: number) => `${start}–${end ?? t('edu.present')}`;
 
 const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'];
 ---
@@ -61,7 +71,7 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 					socials.map((social) => (
 						<li>
 							<IconLink href={social.href} label={social.label} external>
-								<span class="social-initial">{social.label.slice(0, 2)}</span>
+								<Icon name={social.icon} size={22} />
 							</IconLink>
 						</li>
 					))
@@ -127,10 +137,17 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 			</header>
 
 			<ul class="rows">
-				<li class="row">
-					<span class="row-period">2023 —</span>
-					<span class="placeholder">{t('state.placeholder')}</span>
-				</li>
+				{
+					education.map((item) => (
+						<li class="row" data-current={'end' in item ? undefined : ''}>
+							<span class="row-period">{formatPeriod(item.start, 'end' in item ? item.end : undefined)}</span>
+							<span class="row-main">
+								<span class="row-title">{t(item.title)}</span>
+								<span class="row-detail">{t(item.detail)}</span>
+							</span>
+						</li>
+					))
+				}
 			</ul>
 		</section>
 
@@ -248,11 +265,6 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 		list-style: none;
 	}
 
-	.social-initial {
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
-	}
-
 	.stream {
 		display: flex;
 		flex-direction: column;
@@ -323,6 +335,38 @@ const skills = ['TypeScript', 'Astro', 'Go', 'Kubernetes', 'PostgreSQL', 'Linux'
 		font-size: var(--size-label);
 		color: var(--text-subtle);
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* Ongoing entry: an active state, so it may take the accent (koncept.md §4). */
+	.row[data-current] .row-period {
+		color: var(--accent);
+	}
+
+	/* Inline-block, not flex, so the period keeps the text baseline the row
+	   aligns on. */
+	.row[data-current] .row-period::before {
+		content: '';
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: var(--space-xs);
+		width: var(--size-dot);
+		height: var(--size-dot);
+		border-radius: var(--radius-pill);
+		background: currentColor;
+	}
+
+	.row-main {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+	}
+
+	.row-title {
+		font-weight: 500;
+	}
+
+	.row-detail {
+		color: var(--text-muted);
 	}
 
 	.pills {

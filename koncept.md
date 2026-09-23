@@ -58,12 +58,12 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 │  [ avatar ]  │  WYRÓŻNIONY PROJEKT      │
 │              │  ┌────────────────────┐  │
 │  Krystian    │  │   zrzut 16:9       │  │
-│  Figielak    │  └────────────────────┘  │
-│  Software    │  ──────────────────────  │
-│  Engineer    │  DOŚWIADCZENIE           │
-│              │  2024 —  Firma · rola    │
+│  Figiela     │  └────────────────────┘  │
+│  Student ·   │  ──────────────────────  │
+│  Data &      │  DOŚWIADCZENIE           │
+│  Software Dev│  2024 —  Firma · rola    │
 │  ● Dostępny  │  ──────────────────────  │
-│    Warszawa  │  UMIEJĘTNOŚCI            │
+│    Rzeszów   │  UMIEJĘTNOŚCI            │
 │              │  [TS] [Astro] [Go] …     │
 │  [ Napisz ]  │  ──────────────────────  │
 │  [ CV ↗ ]    │  EDUKACJA                │
