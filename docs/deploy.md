@@ -47,7 +47,7 @@ ponowny deploy (Actions → Deploy → *Run workflow*).
 
 ### Klucze do danych na żywo
 
-Kafle GitHub i Last.fm na `/dashboard` pobierają dane przez `/api/github` i `/api/music`
+Kafle GitHub, Last.fm i WakaTime na `/dashboard` pobierają dane przez `/api/github`, `/api/music` i `/api/waka`
 (koncept.md §9). Klucze są sekretami serwera — tak jak hasło, workflow podpina je do
 Cloud Run, więc **muszą istnieć przed deployem**, inaczej krok *Deploy* się wywali.
 
@@ -57,9 +57,11 @@ Cloud Run, więc **muszą istnieć przed deployem**, inaczej krok *Deploy* się 
   jest włączone *Include private contributions on my profile*.
 - **Last.fm:** [last.fm/api/account/create](https://www.last.fm/api/account/create) —
   potrzebny jest tylko *API key* (bez *shared secret*).
+- **WakaTime:** [wakatime.com/settings/api-key](https://wakatime.com/settings/api-key) — ten sam
+  klucz co w edytorze (`waka_…`).
 
 ```bash
-for secret in github-token lastfm-api-key; do
+for secret in github-token lastfm-api-key wakatime-api-key; do
   read -rsp "$secret: " value; echo
   printf '%s' "$value" | gcloud secrets create "$secret" --data-file=-
   gcloud secrets add-iam-policy-binding "$secret" \
@@ -155,6 +157,7 @@ curl -sI https://figielak.dev/dashboard/private | head -1     # 401 — przeglą
 curl -sI https://maths.figielak.dev | grep -i location        # https://figielak.dev/maths
 curl -s  https://figielak.dev/api/github | head -c 120         # {"weeks":[[…  (503 = brak klucza lub błąd GitHuba)
 curl -s  https://figielak.dev/api/music                        # {"track":{…},"topArtists":[…],…}
+curl -s  https://figielak.dev/api/waka                         # {"todayMin":…,"weekMin":…,"languages":[…],…}
 ```
 
 ## Lokalnie
@@ -179,7 +182,8 @@ Problemy, które wystąpiły przy pierwszym wdrożeniu (2026-09-24).
 | Na stronie `+48 000 000 000`, `kontakt@example.com`, `home.example` | brak GitHub Secrets przy buildzie (albo dodane po deployu) | dodaj Secrets (nie Variables) i uruchom deploy ponownie |
 | `/dashboard/private` zwraca **503** | Cloud Run nie dostał `DASHBOARD_PASSWORD` | sprawdź sekret i flagę `--set-secrets` w workflow |
 | **429** przy logowaniu do trybu prywatnego | limit żądań w Cloudflare (liczą się też próby bez hasła) | odczekaj kilka sekund |
-| `/api/github` lub `/api/music` zwraca **503**, kafel „chwilowo niedostępny” | brak klucza, zła nazwa `LASTFM_USER` albo wygasły token GitHuba | przyczyna jest w logach Cloud Run (`[api] …`); nowy token jako nowa wersja sekretu |
+| `/api/github`, `/api/music` lub `/api/waka` zwraca **503**, kafel „chwilowo niedostępny” | brak klucza, zła nazwa `LASTFM_USER` albo wygasły token GitHuba | przyczyna jest w logach Cloud Run (`[api] …`); nowy token jako nowa wersja sekretu |
+| Deploy pada na *Creating Revision*: `Secret …/versions/latest was not found` | sekret nie istnieje albo nie ma wersji (pusta wartość przy `read`) | `gcloud secrets versions list <nazwa>`; brakującą wartość dodaj przez `gcloud secrets versions add` |
 | Odmowa zwraca **500** zamiast 401 | znak spoza Latin-1 (np. „—”) w nagłówku `WWW-Authenticate` | w nagłówkach tylko ASCII |
 
 Logi Cloud Run: `gcloud run services logs read figielak-dev --region europe-west1 --limit 50`.

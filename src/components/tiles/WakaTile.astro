@@ -8,13 +8,22 @@ import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { WAKA_PLACEHOLDER, type Waka } from '../../lib/mocks/waka';
 
-/** Coding time from WakaTime, cached 1 h (koncept.md §9). */
+/**
+ * Coding time from WakaTime, cached 1 h (koncept.md §9).
+ *
+ * With `endpoint` the tile renders as loading and fills itself in the
+ * browser; without it, it shows `waka` as given (mocks in /dev/tiles).
+ */
 interface Props {
 	waka: Waka;
+	endpoint?: string;
 	area?: string;
 }
 
-const { waka, area } = Astro.props;
+/* The API refreshes hourly, so an hour-old answer is still fresh. */
+const STALE_AFTER_MIN = 3 * 60;
+
+const { waka, endpoint, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const d = waka.data ?? WAKA_PLACEHOLDER;
@@ -26,7 +35,16 @@ const hm = (min: number) =>
 const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
 ---
 
-<Tile area={area} label={t('tile.waka')} dense>
+<Tile
+	area={area}
+	label={t('tile.waka')}
+	dense
+	class="waka-tile"
+	data-endpoint={endpoint}
+	data-stale-after={STALE_AFTER_MIN}
+	data-week={t('waka.week')}
+	data-hm={t('duration.hm')}
+>
 	<LiveDot slot="meta" state={dotState(waka.state)} />
 
 	<LiveBody state={waka.state} errorText={t('waka.unavailable')}>
@@ -47,6 +65,32 @@ const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padSt
 
 	<LiveFooter slot="footer" live={waka}>{t('waka.week').replace('{t}', hm(d.weekMin))}</LiveFooter>
 </Tile>
+
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import type { WakaData } from '../../lib/server/wakatime';
+
+	const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.waka-tile[data-endpoint]')) {
+		const { week = '{t}', hm = '{h}:{m}' } = tile.dataset;
+
+		watchLive<WakaData>(tile, (data) => {
+			setText(tile.querySelector('.big-value'), short(data.todayMin));
+
+			tile.querySelectorAll('.waka-language').forEach((row, i) => {
+				const language = data.languages[i];
+				setText(row.querySelector('.waka-name'), language?.name ?? '—');
+				setText(row.querySelector('.waka-percent'), language ? `${language.percent}%` : '');
+			});
+
+			const weekText = hm
+				.replace('{h}', String(Math.floor(data.weekMin / 60)))
+				.replace('{m}', String(data.weekMin % 60));
+			setText(tile.querySelector('.live-footer-detail'), week.replace('{t}', weekText));
+		});
+	}
+</script>
 
 <style>
 	.waka {

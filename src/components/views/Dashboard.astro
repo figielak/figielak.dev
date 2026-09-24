@@ -16,7 +16,6 @@ import CoffeeTile from '../tiles/CoffeeTile.astro';
 import EventTile from '../tiles/EventTile.astro';
 import { mockWeather } from '../../lib/mocks/weather';
 import { mockAir } from '../../lib/mocks/air';
-import { mockWaka } from '../../lib/mocks/waka';
 import { mockDns, mockTraffic } from '../../lib/mocks/network';
 import { mockCoffee } from '../../lib/mocks/coffee';
 
@@ -67,7 +66,7 @@ const base = [
 	<SunTile area="sun" />
 	<ProgressTile area="progress" />
 	<GithubTile area="github" github={{ state: 'loading' }} endpoint="/api/github" />
-	<WakaTile area="waka" waka={mockWaka()} />
+	<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
 	<DnsTile area="dns" dns={mockDns()} />
 	<NetTile area="net" traffic={mockTraffic()} />
 	<MusicTile area="music" music={{ state: 'loading' }} endpoint="/api/music" />
