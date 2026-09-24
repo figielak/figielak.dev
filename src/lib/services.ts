@@ -2,6 +2,9 @@
  * Homelab services for the launcher tile on the private dashboard
  * (koncept.md §3.4). They resolve only over Tailscale. Everything except
  * Mealie is a placeholder — replace with the services that really run.
+ *
+ * The domain comes from HOMELAB_DOMAIN at build time: the repository is
+ * public and must not reveal homelab host names (koncept.md §14).
  */
 import type { IconName } from '../components/ui/Icon.astro';
 
@@ -11,7 +14,8 @@ export interface Service {
 	icon: IconName;
 }
 
-const host = (name: string) => `https://${name}.home.example`;
+const domain = import.meta.env.HOMELAB_DOMAIN || 'home.example';
+const host = (name: string) => `https://${name}.${domain}`;
 
 export const services: Service[] = [
 	{ name: 'Mealie', url: host('mealie'), icon: 'chef-hat' },

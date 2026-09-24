@@ -1,0 +1,5 @@
+# Only package*.json and the prebuilt dist/ go into the image.
+*
+!package.json
+!package-lock.json
+!dist

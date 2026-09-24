@@ -1,0 +1,9 @@
+# Uploaded by `gcloud run deploy --source .`: just what the Dockerfile needs.
+# Without this file gcloud would use .gitignore and skip the prebuilt dist/.
+*
+!Dockerfile
+!.dockerignore
+!package.json
+!package-lock.json
+!dist
+!dist/**

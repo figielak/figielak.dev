@@ -1,0 +1,65 @@
+# Builds and deploys figielak.dev to Cloud Run on every push to master
+# (koncept.md §10). One-time GCP and Cloudflare setup: docs/deploy.md.
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  SERVICE: figielak-dev
+  REGION: europe-west1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation, no JSON keys
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Personal data and homelab host names are GitHub secrets, never in the
+      # public repo (.env.example, koncept.md §14).
+      - name: Build
+        run: npm run build
+        env:
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+          CONTACT_PHONE: ${{ secrets.CONTACT_PHONE }}
+          HOMELAB_DOMAIN: ${{ secrets.HOMELAB_DOMAIN }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --source . \
+            --region "$REGION" \
+            --allow-unauthenticated \
+            --min-instances 0 \
+            --max-instances 3 \
+            --memory 512Mi \
+            --quiet
+          echo "url=$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test
+        run: curl --fail --silent --show-error --retry 3 "${{ steps.deploy.outputs.url }}/api/health"

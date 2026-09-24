@@ -7,7 +7,7 @@
 
 ## 1. Wizja w skrócie
 
-Osobista strona w stylu **bento grid**: ciemne, grafitowe tło, zaokrąglone kafle, jeden czerwony akcent, wszystko poza nim monochromatyczne.
+Osobista strona w stylu **bento grid**: ciemne, grafitowe tło, zaokrąglone kafle, jeden czerwony akcent w interfejsie. **Treść może być kolorowa** — prawdziwe loga, okładki, zdjęcia i grafiki dodają stronie życia (patrz §4 „Kolor w treści”).
 Strona składa się z kilku **widoków** dla różnych odbiorców. Wszystkie dzielą ten sam **system wizualny** (tokeny, kafle, typografia, akcent), ale nie ten sam układ.
 
 - **Bento grid** to układ domyślny: projekty i dashboard.
@@ -83,7 +83,7 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 | lokalizacja | miasto i kraj |
 | bio | 2–3 zdania o mnie |
 | akcje | „Napisz” (pełny akcent) i „Pobierz CV” (PDF z Typst, PL/EN zgodnie z językiem); **kopiowanie e-maila jednym kliknięciem** z potwierdzeniem „Skopiowano ✓” |
-| social | GitHub, LinkedIn i inne; ikony monochromatyczne |
+| social | GitHub, LinkedIn i inne; ikony w kolorze tekstu albo prawdziwe loga |
 
 **Prawa kolumna — strumień sekcji**, rozdzielonych włosową linią `--border-divider`:
 
@@ -204,7 +204,7 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 | `lab` | statystyki homelabu: CPU, RAM, GPU, dyski, kontenery |
 | `uptime` | uptime homelabu i usług |
 | `now` | now page: buduję, uczę się, czytam |
-| `launch` | launchery usług homelabu (`*.home.example`, `src/lib/services.ts`), działają tylko przez Tailscale |
+| `launch` | launchery usług homelabu (domena z `HOMELAB_DOMAIN`, lista w `src/lib/services.ts`), działają tylko przez Tailscale |
 | `deploy` | ostatni deploy strony: kiedy, commit, status |
 | `site` | statystyki strony: odwiedziny dziś / 7 dni, online, top strona |
 
@@ -233,10 +233,14 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i
   - pojedynczych wyróżnień w tekście.
 
   Maksymalnie 1–2 kafle na widok mogą mieć pełne akcentowe tło (np. CV, kontakt).
-- **Ikony:**
-  - monochromatyczne, jedna rodzina (np. Lucide lub Tabler, a do logo technologii Simple Icons w kolorze tekstu);
-  - bez kolorowych logo marek.
-- **Zdjęcia** to jedyne miejsce z pełnym kolorem. Mogą mieć delikatny ciemny gradient u dołu pod tekstem.
+- **Ikony interfejsu** (strzałki, akcje, etykiety): jedna rodzina outline (Tabler), w kolorze tekstu.
+- **Kolor w treści — dozwolony, nie wymagany.** Interfejs (tła, ramki, tekst, akcent) zostaje grafitowy z jednym czerwonym akcentem. Treść może mieć pełny kolor tam, gdzie dodaje życia i informacji:
+  - prawdziwe loga marek i technologii w ich kolorach (np. Simple Icons w kolorze marki, logo uczelni, usług);
+  - okładki książek i albumów, zdjęcia, zrzuty ekranu projektów;
+  - grafiki, ilustracje, mapy, wykresy.
+
+  Zasady: kolor pochodzi z samego assetu (SVG/obraz), a nie z hexów w stylach komponentów; każdy element graficzny ma sensowny tekst alternatywny; nic kolorowego nie może zbić kontrastu tekstu poniżej AA. Tekst obok grafik nadal jest pełnoprawną treścią — grafika uzupełnia, nie zastępuje.
+- **Zdjęcia i okładki** mogą mieć delikatny ciemny gradient u dołu pod tekstem.
 
 ---
 
@@ -260,8 +264,9 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
 
 Zasady:
-- Stany na żywo: `online` i `LIVE` mają kolor `--accent` z pulsowaniem, a `offline` i nieaktualne dane mają kolor `--text-subtle`. Nie używam zieleni, bo paleta ma zostać monochromatyczna z jednym akcentem.
-- Wykres kontrybucji GitHuba rysuję w odcieniach akcentu (4 poziomy przezroczystości), a nie w zieleni.
+- Stany na żywo: domyślnie `online` i `LIVE` mają kolor `--accent` z pulsowaniem, a `offline` i nieaktualne dane mają kolor `--text-subtle`. Kolory semantyczne (np. zielony „online”, skala jakości powietrza) są dozwolone, jeśli poprawiają czytelność — wtedy dodaję je jako tokeny.
+- Wykres kontrybucji GitHuba rysuję w odcieniach akcentu (4 poziomy przezroczystości).
+- Kolor treści (loga, okładki, zdjęcia, grafiki) opisuje §4 „Kolor w treści”.
 
 ---
 
@@ -337,7 +342,8 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 ### Architektura
 
 - Strona jest **statyczna domyślnie** (Astro). Kafle z danymi na żywo to małe wyspy (`client:visible`).
-- Dane pobieram przez własne endpointy `/api/*` na Cloudflare (Astro + `@astrojs/cloudflare`, trasy z `prerender = false`). Z przeglądarki **nigdy** nie odpytuję zewnętrznych API z kluczem.
+- Dane pobieram przez własne endpointy `/api/*` na serwerze Node w Cloud Run (Astro + `@astrojs/node`, trasy z `prerender = false`; wzór: `src/pages/api/health.ts`). Z przeglądarki **nigdy** nie odpytuję zewnętrznych API z kluczem.
+- Tokeny i klucze trzymam w **Secret Manager** i przekazuję do Cloud Run jako zmienne środowiskowe.
 
 | Dane | Źródło | Odświeżanie / cache |
 |---|---|---|
@@ -348,7 +354,7 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 | Jakość powietrza | GIOŚ (bez klucza), stacja w Rzeszowie | cache 1h |
 | Wschód i zachód słońca, % dnia/miesiąca/roku | liczone lokalnie (build + przeglądarka) | — |
 | Blokada reklam (DNS), transfer sieciowy | AdGuard Home / Pi-hole i router przez push-agenta | przez push |
-| Ostatni deploy (prywatne) | Cloudflare API (token po stronie serwera) | cache 1–5 min |
+| Ostatni deploy (prywatne) | Cloud Run Admin API (rewizje usługi) lub GitHub Actions API | cache 1–5 min |
 | Licznik kaw | do ustalenia (§17) | — |
 | Homelab | model **push**, opisany niżej | co 1–5 min |
 | Uptime | agent na homelabie (opcjonalnie Uptime Kuma) | przez push |
@@ -362,12 +368,8 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 - Mały agent na homelabie (skrypt, np. timer systemd lub cron) co kilka minut wysyła zanonimizowany JSON z CPU, RAM, GPU, dyskami i uptime:
   - metodą POST na `/api/stats`;
   - z tajnym tokenem w nagłówku.
-- Worker zapisuje ostatni odczyt. Dashboard odczytuje go i odświeża co około 30 s.
-- **Limity zapisu:** darmowe Cloudflare KV ma niski dzienny limit zapisów (około 1000 dziennie). Przy wysyłce co 30 s (ok. 2900 zapisów dziennie) to się nie zmieści. Dlatego:
-  - albo wysyłam co 5 min,
-  - albo używam D1 lub Durable Objects.
-
-  Przed wdrożeniem sprawdzam aktualne limity.
+- Endpoint zapisuje ostatni odczyt w **Firestore**. Dashboard odczytuje go i odświeża co około 30 s.
+- **Limity zapisu:** Cloud Run skaluje się do zera i nie trzyma stanu w pamięci, więc odczyt musi trafić do bazy. Darmowy Firestore daje 20 tys. zapisów dziennie; wysyłka co 30 s to ok. 2900 zapisów, więc się mieści. Przed wdrożeniem sprawdzam aktualne limity.
 
 ### Stany każdego kafla z danymi na żywo (obowiązkowe)
 
@@ -388,11 +390,13 @@ Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na 
 - **Tailwind v4:** tokeny w `@theme`, zgodnie z sekcją 5.
 - **Fontsource** dla JetBrains Mono; Satoshi hostowany lokalnie.
 - **Sätteri (`@astrojs/markdown-satteri`) + KaTeX:** wzory w projektach i na `/maths`. Sätteri parsuje matematykę (`features: { math: true }`), a własny plugin `src/plugins/katex.js` renderuje ją KaTeX-em przy buildzie. CSS KaTeX ładuję tylko na stronach, które go używają.
-- **rehype-mermaid:** diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright, co może nie działać w środowisku buildu Cloudflare. W razie problemów:
-  - buduję w GitHub Actions,
-  - albo używam strategii renderowania po stronie klienta.
+- **rehype-mermaid:** diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright. Build idzie w GitHub Actions (obraz Dockera dostaje gotowy `dist/`), więc wystarczy doinstalować tam przeglądarkę; w razie problemów przechodzę na renderowanie po stronie klienta.
 - **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`), kompilowane do PDF w `public/cv/`. Kompilacja lokalnie lub w CI.
-- **Hosting:** Cloudflare, bo daje Workers, D1/KV i przekierowania subdomen w jednym miejscu. Netlify jest alternatywą.
+- **Hosting:** **Google Cloud Run** (`europe-west1`, skalowanie do zera) za **Cloudflare**.
+  - Cloud Run uruchamia kontener z `Dockerfile`: prerenderowane strony + serwer Node dla `/api/*`.
+  - Cloudflare zostaje z przodu jako DNS z proxy: SSL Full (strict), Access dla prywatnego dashboardu, przekierowania 301 subdomen, cache `/_astro/*`.
+  - Region `europe-west1`, bo Cloud Run mapuje własne domeny tylko w części regionów (Warszawy wśród nich nie ma).
+  - Deploy: GitHub Actions przy pushu na `master` (`.github/workflows/deploy.yml`, Workload Identity Federation, bez kluczy JSON). Jednorazowa konfiguracja: `docs/deploy.md`.
 - **Analityka:** Umami lub Plausible. Wybór zależy od tego, które API wygodniej zasila licznik wizyt.
 - **Homelab:** Homepage lub Homarr, dostępne tylko przez Tailscale.
 
@@ -417,6 +421,8 @@ public/
   fonts/  cv/
 cv/              # źródła Typst
 agent/           # skrypt statystyk homelabu
+docs/            # deploy.md — konfiguracja Cloud Run i Cloudflare
+Dockerfile       # obraz dla Cloud Run
 ```
 
 ---
@@ -470,6 +476,11 @@ agent/           # skrypt statystyk homelabu
 
 ## 14. Prywatność i bezpieczeństwo
 
+- **Repozytorium jest publiczne** (`github.com/figielak/figielak.dev`). Wszystko, co trafia do commita — także do historii — jest jawne. Dlatego:
+  - dane osobowe (telefon, e-mail kontaktowy, adres), nazwy hostów i domeny homelabu, nazwa tailnetu, adresy IP, tokeny i klucze **nigdy** nie trafiają do kodu, dokumentacji ani wiadomości commitów;
+  - wartości potrzebne przy buildzie czytam ze zmiennych środowiskowych: lokalnie z `.env` (poza gitem), w CI z GitHub Secrets; lista kluczy jest w `.env.example`, a kod ma neutralne wypełniacze, żeby build działał bez nich;
+  - sekrety serwera (`/api/*`) są w Secret Manager, nie w repo i nie w GitHub Variables;
+  - zanim zrobię commit, sprawdzam diff pod kątem powyższych danych; jeśli coś wycieknie, przepisuję historię i od razu zmieniam ujawniony sekret.
 - **Rozkład zajęć** zdradza, gdzie i kiedy jestem, a strona z korepetycjami jest publiczna. Publicznie pokazuję tylko ogólną formę (np. „zajęcia do 14:00” lub „dziś wolne”) albo ukrywam kafel.
 - **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu i uptime** są tylko w **prywatnym dashboardzie**.
 - **Prywatny dashboard** (`/dashboard/private*` i `/en/dashboard/private*`) chroni reguła **Cloudflare Access** na krawędzi (logowanie np. e-mailem lub GitHubem), ustawiana w panelu Cloudflare, nie w repo. Strona jest statyczna, ma `noindex` i nie trafia do sitemapy.
