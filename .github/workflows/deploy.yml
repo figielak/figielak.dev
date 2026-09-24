@@ -58,6 +58,7 @@ jobs:
             --min-instances 0 \
             --max-instances 3 \
             --memory 512Mi \
+            --set-secrets DASHBOARD_PASSWORD=dashboard-password:latest \
             --quiet
           echo "url=$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')" >> "$GITHUB_OUTPUT"
 

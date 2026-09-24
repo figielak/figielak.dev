@@ -162,7 +162,7 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 | Tryb | Adres | Dla kogo | Dostęp |
 |---|---|---|---|
 | publiczny | `/dashboard` | odwiedzający | otwarty |
-| prywatny | `/dashboard/private` | ja | Cloudflare Access (patrz §14) |
+| prywatny | `/dashboard/private` | ja | hasło na serwerze (patrz §14) |
 
 Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłódką / „Widok publiczny”). W nawigacji jest tylko tryb publiczny.
 
@@ -394,7 +394,7 @@ Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na 
 - **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`), kompilowane do PDF w `public/cv/`. Kompilacja lokalnie lub w CI.
 - **Hosting:** **Google Cloud Run** (`europe-west1`, skalowanie do zera) za **Cloudflare**.
   - Cloud Run uruchamia kontener z `Dockerfile`: prerenderowane strony + serwer Node dla `/api/*`.
-  - Cloudflare zostaje z przodu jako DNS z proxy: SSL Full (strict), Access dla prywatnego dashboardu, przekierowania 301 subdomen, cache `/_astro/*`.
+  - Cloudflare zostaje z przodu jako DNS z proxy: SSL Full (strict), przekierowania 301 subdomen, cache `/_astro/*`, limit żądań do trybu prywatnego.
   - Region `europe-west1`, bo Cloud Run mapuje własne domeny tylko w części regionów (Warszawy wśród nich nie ma).
   - Deploy: GitHub Actions przy pushu na `master` (`.github/workflows/deploy.yml`, Workload Identity Federation, bez kluczy JSON). Jednorazowa konfiguracja: `docs/deploy.md`.
 - **Analityka:** Umami lub Plausible. Wybór zależy od tego, które API wygodniej zasila licznik wizyt.
@@ -483,7 +483,12 @@ Dockerfile       # obraz dla Cloud Run
   - zanim zrobię commit, sprawdzam diff pod kątem powyższych danych; jeśli coś wycieknie, przepisuję historię i od razu zmieniam ujawniony sekret.
 - **Rozkład zajęć** zdradza, gdzie i kiedy jestem, a strona z korepetycjami jest publiczna. Publicznie pokazuję tylko ogólną formę (np. „zajęcia do 14:00” lub „dziś wolne”) albo ukrywam kafel.
 - **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu i uptime** są tylko w **prywatnym dashboardzie**.
-- **Prywatny dashboard** (`/dashboard/private*` i `/en/dashboard/private*`) chroni reguła **Cloudflare Access** na krawędzi (logowanie np. e-mailem lub GitHubem), ustawiana w panelu Cloudflare, nie w repo. Strona jest statyczna, ma `noindex` i nie trafia do sitemapy.
+- **Prywatny dashboard** (`/dashboard/private` i `/en/dashboard/private`) chroni **hasło sprawdzane na serwerze** (HTTP Basic Auth, `src/lib/owner.ts`). Cloudflare Zero Trust (Access) nie jest dostępny.
+  - Strony prywatne renderuje serwer (`prerender = false`), a nie plik statyczny. Dzięki temu sprawdzenie obejmuje każdą odmianę ścieżki i adres `*.run.app`, który omija Cloudflare.
+  - Hasło (`DASHBOARD_PASSWORD`) jest w Secret Manager i trafia do Cloud Run jako zmienna środowiskowa przy starcie, nie przy buildzie. Bez hasła serwer odmawia wszystkim (poza `astro dev`).
+  - Hasło jest długie i losowe. Reguła rate limiting w Cloudflare ogranicza próby zgadywania.
+  - Odpowiedzi mają `Cache-Control: private, no-store`. Strony mają `noindex` i nie trafiają do sitemapy.
+  - Ten sam strażnik chroni przyszłe prywatne endpointy (`/api/private/*`).
 - **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym pokazuję ogólne etykiety.
 - **Tokeny i klucze** trzymam wyłącznie w zmiennych środowiskowych po stronie serwera. Endpoint `/api/stats`:
   - wymaga tokenu;

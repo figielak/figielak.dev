@@ -13,7 +13,7 @@ export default defineConfig({
 	adapter: node({ mode: 'standalone' }),
 	integrations: [
 		mdx(),
-		/* The private dashboard sits behind Cloudflare Access (koncept.md §14). */
+		/* The private dashboard is password-protected (koncept.md §14). */
 		sitemap({ filter: (page) => !page.includes('/dashboard/private') }),
 	],
 	markdown: {

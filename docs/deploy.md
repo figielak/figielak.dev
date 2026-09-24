@@ -5,7 +5,7 @@ Po niej każdy push na `master` wdraża stronę sam (`.github/workflows/deploy.y
 build w GitHub Actions (z sekretami), potem obraz z gotowym `dist/` na Cloud Run.
 
 ```text
-przeglądarka → Cloudflare (DNS proxy, SSL, Access, 301, cache) → Cloud Run „figielak-dev” (europe-west1)
+przeglądarka → Cloudflare (DNS proxy, SSL, 301, cache) → Cloud Run „figielak-dev” (europe-west1)
 ```
 
 ## 1. Google Cloud
@@ -24,8 +24,26 @@ gcloud config set project "$PROJECT_ID"
 PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
 
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
-  artifactregistry.googleapis.com iamcredentials.googleapis.com
+  artifactregistry.googleapis.com iamcredentials.googleapis.com secretmanager.googleapis.com
 ```
+
+### Hasło do prywatnego dashboardu
+
+Serwer wpuszcza na `/dashboard/private` tylko z tym hasłem (koncept.md §14). Workflow
+podpina je do Cloud Run (`--set-secrets`), więc sekret musi istnieć przed deployem.
+
+```bash
+openssl rand -base64 24 | tr -d '\n' | gcloud secrets create dashboard-password --data-file=-
+gcloud secrets versions access latest --secret=dashboard-password; echo   # zapisz w menedżerze haseł
+
+# Cloud Run działa na domyślnym koncie Compute — musi móc odczytać sekret.
+gcloud secrets add-iam-policy-binding dashboard-password \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role=roles/secretmanager.secretAccessor
+```
+
+Zmiana hasła: `… | gcloud secrets versions add dashboard-password --data-file=-`, potem
+ponowny deploy (Actions → Deploy → *Run workflow*).
 
 ### Konto serwisowe dla GitHub Actions
 
@@ -93,9 +111,9 @@ gcloud beta run domain-mappings describe --domain figielak.dev --region "$REGION
    Na czas wystawiania certyfikatu przez Google **proxy wyłączone** (szara chmurka).
    Gdy `describe` pokaże certyfikat jako gotowy — **włącz proxy** (pomarańczowa chmurka).
 2. **SSL/TLS → Overview:** tryb **Full (strict)**.
-3. **Zero Trust → Access → Applications:** aplikacja self-hosted dla
-   `figielak.dev/dashboard/private*` i `figielak.dev/en/dashboard/private*`,
-   polityka *Allow* tylko dla Twojego e-maila (koncept.md §14).
+3. **Security → WAF → Rate limiting rules** (1 reguła w darmowym planie): gdy URI path zawiera
+   `/dashboard/private`, blokuj po 10 żądaniach na 10 s z jednego IP. Hasło chroni serwer,
+   a ta reguła ogranicza zgadywanie.
 4. **Rules → Redirect Rules:** `maths.figielak.dev/*` → `https://figielak.dev/maths` (301),
    `dashboard.figielak.dev/*` → `https://figielak.dev/dashboard` (301). Subdomeny potrzebują
    rekordu DNS z proxy (np. `AAAA 100::`), żeby reguła zadziałała (koncept.md §2).
@@ -107,7 +125,7 @@ gcloud beta run domain-mappings describe --domain figielak.dev --region "$REGION
 ```bash
 curl -sI https://figielak.dev | grep -iE '^(HTTP|server)'     # 200, server: cloudflare
 curl -s  https://figielak.dev/api/health                      # {"ok":true,"revision":"figielak-dev-000…"}
-curl -sI https://figielak.dev/dashboard/private | head -1     # 302 do logowania Access
+curl -sI https://figielak.dev/dashboard/private | head -1     # 401 — przeglądarka pyta o hasło
 curl -sI https://maths.figielak.dev | grep -i location        # https://figielak.dev/maths
 ```
 
