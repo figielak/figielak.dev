@@ -19,7 +19,8 @@ import { mockAir } from '../../lib/mocks/air';
  * rhythm. The day and the weather top left, GitHub wide and low under them,
  * music tall and narrow like a cover, the homelab big because it holds the
  * most; the featured project is the biggest, as the one card that sells
- * something. WakaTime is the one accent block beside the books.
+ * something. WakaTime is two columns wide for its week chart and language bar.
+ * The countdown is one number, so it gets a half-height tile like the socials.
  * Homelab numbers are public: it is a server, so they do not tell when I am at
  * the computer (§14).
  *
@@ -31,10 +32,10 @@ const lg = [
 	'day      day      weather  music    lab      lab',
 	'github   github   github   music    lab      lab',
 	'github   github   github   music    lab      lab',
-	'featured featured featured dc       ig       event',
-	'featured featured featured gh       li       event',
-	'featured featured featured books    books    waka',
-	'featured featured featured books    books    waka',
+	'featured featured featured dc       ig       books',
+	'featured featured featured gh       li       books',
+	'featured featured featured waka     waka     books',
+	'featured featured featured waka     waka     event',
 ];
 
 const md = [
@@ -58,8 +59,8 @@ const base = [
 	'dc       ig',
 	'gh       li',
 	'lab      lab',
-	'event    waka',
-	'books    books',
+	'waka     waka',
+	'event    books',
 ];
 ---
 

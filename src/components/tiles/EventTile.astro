@@ -5,7 +5,8 @@ import { daysUntil, nextEvent } from '../../lib/events';
 
 /**
  * Countdown to the next important event from src/lib/events.ts
- * (koncept.md §3.4) — a small square: the event on top, the days under it.
+ * (koncept.md §3.4) — the event on top, the days under it; in a half-height
+ * tile (the desktop dashboard) they sit side by side.
  * The build picks the event; the browser recounts the days, so the number
  * stays right between deploys.
  */
@@ -29,23 +30,25 @@ const date = event
 <Tile area={area} label={t('tile.event')} icon="hourglass" dense>
 	{
 		event ? (
-			<div
-				class="event"
-				data-event={event.date}
-				data-unit-today={t('event.today')}
-				data-unit-one={t('event.day')}
-				data-unit-many={t('event.days')}
-			>
-				<span class="event-text">
-					<span class="event-title">{event.title[lang]}</span>
-					<time class="event-date" datetime={event.date}>
-						{date}
-					</time>
-				</span>
-				<p class="event-count">
-					<span class="event-days" data-count aria-live="polite">{days}</span>
-					<span class="event-unit">{unit(days)}</span>
-				</p>
+			<div class="event-box">
+				<div
+					class="event"
+					data-event={event.date}
+					data-unit-today={t('event.today')}
+					data-unit-one={t('event.day')}
+					data-unit-many={t('event.days')}
+				>
+					<span class="event-text">
+						<span class="event-title">{event.title[lang]}</span>
+						<time class="event-date" datetime={event.date}>
+							{date}
+						</time>
+					</span>
+					<p class="event-count">
+						<span class="event-days" data-count aria-live="polite">{days}</span>
+						<span class="event-unit">{unit(days)}</span>
+					</p>
+				</div>
 			</div>
 		) : (
 			<p class="event-none">{t('event.none')}</p>
@@ -65,6 +68,18 @@ const date = event
 </script>
 
 <style>
+	/* Height queries only on the desktop dashboard, where the grid rows set the
+	   tile's height (a size container has none of its own). */
+	.event-box {
+		height: 100%;
+	}
+
+	@media (min-width: 1024px) {
+		.event-box {
+			container-type: size;
+		}
+	}
+
 	.event {
 		display: flex;
 		flex-direction: column;
@@ -113,6 +128,50 @@ const date = event
 
 	.event-unit {
 		color: var(--text-muted);
+	}
+
+	/* Half-height tile: the text on the left, the days on the right. */
+	@container (max-height: 80px) {
+		.event {
+			flex-direction: row;
+			align-items: flex-end;
+			gap: var(--space-sm);
+		}
+
+		.event-count {
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 0;
+		}
+
+		.event-days {
+			font-size: var(--size-number-short);
+		}
+
+		.event-unit {
+			font-size: var(--size-label);
+		}
+	}
+
+	/* Room for one line only (1440×900): the title and the days, no date. */
+	@container (max-height: 44px) {
+		.event {
+			align-items: baseline;
+		}
+
+		.event-date {
+			display: none;
+		}
+
+		.event-count {
+			flex-direction: row;
+			align-items: baseline;
+			gap: var(--space-xs);
+		}
+
+		.event-days {
+			font-size: var(--size-hero);
+		}
 	}
 
 	.event-none {

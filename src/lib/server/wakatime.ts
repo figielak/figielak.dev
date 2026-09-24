@@ -1,6 +1,6 @@
 /**
- * Coding time from WakaTime for the dashboard (koncept.md §9): today, this
- * week since Monday and the week's top languages. WAKATIME_API_KEY is a
+ * Coding time from WakaTime for the dashboard (koncept.md §9): today, each
+ * day of this week since Monday and the week's top languages. WAKATIME_API_KEY is a
  * server secret read at runtime.
  */
 import type { Waka } from '../mocks/waka';
@@ -55,12 +55,13 @@ export async function fetchWaka(): Promise<WakaData> {
 	byLanguage.delete('Other');
 	const languages = [...byLanguage]
 		.sort((a, b) => b[1] - a[1])
-		.slice(0, 3)
+		.slice(0, 5)
 		.map(([name, seconds]) => ({ name, percent: weekSeconds ? Math.round((seconds / weekSeconds) * 100) : 0 }));
 
 	return {
 		todayMin: minutes(days.at(-1)?.grand_total.total_seconds ?? 0),
 		weekMin: minutes(weekSeconds),
+		days: days.map((day) => minutes(day.grand_total.total_seconds)),
 		languages,
 	};
 }

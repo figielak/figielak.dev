@@ -171,8 +171,8 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 - kształt wynika z treści: GitHub jest szeroki i niski, bo wykres kontrybucji to długi pasek; muzyka jest wysoka i wąska jak okładka; homelab jest duży, bo ma najwięcej danych;
 - wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, połowa wysokości), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
 - sociale (Discord, Instagram, GitHub, LinkedIn) to cztery małe kafle 2×2: cały kafel jest przyciskiem w kolorach marki (gradient z tokenów `--brand-*`, biały tekst z kontrastem AA), z białym logo (Simple Icons) nad nazwą wersalikami, bez ↗;
-- Muzyka, Czytam i projekt przełamują ścianę tekstu obrazem, a Wakatime jako jedyny pełny akcentowy blok jest kotwicą;
-- pojedyncza liczba (odliczanie) dostaje mały kafel.
+- Muzyka, Czytam i projekt przełamują ścianę tekstu obrazem; WakaTime ma dwie kolumny na wykres tygodnia i pasek języków;
+- pojedyncza liczba (odliczanie) dostaje mały kafel — na desktopie o wysokości półrzędu, jak sociale.
 
 Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od reszty.
 
@@ -180,9 +180,10 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 ≥ 1024px (6 kolumn, 8 półrzędów; jeden ekran od 1440×900)
 "day      day      weather  music    lab      lab"    ×2
 "github   github   github   music    lab      lab"    ×2
-"featured featured featured dc       ig       event"
-"featured featured featured gh       li       event"
-"featured featured featured books    books    waka"   ×2
+"featured featured featured dc       ig       books"
+"featured featured featured gh       li       books"
+"featured featured featured waka     waka     books"
+"featured featured featured waka     waka     event"
 
 640–1023px (4 kolumny)
 "day day weather music" / "github github github music" /
@@ -191,7 +192,7 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 
 < 640px (2 kolumny: szerokie karty na cały rząd, małe parami)
 "day day" / "weather music" / "github github" / "featured featured" /
-"dc ig" / "gh li" / "lab lab" / "event waka" / "books books"
+"dc ig" / "gh li" / "lab lab" / "waka waka" / "event books"
 ```
 
 | Kafel | Grupa | Zawartość |
@@ -201,10 +202,10 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 | `github` | praca | liczba kontrybucji, streak, repozytoria, legenda i „X min temu” w jednym rzędzie; pod nimi wykres roku na całą szerokość |
 | `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz ↗”; kilka projektów w karuzeli (`src/lib/featured.ts` — dane testowe do czasu kolekcji projektów, §3.2) |
 | `dc` `ig` `gh` `li` | kontakt | linki do profili: kafel w kolorach marki, białe logo i nazwa |
-| `waka` | praca | czas kodowania dziś i w tygodniu, top języki (WakaTime); jedyny pełny akcentowy blok; w wąskim kaflu tylko liczba i najczęstszy język |
+| `waka` | praca | WakaTime, ciemny jak inne kafle, w kolejności ważności: czas dziś (duża liczba) i porównanie ze średnią dni tygodnia; 7 słupków pon–ndz z dzisiejszym w akcencie; pasek języków w kolorach GitHub Linguist (`--lang-*`) z 3 nazwami; suma tygodnia w stopce. W wąskim kaflu najpierw znika porównanie, potem nazwy języków |
 | `lab` | homelab | cztery sekcje: **maszyna** (CPU, RAM, dysk w % — czerwone od 85% — kontenery, temperatura CPU), **usługi** (uptime hosta; usługi pod ogólnymi nazwami: Media, Pliki, DNS, Kopie — up/down, dostępność z 30 dni jako liczba i pasek od 90%, średni czas odpowiedzi; usługi bez danych zebrane w jedną linię „Brak danych: …”), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
 | `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole |
-| `books` | życie | aktualnie czytane książki z okładkami (statycznie, `src/lib/books.ts`, okładki w `src/assets/books/`) |
+| `books` | życie | aktualnie czytane książki z okładkami (statycznie, `src/lib/books.ts`, okładki w `src/assets/books/`); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast ↗; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
 
 **Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne.
@@ -248,7 +249,7 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i
 
   Paski postępu i zajętości oraz skala jakości powietrza są neutralne. Aktywna zakładka w nawigacji ma półprzezroczyste tło akcentu (`--nav-active`), bez animacji.
 
-  Maksymalnie 1–2 kafle na widok mogą mieć pełne akcentowe tło (np. CV, kontakt; na dashboardzie Wakatime). W takim kaflu tekst, ikony i kropki są grafitowe (`--accent-foreground`), a `Tile` sam podmienia tokeny tekstu.
+  Maksymalnie 1–2 kafle na widok mogą mieć pełne akcentowe tło (np. CV, kontakt). W takim kaflu tekst, ikony i kropki są grafitowe (`--accent-foreground`), a `Tile` sam podmienia tokeny tekstu.
 - **Ikony interfejsu** (strzałki, akcje): jedna rodzina outline (Tabler), w kolorze tekstu. Wyjątek: ikona przy etykiecie karty (`Tile icon`) jest w kolorze akcentu.
 - **Kolor w treści — dozwolony, nie wymagany.** Interfejs (tła, ramki, tekst, akcent) zostaje grafitowy z jednym czerwonym akcentem. Treść może mieć pełny kolor tam, gdzie dodaje życia i informacji:
   - prawdziwe loga marek i technologii w ich kolorach (np. Simple Icons w kolorze marki, logo uczelni, usług);
@@ -278,6 +279,7 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--accent` | `#E5484D` | akcent: stonowana czerwień, kontrast AA na tle |
 | `--accent-hover` | `#EC5D5E` | akcent po najechaniu |
 | `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
+| `--lang-*` | kolory GitHub Linguist | języki w kaflu WakaTime — kolor treści jak loga (§4); najciemniejsze rozjaśnione |
 | `--nav-active` | `rgb(229 72 77 / 0.22)` | tło aktywnej zakładki w nawigacji |
 | `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
 | `--spotlight` | `rgb(229 72 77 / 0.6)` | światło na ramkach kafli wokół kursora (dashboard) |
@@ -359,6 +361,7 @@ Na start:
   - animowane jest tylko `opacity` i `transform`.
 - **Poświata dashboardu:** plamy dryfują w cyklach ok. 48 i 62 s.
 - **Światło przy kursorze (dashboard, tylko mysz):** ramki kafli w zasięgu kursora (`--spotlight-size`) lekko czerwienieją, także sąsiednich; światło płynie za kursorem z lekkim opóźnieniem jak fala (`src/scripts/spotlight.ts`). Bez kafla akcentowego; przy reduced motion bez opóźnienia.
+- **Obrót karty (Czytam):** kafel zwęża się do krawędzi, podmienia treść i rozszerza z powrotem (ok. 0,3 s). Płaski `scaleX`, nie `rotateY` — obrót 3D kafla ze szklanym tłem rozjaśnia poświatę w Chromium. Przy reduced motion treść zmienia się bez animacji.
 - **Pulsowanie kropki** (tylko rzeczy dziejące się teraz, patrz §5): łagodne, skala i przezroczystość, około 2s.
 - **Focus:** widoczny ring w kolorze akcentu (`:focus-visible`).
 - **`prefers-reduced-motion`:** wyłącza unoszenie, pulsowanie, dryf poświaty i animacje wejścia.

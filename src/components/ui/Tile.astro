@@ -15,6 +15,8 @@ interface Props {
 	icon?: IconName;
 	href?: string;
 	external?: boolean;
+	/** Clickable without a link — a button inside covers the tile: the hover, no ↗. */
+	interactive?: boolean;
 	/** The ↗ of a clickable tile; off for tiles that are one big button (social). */
 	arrow?: boolean;
 	/** Full accent background — at most one or two tiles per view. */
@@ -32,6 +34,7 @@ const {
 	icon,
 	href,
 	external = false,
+	interactive: button = false,
 	arrow = true,
 	accent = false,
 	dense = false,
@@ -40,7 +43,7 @@ const {
 } = Astro.props;
 
 const Tag = href ? 'a' : 'div';
-const interactive = Boolean(href);
+const interactive = Boolean(href) || button;
 const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 ---
 
@@ -55,7 +58,7 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 	{...rest}
 >
 	{
-		(label || Astro.slots.has('label') || (interactive && arrow)) && (
+		(label || Astro.slots.has('label') || (href && arrow)) && (
 			<header class="tile-header">
 				<span class="tile-title">
 					{icon && <Icon name={icon} size={14} />}
@@ -63,7 +66,7 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 				</span>
 				<span class="tile-header-end">
 					<slot name="meta" />
-					{interactive && arrow && (
+					{href && arrow && (
 						<svg
 							class="tile-arrow"
 							viewBox="0 0 24 24"

@@ -76,6 +76,37 @@
 	--brand-linkedin: linear-gradient(135deg, #0a66c2, #004182);
 	--brand-foreground: #ffffff;
 
+	/* Programming languages in the WakaTime tile: GitHub Linguist's colours,
+	   content colour like a logo (koncept.md §4). Named after the language
+	   (lower case, `++` → `pp`, `#` → `sharp`); the darkest are lifted so they
+	   show on a tile. Anything else falls back to --lang-other. */
+	--lang-typescript: #3178c6;
+	--lang-javascript: #f1e05a;
+	--lang-python: #3572a5;
+	--lang-astro: #ff5a03;
+	--lang-css: #8c5fcf;
+	--lang-scss: #c6538c;
+	--lang-html: #e34c26;
+	--lang-go: #00add8;
+	--lang-rust: #dea584;
+	--lang-java: #b07219;
+	--lang-kotlin: #a97bff;
+	--lang-c: #8a8a8a;
+	--lang-cpp: #f34b7d;
+	--lang-csharp: #2fa31f;
+	--lang-php: #7480bf;
+	--lang-shell: #89e051;
+	--lang-bash: #89e051;
+	--lang-sql: #e38c00;
+	--lang-yaml: #cb171e;
+	--lang-markdown: #3b6fd6;
+	--lang-docker: #5f7f8a;
+	--lang-dockerfile: #5f7f8a;
+	--lang-typst: #239dad;
+	--lang-vue: #41b883;
+	--lang-svelte: #ff3e00;
+	--lang-other: var(--text-subtle);
+
 	/* Elevation */
 	--shadow-tile: 0 8px 24px rgb(0 0 0 / 0.32);
 }
@@ -84,6 +115,8 @@
 	/* Radii */
 	--radius-tile: 20px;
 	--radius-inset: 10px;
+	/* Slim chart bars, where a larger radius would turn them into pills. */
+	--radius-bar: 4px;
 	--radius-pill: 999px;
 
 	/* Spacing scale — every gap, margin and padding comes from here. */
@@ -120,11 +153,13 @@
 	--project-card-min: 140px;
 	--size-teaser: 44px;
 	--size-book-cover: 72px;
+	--size-book-cover-small: 48px;
 	--featured-shot-min: 160px;
 	--gallery-column: 460px;
 	--size-social-row: 80px;
 	--size-bar: 6px;
 	--size-contrib-gap: 3px;
+	--size-segment-gap: 2px;
 
 	/* Width of the navigation band: the wordmark sits at its left edge and the
 	   controls at its right, so this value sets how far both sit from the

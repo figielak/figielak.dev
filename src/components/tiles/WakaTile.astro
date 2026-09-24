@@ -7,10 +7,14 @@ import BigNumber from '../ui/BigNumber.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { WAKA_PLACEHOLDER, type Waka } from '../../lib/mocks/waka';
+import { languageSegments, vsAverage, weekBars } from '../../lib/waka';
 
 /**
- * Coding time from WakaTime, cached 1 h (koncept.md §9). The dashboard's one
- * full accent tile (§4) — its anchor; Tile switches the text tokens for it.
+ * Coding time from WakaTime, cached 1 h (koncept.md §9), by priority: today
+ * as the big number (and against the week's average), the week as seven bars
+ * with today in the accent, then the week's languages as one bar in their
+ * own colours (like GitHub's) with the top three named under it. A narrow
+ * tile drops the comparison first, then the language names.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser; without it, it shows `waka` as given (mocks in /dev/tiles).
@@ -23,46 +27,94 @@ interface Props {
 
 /* The API refreshes hourly, so an hour-old answer is still fresh. */
 const STALE_AFTER_MIN = 3 * 60;
+const LEGEND = 3;
 
 const { waka, endpoint, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const d = waka.data ?? WAKA_PLACEHOLDER;
 
-const hm = (min: number) =>
-	t('duration.hm')
-		.replace('{h}', String(Math.floor(min / 60)))
-		.replace('{m}', String(min % 60));
-const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+const fill = (template: string, h: number, m: number) =>
+	template.replace('{h}', String(h)).replace('{m}', String(m));
+const hm = (min: number) => fill(t('duration.hm'), Math.floor(min / 60), min % 60);
+const short = (min: number) =>
+	min >= 60 ? fill(t('duration.short'), Math.floor(min / 60), min % 60) : fill(t('duration.shortMin'), 0, min);
+const signed = (min: number) => {
+	const size = Math.abs(min);
+	return `${min < 0 ? '−' : '+'}${size >= 60 ? short(size) : fill(t('duration.min'), 0, size)}`;
+};
+
+const diff = vsAverage(d.days);
+const compare = diff === null ? '' : t('waka.vsAvg').replace('{d}', signed(diff));
+const bars = weekBars(d.days);
+const segments = languageSegments(d.languages, t('waka.other'));
+
+/* Initials of Monday to Sunday: 2024-01-01 was a Monday. */
+const weekday = new Intl.DateTimeFormat(lang, { weekday: 'narrow', timeZone: 'UTC' });
+const initials = Array.from({ length: 7 }, (_, i) => weekday.format(new Date(Date.UTC(2024, 0, 1 + i))));
+const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '));
 ---
 
 <Tile
 	area={area}
 	label={t('tile.waka')}
 	icon="code"
-	accent
 	dense
 	class="waka-tile"
 	data-endpoint={endpoint}
 	data-stale-after={STALE_AFTER_MIN}
 	data-week={t('waka.week')}
 	data-hm={t('duration.hm')}
+	data-short={t('duration.short')}
+	data-short-min={t('duration.shortMin')}
+	data-min={t('duration.min')}
+	data-vs={t('waka.vsAvg')}
+	data-other={t('waka.other')}
+	data-week-aria={t('waka.weekAria')}
 >
 	<LiveDot slot="meta" state={dotState(waka.state)} />
 
 	<LiveBody state={waka.state} errorText={t('waka.unavailable')}>
 		<div class="waka">
-			<BigNumber value={short(d.todayMin)} caption={t('waka.today')} />
-			<ul class="waka-languages">
+			<div class="waka-today">
+				<BigNumber value={short(d.todayMin)} />
+				<span class="waka-caption" data-skeleton>
+					{t('waka.today')}
+					<span class="waka-compare" hidden={!compare}>{compare}</span>
+				</span>
+			</div>
+
+			<div class="waka-week" role="img" aria-label={weekAria}>
 				{
-					d.languages.map((language) => (
-						<li class="waka-language">
-							<span class="waka-name" data-skeleton>{language.name}</span>
-							<span class="waka-percent" data-skeleton>{language.percent}%</span>
-						</li>
+					bars.map((bar, i) => (
+						<span class="waka-day" data-state={bar.state} style={`--h: ${bar.height}; --i: ${i}`}>
+							<span class="waka-day-track">
+								<span class="waka-day-bar" />
+							</span>
+							<span class="waka-day-label" aria-hidden="true">
+								{initials[i]}
+							</span>
+						</span>
 					))
 				}
-			</ul>
+			</div>
+
+			<div class="waka-languages">
+				<span class="waka-bar" data-skeleton aria-hidden="true">
+					{segments.map((s) => <span class="waka-segment" style={`width: ${s.percent}%; --c: ${s.color}`} />)}
+				</span>
+				<ul class="waka-legend">
+					{
+						/* Always three rows, so the browser can fill them in when data comes. */
+						Array.from({ length: LEGEND }, (_, i) => segments[i]).map((s) => (
+							<li class="waka-language" style={s && `--c: ${s.color}`} hidden={!s}>
+								<span class="waka-name" data-skeleton>{s?.name}</span>
+								<span class="waka-percent" data-skeleton>{s && `${s.percent}%`}</span>
+							</li>
+						))
+					}
+				</ul>
+			</div>
 		</div>
 	</LiveBody>
 
@@ -71,59 +123,225 @@ const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padSt
 
 <script>
 	import { setText, watchLive } from '../../scripts/live';
+	import { languageSegments, vsAverage, weekBars } from '../../lib/waka';
 	import type { WakaData } from '../../lib/server/wakatime';
 
-	const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+	const LEGEND = 3;
 
 	for (const tile of document.querySelectorAll<HTMLElement>('.waka-tile[data-endpoint]')) {
-		const { week = '{t}', hm = '{h}:{m}' } = tile.dataset;
+		const {
+			week = '{t}',
+			hm: hmTemplate = '{h}:{m}',
+			short: shortTemplate = '{h}h {m}m',
+			shortMin = '{m}m',
+			min: minTemplate = '{m} min',
+			vs = '{d}',
+			other = 'other',
+			weekAria = '{days}',
+		} = tile.dataset;
+
+		const fill = (template: string, h: number, m: number) =>
+			template.replace('{h}', String(h)).replace('{m}', String(m));
+		const hm = (m: number) => fill(hmTemplate, Math.floor(m / 60), m % 60);
+		const short = (m: number) => (m >= 60 ? fill(shortTemplate, Math.floor(m / 60), m % 60) : fill(shortMin, 0, m));
+		const signed = (m: number) =>
+			`${m < 0 ? '−' : '+'}${Math.abs(m) >= 60 ? short(Math.abs(m)) : fill(minTemplate, 0, Math.abs(m))}`;
 
 		watchLive<WakaData>(tile, (data) => {
 			setText(tile.querySelector('.big-value'), short(data.todayMin));
 
-			tile.querySelectorAll('.waka-language').forEach((row, i) => {
-				const language = data.languages[i];
-				setText(row.querySelector('.waka-name'), language?.name ?? '—');
-				setText(row.querySelector('.waka-percent'), language ? `${language.percent}%` : '');
+			const compare = tile.querySelector<HTMLElement>('.waka-compare');
+			const diff = vsAverage(data.days);
+			if (compare) {
+				compare.hidden = diff === null;
+				setText(compare, diff === null ? '' : vs.replace('{d}', signed(diff)));
+			}
+
+			const bars = weekBars(data.days);
+			tile.querySelectorAll<HTMLElement>('.waka-day').forEach((day, i) => {
+				day.style.setProperty('--h', String(bars[i].height));
+				day.dataset.state = bars[i].state;
+			});
+			tile.querySelector('.waka-week')?.setAttribute('aria-label', weekAria.replace('{days}', data.days.map(hm).join(', ')));
+
+			const segments = languageSegments(data.languages, other);
+			tile.querySelector('.waka-bar')?.replaceChildren(
+				...segments.map((s) => {
+					const el = document.createElement('span');
+					el.className = 'waka-segment';
+					el.style.width = `${s.percent}%`;
+					el.style.setProperty('--c', s.color);
+					return el;
+				}),
+			);
+			tile.querySelectorAll<HTMLElement>('.waka-language').forEach((row, i) => {
+				const s = segments[i];
+				row.hidden = !s || i >= LEGEND;
+				if (!s) return;
+				row.style.setProperty('--c', s.color);
+				setText(row.querySelector('.waka-name'), s.name);
+				setText(row.querySelector('.waka-percent'), `${s.percent}%`);
 			});
 
-			const weekText = hm
-				.replace('{h}', String(Math.floor(data.weekMin / 60)))
-				.replace('{m}', String(data.weekMin % 60));
-			setText(tile.querySelector('.live-footer-detail'), week.replace('{t}', weekText));
+			setText(tile.querySelector('.live-footer-detail'), week.replace('{t}', hm(data.weekMin)));
 		});
 	}
 </script>
 
 <style>
-	/* The tile is the container, so a narrow one can also drop the footer detail. */
+	/* The tile is the container: a narrow one drops the comparison, then the
+	   language names and the footer detail. */
 	:global(.waka-tile) {
 		container-type: inline-size;
 	}
 
+	/* Today and the week side by side, the languages across under them. */
 	.waka {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		align-items: center;
-		gap: var(--space-xl);
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) auto;
+		grid-template-areas:
+			'today week'
+			'languages languages';
+		gap: var(--space-md) var(--space-xl);
 		height: 100%;
 	}
 
-	.waka-languages {
+	.waka-today {
+		grid-area: today;
 		display: flex;
 		flex-direction: column;
+		justify-content: center;
 		gap: var(--space-2xs);
+		min-width: 0;
+	}
+
+	/* A little smaller than elsewhere, so the caption fits under it in a
+	   two-half-row tile. */
+	.waka-today :global(.big-value) {
+		font-size: min(var(--size-number-short), 26cqi);
+	}
+
+	/* "coding today" and, on the same line, today against the average. */
+	.waka-caption {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		color: var(--text-muted);
+	}
+
+	.waka-compare {
+		margin-left: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+
+	/* Seven slim bars, Monday to Sunday; today in the accent. */
+	.waka-week {
+		grid-area: week;
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: var(--space-2xs);
+		min-height: 0;
+	}
+
+	.waka-day {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2xs);
+		min-height: 0;
+	}
+
+	.waka-day-track {
+		position: relative;
+		flex: 1;
+		width: 100%;
+		min-height: 0;
+		border-radius: var(--radius-bar);
+		background: var(--surface-inset);
+		overflow: hidden;
+	}
+
+	.waka-day-bar {
+		position: absolute;
+		inset: auto 0 0;
+		height: calc(var(--h, 0) * 100%);
+		border-radius: inherit;
+		background: var(--text-muted);
+	}
+
+	.waka-day[data-state='today'] .waka-day-bar {
+		background: var(--accent);
+	}
+
+	.waka-day-label {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		line-height: 1;
+		text-transform: uppercase;
+		color: var(--text-subtle);
+	}
+
+	.waka-day[data-state='today'] .waka-day-label {
+		color: var(--text);
+	}
+
+	/* The languages: one bar in their colours, the top three named under it. */
+	.waka-languages {
+		grid-area: languages;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+		min-width: 0;
+	}
+
+	.waka-bar {
+		display: flex;
+		gap: var(--size-segment-gap);
+		height: var(--size-bar);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		overflow: hidden;
+	}
+
+	.waka-bar :global(.waka-segment) {
+		display: block;
+		height: 100%;
+		background: var(--c);
+	}
+
+	.waka-legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2xs) var(--space-lg);
 		margin: 0;
 		padding: 0;
 		list-style: none;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
 	}
 
 	.waka-language {
-		display: flex;
-		justify-content: space-between;
-		gap: var(--space-sm);
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		min-width: 0;
+	}
+
+	.waka-language[hidden] {
+		display: none;
+	}
+
+	.waka-language::before {
+		content: '';
+		flex: none;
+		width: var(--size-dot);
+		height: var(--size-dot);
+		border-radius: var(--radius-pill);
+		background: var(--c);
 	}
 
 	.waka-name {
@@ -137,16 +355,40 @@ const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padSt
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* One column wide (beside the social tiles): the number, its caption and
-	   only the top language; the week in the footer does not fit. */
-	@container (max-width: 280px) {
-		.waka {
-			grid-template-columns: minmax(0, 1fr);
-			align-content: center;
-			gap: var(--space-md);
-		}
+	/* Dashboard intro: the week's bars grow one after another, the language
+	   bar sweeps in from the left. */
+	:global(.tile[data-reveal]) .waka-day-bar {
+		transform-origin: bottom;
+		animation: waka-grow-y var(--duration-grow) var(--ease-out) both;
+		animation-delay: calc(var(--i) * var(--intro-type-step));
+	}
 
-		.waka-language:nth-child(n + 2),
+	:global(.tile[data-reveal]) .waka-bar {
+		transform-origin: left;
+		animation: waka-grow-x var(--duration-grow) var(--ease-out) both;
+	}
+
+	@keyframes waka-grow-y {
+		from {
+			transform: scaleY(0);
+		}
+	}
+
+	@keyframes waka-grow-x {
+		from {
+			transform: scaleX(0);
+		}
+	}
+
+	@container (max-width: 360px) {
+		.waka-compare,
+		.waka-language:nth-child(n + 3) {
+			display: none;
+		}
+	}
+
+	@container (max-width: 260px) {
+		.waka-legend,
 		:global(.waka-tile .live-footer-detail) {
 			display: none;
 		}

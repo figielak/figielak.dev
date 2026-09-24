@@ -196,7 +196,7 @@ curl -sI https://figielak.dev/dashboard/private | head -1     # 401 — przeglą
 curl -sI https://maths.figielak.dev | grep -i location        # https://figielak.dev/maths
 curl -s  https://figielak.dev/api/github | head -c 120         # {"weeks":[[…  (503 = brak klucza lub błąd GitHuba)
 curl -s  https://figielak.dev/api/music                        # {"track":{…},"topArtists":[…],…}
-curl -s  https://figielak.dev/api/waka                         # {"todayMin":…,"weekMin":…,"languages":[…],…}
+curl -s  https://figielak.dev/api/waka                         # {"todayMin":…,"weekMin":…,"days":[…],"languages":[…],…}
 curl -s  -X POST https://figielak.dev/api/stats -o /dev/null -w '%{http_code}\n'   # 401 — bez tokenu
 curl -s  https://figielak.dev/api/homelab/lab                  # {"cpu":…,"disks":[…],…} (503 = agent jeszcze nic nie wysłał)
 ```

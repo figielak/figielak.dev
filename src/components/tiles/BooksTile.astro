@@ -8,6 +8,7 @@ import { books } from '../../lib/books';
 /**
  * Books I am reading now (koncept.md §3.4), each with its cover in full
  * colour (§4) beside the title and author. Static — edit src/lib/books.ts.
+ * Three at a time: with more, a click turns the card over to the next three.
  */
 interface Props {
 	area?: string;
@@ -15,40 +16,179 @@ interface Props {
 
 /* Rendered widths for 1x–3x screens; must match --size-book-cover. */
 const COVER_PX = 72;
+const PAGE_SIZE = 3;
 
 const { area } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
+
+const pages = Array.from({ length: Math.ceil(books.length / PAGE_SIZE) }, (_, i) =>
+	books.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE),
+);
+const paged = pages.length > 1;
+const pageLabel = (n: number) =>
+	t('books.page').replace('{n}', String(n)).replace('{total}', String(pages.length));
 ---
 
-<Tile area={area} label={t('tile.books')} icon="book" dense>
-	<ul class="books">
+<Tile
+	area={area}
+	label={t('tile.books')}
+	icon="book"
+	dense
+	interactive={paged}
+	class="books-tile"
+	data-books={paged ? '' : undefined}
+	data-flip-label={t('books.flip')}
+	data-page-label={t('books.page')}
+>
+	{
+		paged && (
+			<span slot="meta" class="books-count">
+				<span data-books-count>1/{pages.length}</span>
+				<Icon name="rotate-clockwise" size={14} />
+			</span>
+		)
+	}
+	<div class="books-box">
 		{
-			books.map((book) => (
-				<li class="book">
-					{book.cover ? (
-						<Image
-							class="book-cover"
-							src={book.cover}
-							alt={t('books.cover').replace('{title}', book.title)}
-							widths={[COVER_PX, COVER_PX * 2, COVER_PX * 3]}
-							sizes={`${COVER_PX}px`}
-						/>
-					) : (
-						<span class="book-cover book-cover-empty" aria-hidden="true">
-							<Icon name="book" size={20} />
-						</span>
-					)}
-					<span class="book-text">
-						<span class="book-title">{book.title}</span>
-						<span class="book-author">{book.author}</span>
-					</span>
-				</li>
+			pages.map((page, i) => (
+				<ul class="books" data-books-page hidden={i > 0}>
+					{page.map((book) => (
+						<li class="book">
+							{book.cover ? (
+								<Image
+									class="book-cover"
+									src={book.cover}
+									alt={t('books.cover').replace('{title}', book.title)}
+									widths={[COVER_PX, COVER_PX * 2, COVER_PX * 3]}
+									sizes={`${COVER_PX}px`}
+								/>
+							) : (
+								<span class="book-cover book-cover-empty" aria-hidden="true">
+									<Icon name="book" size={20} />
+								</span>
+							)}
+							<span class="book-text">
+								<span class="book-title">{book.title}</span>
+								<span class="book-author">{book.author}</span>
+							</span>
+						</li>
+					))}
+				</ul>
 			))
 		}
-	</ul>
+	</div>
+	{
+		paged && (
+			<button
+				type="button"
+				class="books-flip"
+				aria-label={`${t('books.flip')} (${pageLabel(1)})`}
+				data-books-flip
+			/>
+		)
+	}
 </Tile>
 
+<script>
+	/* Turn the card over: it narrows to its edge, the next page is swapped in,
+	   and it widens back. A flat scaleX, not a 3D rotateY — a 3D transform on a
+	   glass tile (backdrop-filter) makes Chromium light up the glow behind it.
+	   Only transform moves; with reduced motion the page just changes. */
+	const HALF_MS = 150;
+	const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+	for (const tile of document.querySelectorAll<HTMLElement>('[data-books]')) {
+		const pages = [...tile.querySelectorAll<HTMLElement>('[data-books-page]')];
+		const count = tile.querySelector('[data-books-count]')!;
+		const button = tile.querySelector<HTMLButtonElement>('[data-books-flip]')!;
+		const { flipLabel = '', pageLabel = '' } = tile.dataset;
+		let current = 0;
+		let busy = false;
+
+		const show = (index: number) => {
+			pages.forEach((page, i) => (page.hidden = i !== index));
+			current = index;
+			const n = String(index + 1);
+			const total = String(pages.length);
+			count.textContent = `${n}/${total}`;
+			button.setAttribute(
+				'aria-label',
+				`${flipLabel} (${pageLabel.replace('{n}', n).replace('{total}', total)})`,
+			);
+		};
+
+		button.addEventListener('click', async () => {
+			if (busy) return;
+			const next = (current + 1) % pages.length;
+			if (reduce.matches) return show(next);
+
+			busy = true;
+			const away = tile.animate(
+				[{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }],
+				{ duration: HALF_MS, easing: 'ease-in', fill: 'forwards' },
+			);
+			await away.finished;
+			show(next);
+			const back = tile.animate(
+				[{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }],
+				{ duration: HALF_MS, easing: 'ease-out' },
+			);
+			away.cancel();
+			await back.finished;
+			busy = false;
+		});
+	}
+</script>
+
 <style>
+	/* The layout follows the tile's width; on the desktop dashboard also its
+	   height. A size container has no height of its own, so only there, where
+	   the grid rows set it — below 1024px the rows grow with the content. */
+	.books-box {
+		container-type: inline-size;
+		height: 100%;
+	}
+
+	@media (min-width: 1024px) {
+		.books-box {
+			container-type: size;
+		}
+	}
+
+	/* The whole tile is the button that turns the card over. Above the cursor
+	   light (z-index 2); the ring sits inside, since the tile clips its edge. */
+	:global(.books-tile) {
+		position: relative;
+	}
+
+	.books-flip {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		padding: 0;
+		border: 0;
+		border-radius: inherit;
+		background: none;
+		cursor: pointer;
+	}
+
+	.books-flip:focus-visible {
+		outline-offset: calc(-1 * var(--space-2xs));
+	}
+
+	.books-count {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.books[hidden] {
+		display: none;
+	}
+
 	/* Books side by side, each a cover with its title and author beside it. */
 	.books {
 		display: grid;
@@ -107,5 +247,58 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 		white-space: nowrap;
 		font-size: var(--size-label);
 		color: var(--text-muted);
+	}
+
+	/* One column, square-ish (half a phone): one book, the title under a
+	   smaller cover. */
+	@container (max-width: 300px) {
+		.book:nth-child(n + 2) {
+			display: none;
+		}
+
+		.book {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: var(--space-sm);
+		}
+
+		/* The cover is an astro:assets image, outside this component's scope. */
+		.book :global(.book-cover) {
+			width: var(--size-book-cover-small);
+		}
+
+		.book-title {
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+		}
+	}
+
+	/* One column but tall (the desktop dashboard): every book, one under
+	   another, sharing the height; the covers shrink to fit their rows. */
+	@container (max-width: 300px) and (min-height: 200px) {
+		.books {
+			grid-template-columns: 1fr;
+			grid-auto-rows: minmax(0, 1fr);
+			align-items: stretch;
+			gap: var(--space-md);
+		}
+
+		.book:nth-child(n + 2) {
+			display: flex;
+		}
+
+		.book {
+			flex-direction: row;
+			align-items: center;
+			gap: var(--space-md);
+			min-height: 0;
+		}
+
+		.book :global(.book-cover) {
+			width: auto;
+			max-width: 40%;
+			height: 100%;
+			max-height: calc(var(--size-book-cover) * 1.5);
+		}
 	}
 </style>
