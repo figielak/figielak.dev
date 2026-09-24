@@ -19,3 +19,13 @@ rehype-mermaid, Typst (CV). Hosting: Google Cloud Run za Cloudflare
 - Kod i nazwy po angielsku, teksty UI przez i18n (PL/EN).
 - Szanuj prefers-reduced-motion i kontrast AA.
 - Zapytaj, zanim dodasz nową zależność albo zmienisz coś, co jest sprzeczne z koncept.md.
+
+## Praca w repo
+
+- Podgląd: `npm run dev -- --host` (też w LAN). Galeria stanów kafli: `/dev/tiles` (tylko w dev).
+- Weryfikacja zmian: `npm run build` (typy nie są sprawdzane — `@astrojs/check` nie jest zainstalowany). Wygląd sprawdzaj na buildzie (`npm run preview` lub `node dist/server/entry.mjs`), bo dev potrafi serwować nieaktualne style; widoki bento w 1280×720, 1440×900, 800 px i 390 px.
+- Formatowanie: projekt nie ma konfiguracji Prettiera — nie uruchamiaj `prettier --write` (domyślny styl przepisze pliki). Styl: taby, apostrofy, średniki, linie do ok. 100–120 znaków.
+- Tryb prywatny i endpointy z danymi prywatnymi chroni `ownerGate` z `src/lib/owner.ts`; takie trasy mają `prerender = false`.
+- Wartości czytane przy buildzie: `import.meta.env`; sekrety serwera czytane przy starcie: `process.env` (inaczej trafią do builda).
+- Deploy: push na `master` uruchamia `.github/workflows/deploy.yml`. Nie pushuj ani nie rób force pusha bez wyraźnej prośby. Commit tylko na prośbę.
+- Konfiguracja i typowe błędy wdrożenia: `docs/deploy.md`.

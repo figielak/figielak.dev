@@ -509,13 +509,18 @@ Dockerfile       # obraz dla Cloud Run
 
 ## 16. Kolejność prac
 
-1. **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
-2. **Wizytówka:** układ dossier (zrobione w kroku 1), statyczne treści, kopiowanie e-maila, CV z Typst.
-3. **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured.
-4. **Korepetycje:** treść i szybki kontakt.
-5. **Dashboard na danych testowych:** pełny układ i wszystkie 4 stany kafli.
-6. **Dane na żywo:** endpointy, cache, agent homelabu, analityka.
-7. **Dodatki:** kafle fun-to-have, animacje, jasny motyw, motyw „crazy”, rezerwacja online na `/maths`.
+Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
+
+1. ✅ **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
+2. 🟡 **Wizytówka:** układ dossier, tożsamość, edukacja, umiejętności, zdjęcie, linki, kopiowanie e-maila, zajawka dashboardu — gotowe. Zostało:
+   - sekcja „Doświadczenie” ma zastępcze wiersze (do decyzji: ukryć, praktyki, „Projekty i działalność”);
+   - CV z Typst (`cv/` → `public/cv/`) — linki „Pobierz CV” dają 404;
+   - zrzut w wyróżnionym projekcie.
+3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured. Jest tylko szkielet `/projects`.
+4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
+5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`).
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Zostały endpointy (pogoda i powietrze na start — bez kluczy), Firestore, agent homelabu, analityka.
+7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, kawa, odliczanie). Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
 
 ---
 

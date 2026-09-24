@@ -138,3 +138,19 @@ więc build zawsze idzie przed `docker build`.
 npm run build && node dist/server/entry.mjs                  # http://localhost:4321
 npm run build && docker build -t figielak-dev . && docker run --rm -p 8080:8080 figielak-dev
 ```
+
+## Rozwiązywanie problemów
+
+Problemy, które wystąpiły przy pierwszym wdrożeniu (2026-09-24).
+
+| Objaw | Przyczyna | Rozwiązanie |
+|---|---|---|
+| Deploy pada na *Creating Revision*: `Permission denied on secret … for Revision service account …-compute@…` | konto, na którym działa Cloud Run, nie może czytać sekretu | `gcloud secrets add-iam-policy-binding dashboard-password --member="serviceAccount:<NUMER>-compute@developer.gserviceaccount.com" --role=roles/secretmanager.secretAccessor`, potem *Run workflow* |
+| Odpowiedzi mają `server: Google Frontend`, DNS wskazuje `216.239.x.21` | rekordy w Cloudflare mają wyłączone proxy (szara chmurka) | włącz proxy, SSL/TLS: Full (strict) |
+| Subdomeny `maths.` / `dashboard.` zwracają **525** | reguła przekierowania nie działa, a rekord wskazuje serwer bez certyfikatu dla subdomeny | Redirect Rules z warunkiem `http.host eq "maths.figielak.dev"`, rekord `AAAA 100::` z proxy |
+| Na stronie `+48 000 000 000`, `kontakt@example.com`, `home.example` | brak GitHub Secrets przy buildzie (albo dodane po deployu) | dodaj Secrets (nie Variables) i uruchom deploy ponownie |
+| `/dashboard/private` zwraca **503** | Cloud Run nie dostał `DASHBOARD_PASSWORD` | sprawdź sekret i flagę `--set-secrets` w workflow |
+| **429** przy logowaniu do trybu prywatnego | limit żądań w Cloudflare (liczą się też próby bez hasła) | odczekaj kilka sekund |
+| Odmowa zwraca **500** zamiast 401 | znak spoza Latin-1 (np. „—”) w nagłówku `WWW-Authenticate` | w nagłówkach tylko ASCII |
+
+Logi Cloud Run: `gcloud run services logs read figielak-dev --region europe-west1 --limit 50`.
