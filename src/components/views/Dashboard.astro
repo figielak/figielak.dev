@@ -19,7 +19,7 @@ import { mockAir } from '../../lib/mocks/air';
  * rhythm. The day and the weather top left, GitHub wide and low under them,
  * music tall and narrow like a cover, the homelab big because it holds the
  * most; the featured project is the biggest, as the one card that sells
- * something. WakaTime is the one accent block beside the social tiles.
+ * something. WakaTime is the one accent block beside the books.
  * Homelab numbers are public: it is a server, so they do not tell when I am at
  * the computer (§14).
  *
@@ -31,10 +31,10 @@ const lg = [
 	'day      day      weather  music    lab      lab',
 	'github   github   github   music    lab      lab',
 	'github   github   github   music    lab      lab',
-	'featured featured featured dc       ig       waka',
-	'featured featured featured gh       li       waka',
-	'featured featured featured books    books    event',
-	'featured featured featured books    books    event',
+	'featured featured featured dc       ig       event',
+	'featured featured featured gh       li       event',
+	'featured featured featured books    books    waka',
+	'featured featured featured books    books    waka',
 ];
 
 const md = [
@@ -45,8 +45,8 @@ const md = [
 	'dc       ig       gh       li',
 	'lab      lab      lab      lab',
 	'lab      lab      lab      lab',
-	'waka     waka     books    books',
 	'event    event    books    books',
+	'waka     waka     books    books',
 ];
 
 /* Wide cards take the row, small ones go in pairs — never one column. */
@@ -58,12 +58,13 @@ const base = [
 	'dc       ig',
 	'gh       li',
 	'lab      lab',
-	'waka     event',
+	'event    waka',
 	'books    books',
 ];
 ---
 
 <BentoLayout
+	alive
 	fill
 	tall
 	dense

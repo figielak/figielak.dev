@@ -18,6 +18,11 @@ const href = localizePath(to === 'private' ? '/dashboard/private' : '/dashboard'
 ---
 
 <nav class="switch">
+	{/* Keyboard hint for the terminal; touch screens use the >_ button. */}
+	<button class="switch-link switch-terminal" type="button" data-terminal-toggle aria-expanded="false">
+		<span aria-hidden="true">`</span>
+		{t('term.title')}
+	</button>
 	<a class="switch-link" href={href}>
 		{to === 'private' && <Icon name="lock" size={12} />}
 		{t(to === 'private' ? 'dashboard.private' : 'dashboard.public')}
@@ -28,6 +33,7 @@ const href = localizePath(to === 'private' ? '/dashboard/private' : '/dashboard'
 	.switch {
 		display: flex;
 		justify-content: flex-end;
+		gap: var(--space-xl);
 		padding-top: var(--space-sm);
 	}
 
@@ -46,5 +52,18 @@ const href = localizePath(to === 'private' ? '/dashboard/private' : '/dashboard'
 
 	.switch-link:hover {
 		color: var(--text);
+	}
+
+	.switch-terminal {
+		padding: 0;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+	}
+
+	@media (hover: none) {
+		.switch-terminal {
+			display: none;
+		}
 	}
 </style>

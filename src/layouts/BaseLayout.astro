@@ -2,6 +2,7 @@
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/global.css';
 import Nav from '../components/ui/Nav.astro';
+import Terminal from '../components/ui/Terminal.astro';
 import { getLangFromUrl, useTranslations } from '../i18n';
 
 interface Props {
@@ -12,9 +13,11 @@ interface Props {
 	wide?: boolean;
 	/** Keeps the page out of search results — the private dashboard. */
 	noindex?: boolean;
+	/** Blurred accent glow drifting behind the page — the dashboards. */
+	glow?: boolean;
 }
 
-const { title, description, wide = false, noindex = false } = Astro.props;
+const { title, description, wide = false, noindex = false, glow = false } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -64,7 +67,16 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		</script>
 	</head>
 
-	<body>
+	<body class:list={[glow && 'has-glow']}>
+		{
+			glow && (
+				<div class="page-glow" aria-hidden="true">
+					<span />
+					<span />
+				</div>
+			)
+		}
+
 		<a href="#main" class="skip-link">{t('nav.skip')}</a>
 
 		<header class="topbar">
@@ -76,6 +88,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 				<slot />
 			</main>
 		</div>
+
+		<Terminal />
 	</body>
 </html>
 
@@ -107,6 +121,60 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+	}
+
+	/* The glow sits over the page background and under everything else. */
+	.has-glow {
+		isolation: isolate;
+	}
+
+	.page-glow {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.page-glow span {
+		position: absolute;
+		width: var(--glow-size);
+		height: var(--glow-size);
+		border-radius: 50%;
+		background: radial-gradient(circle, var(--glow), transparent 70%);
+		filter: blur(var(--glow-blur));
+		animation: glow-drift var(--duration-glow) ease-in-out infinite alternate;
+	}
+
+	.page-glow span:first-child {
+		top: -25%;
+		left: -15%;
+	}
+
+	/* A longer, reversed cycle, so the two never move in step. */
+	.page-glow span:last-child {
+		right: -10%;
+		bottom: -25%;
+		animation-duration: calc(var(--duration-glow) * 1.3);
+		animation-direction: alternate-reverse;
+	}
+
+	@keyframes glow-drift {
+		0% {
+			transform: translate(0, 0) scale(1);
+		}
+		50% {
+			transform: translate(12vw, 8vh) scale(1.15);
+		}
+		100% {
+			transform: translate(4vw, 18vh) scale(0.9);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.page-glow span {
+			animation: none;
+		}
 	}
 
 	.skip-link {

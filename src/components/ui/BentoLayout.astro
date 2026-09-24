@@ -30,10 +30,23 @@ interface Props {
 	fill?: boolean;
 	/** With `fill` and `xl`: fit one screen only from 1440×900, not 1280×720. */
 	tall?: boolean;
+	/** Dashboard look: see-through tiles over the glow, and a small hover on
+	    every tile (koncept.md §4, §8). */
+	alive?: boolean;
 	class?: string;
 }
 
-const { base, md, lg, xl, dense = false, fill = false, tall = false, class: className } = Astro.props;
+const {
+	base,
+	md,
+	lg,
+	xl,
+	dense = false,
+	fill = false,
+	tall = false,
+	alive = false,
+	class: className,
+} = Astro.props;
 
 const toAreas = (rows: string[]) => rows.map((row) => `"${row}"`).join(' ');
 const toColumns = (count: number) => `repeat(${count}, minmax(0, 1fr))`;
@@ -64,6 +77,7 @@ const vars = [
 	data-fill={fill ? '' : undefined}
 	data-xl={xl ? '' : undefined}
 	data-tall={tall ? '' : undefined}
+	data-alive={alive ? '' : undefined}
 	style={vars}
 >
 	<slot />

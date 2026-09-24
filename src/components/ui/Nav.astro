@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 import {
 	defaultLang,
 	getLangFromUrl,
@@ -78,6 +79,18 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 				),
 			)
 		}
+
+		{/* The only way into the terminal on touch screens (koncept.md §8). */}
+		<button
+			class="nav-control"
+			type="button"
+			data-terminal-toggle
+			aria-expanded="false"
+			aria-label={t('term.open')}
+			title={t('term.open')}
+		>
+			<Icon name="terminal" size={16} />
+		</button>
 
 		<button
 			class="nav-control"

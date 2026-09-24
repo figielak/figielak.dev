@@ -130,6 +130,30 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 		box-shadow: var(--shadow-tile);
 	}
 
+	/* Dashboard (BentoLayout `alive`): see-through tiles over the glow, and a
+	   small hover on every tile — a border and 1px, less than a clickable one.
+	   `:where` keeps the specificity of the plain rules, so the accent tile
+	   below and the brand colours of the social tiles still win. */
+	:global(:where([data-alive])) .tile {
+		background: var(--surface-glass);
+		backdrop-filter: blur(var(--glass-blur));
+	}
+
+	:global(:where([data-alive])) .tile[data-interactive]:hover {
+		background: var(--surface-glass-hover);
+	}
+
+	:global(:where([data-alive])) .tile:not([data-interactive]) {
+		transition:
+			border-color var(--duration-hover) var(--ease-out),
+			transform var(--duration-hover) var(--ease-out);
+	}
+
+	:global(:where([data-alive])) .tile:not([data-interactive]):hover {
+		border-color: var(--border-hover);
+		transform: translateY(var(--lift-subtle));
+	}
+
 	/* Full accent: the text tokens switch to the graphite that reads on it, so
 	   what is inside the tile needs no idea it sits on the accent. */
 	.tile[data-accent] {
@@ -191,6 +215,10 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 
 	@media (prefers-reduced-motion: reduce) {
 		.tile[data-interactive]:hover {
+			transform: none;
+		}
+
+		:global(:where([data-alive])) .tile:not([data-interactive]):hover {
 			transform: none;
 		}
 	}

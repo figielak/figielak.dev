@@ -1,0 +1,449 @@
+---
+import Icon from './Icon.astro';
+import pl from '../../i18n/pl.json';
+import {
+	getLangFromUrl,
+	localizePath,
+	stripLang,
+	useTranslations,
+	type TranslationKey,
+} from '../../i18n';
+import { discordUrl, githubUrl, instagramUrl, linkedinUrl } from '../../lib/contact';
+import { books } from '../../lib/books';
+import { featuredProjects } from '../../lib/featured';
+import type { TerminalData } from '../../scripts/terminal/types';
+
+/**
+ * Site-wide terminal (koncept.md §8): a panel that slides down from the top on
+ * ` or the >_ button in the navigation. The markup and styles live here; the
+ * prompt and the commands in src/scripts/terminal/. What the commands need
+ * from the build — strings, pages, links, books — goes to the browser as JSON.
+ */
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const strings = Object.fromEntries(
+	(Object.keys(pl) as TranslationKey[]).filter((key) => key.startsWith('term.')).map((key) => [key, t(key)]),
+);
+
+/* /maths is Polish-only (koncept.md §11), as in the navigation. */
+const polishOnly = ['/maths'];
+const pages = [
+	{ name: 'wizytowka', aliases: ['wizytówka', 'home'], path: '/' },
+	{ name: 'projekty', aliases: ['projects'], path: '/projects' },
+	{ name: 'dashboard', aliases: [], path: '/dashboard' },
+	{ name: 'korepetycje', aliases: ['maths'], path: '/maths' },
+];
+const dirs = pages.map(({ path, ...dir }) => ({
+	...dir,
+	href: polishOnly.includes(path) ? path : localizePath(path, lang),
+}));
+
+const current = stripLang(Astro.url.pathname).replace(/\/$/, '') || '/';
+const page = pages.find((p) => p.path !== '/' && (current === p.path || current.startsWith(`${p.path}/`)));
+const cwd = current === '/' ? '~' : page ? `~/${page.name}${current.slice(page.path.length)}` : `~${current}`;
+
+const data: TerminalData = {
+	lang,
+	strings,
+	cwd,
+	dirs,
+	langHrefs: polishOnly.includes(current) ? { pl: current } : { pl: current, en: localizePath(current, 'en') },
+	themes: ['dark'],
+	socials: [
+		{ name: 'discord', label: 'Discord', url: discordUrl },
+		{ name: 'instagram', label: 'Instagram', url: instagramUrl },
+		{ name: 'github', label: 'GitHub', url: githubUrl },
+		{ name: 'linkedin', label: 'LinkedIn', url: linkedinUrl },
+	],
+	projects: featuredProjects.map((project) => ({
+		name: project.title.toLowerCase().replace(/[^a-z0-9.]+/g, '-'),
+		title: project.title,
+		href: localizePath(project.href, lang),
+	})),
+	books: books.map(({ title, author }) => ({ title, author })),
+};
+
+/* `<` escaped, so no string in the data can close the script tag. */
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+
+const chips = ['help', 'neofetch', 'np', 'weather', 'gh', 'ls', 'sudo'];
+---
+
+<div class="term" data-terminal inert>
+	<div class="term-overlay" data-terminal-close></div>
+
+	<section class="term-panel" role="dialog" aria-modal="true" aria-labelledby="term-title">
+		<header class="term-bar">
+			<span class="term-title" id="term-title">
+				<span class="term-title-icon"><Icon name="terminal" size={14} /></span>
+				{t('term.title')}
+				<span class="term-host">· figielak.dev</span>
+			</span>
+			<span class="term-hint" aria-hidden="true">{t('term.hint')}</span>
+			<button class="term-close" type="button" data-terminal-close aria-label={t('term.close')}>
+				<Icon name="x" size={16} />
+			</button>
+		</header>
+
+		<div class="term-body">
+			<div class="term-output">
+				<div class="term-log" role="log" aria-live="polite"></div>
+			</div>
+		</div>
+
+		<div class="term-chips" role="group" aria-label={t('term.chips')}>
+			{
+				chips.map((command) => (
+					<button class="term-chip" type="button" data-command={command}>
+						{command}
+					</button>
+				))
+			}
+		</div>
+
+		<label class="term-line">
+			<span class="term-prompt">
+				<span class="term-user">guest@figielak</span><span class="term-path">:{cwd}$</span>
+			</span>
+			<span class="term-field">
+				<span class="term-typed" aria-hidden="true"></span>
+				<input
+					class="term-input"
+					type="text"
+					aria-label={t('term.input')}
+					autocomplete="off"
+					autocapitalize="off"
+					autocorrect="off"
+					spellcheck="false"
+					enterkeyhint="send"
+				/>
+			</span>
+		</label>
+	</section>
+
+	<script type="application/json" data-terminal-data set:html={json} />
+</div>
+
+<script>
+	import '../../scripts/terminal';
+</script>
+
+<style>
+	/* Closed, the panel is off screen and `inert` (out of focus and the
+	   accessibility tree). No `visibility`: reduced motion gives every element
+	   a one-tick transition, and an inherited `hidden` would then block the
+	   focus that opening moves into the input. */
+	.term {
+		position: fixed;
+		inset: 0;
+		z-index: var(--z-terminal);
+		pointer-events: none;
+	}
+
+	.term[data-open] {
+		pointer-events: auto;
+	}
+
+	:global(html.terminal-open) {
+		overflow: hidden;
+	}
+
+	.term-overlay {
+		position: absolute;
+		inset: 0;
+		background: var(--scrim-soft);
+		opacity: 0;
+		transition: opacity var(--duration-terminal-close) var(--ease-out);
+	}
+
+	.term[data-open] .term-overlay {
+		opacity: 1;
+		transition-duration: var(--duration-terminal-open);
+	}
+
+	.term-panel {
+		position: absolute;
+		inset: 0 0 auto;
+		display: flex;
+		flex-direction: column;
+		height: min(var(--terminal-height), var(--terminal-max-height));
+		border-bottom: 1px solid var(--border);
+		border-radius: 0 0 var(--radius-tile) var(--radius-tile);
+		background: var(--surface);
+		font-family: var(--font-mono);
+		font-size: var(--size-terminal-text);
+		line-height: 1.6;
+		/* Code ligatures would turn `->` or `=>` in output into arrows. */
+		font-variant-ligatures: none;
+		color: var(--text);
+		transform: translateY(-100%);
+		transition:
+			transform var(--duration-terminal-close) var(--ease-out),
+			box-shadow var(--duration-terminal-close) var(--ease-out);
+	}
+
+	/* The shadow only when open, so none peeks in from above the page. */
+	.term[data-open] .term-panel {
+		transform: none;
+		box-shadow: var(--shadow-tile);
+		transition-duration: var(--duration-terminal-open);
+	}
+
+	/* Title bar: styled like a tile label. */
+	.term-bar {
+		display: flex;
+		align-items: center;
+		gap: var(--space-lg);
+		padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-2xl);
+		border-bottom: 1px solid var(--border);
+		font-size: var(--size-label);
+		font-weight: 500;
+		line-height: 1;
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.term-title {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-sm);
+		margin-right: auto;
+		white-space: nowrap;
+	}
+
+	.term-title-icon {
+		display: inline-flex;
+		color: var(--accent);
+	}
+
+	.term-host {
+		text-transform: none;
+	}
+
+	.term-hint {
+		white-space: nowrap;
+	}
+
+	.term-close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--size-nav-control);
+		height: var(--size-nav-control);
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: transparent;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.term-close:hover {
+		color: var(--text);
+		background: var(--surface-hover);
+	}
+
+	/* The output scrolls; effects like `matrix` cover it from above. */
+	.term-body {
+		position: relative;
+		flex: 1;
+		min-height: 0;
+	}
+
+	.term-output {
+		height: 100%;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		padding: var(--space-lg) var(--space-2xl);
+		scrollbar-color: var(--border-hover) transparent;
+		scrollbar-width: thin;
+	}
+
+	.term-log :global(.term-row) {
+		min-height: 1lh;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.term-log :global([data-role='muted']) {
+		color: var(--text-muted);
+	}
+
+	.term-log :global([data-role='accent']) {
+		color: var(--accent);
+	}
+
+	.term-log :global([data-role='ok']) {
+		color: var(--status-ok);
+	}
+
+	.term-log :global([data-role='down']) {
+		color: var(--status-down);
+	}
+
+	.term-log :global(a) {
+		color: var(--text);
+		text-decoration: underline;
+		text-decoration-color: var(--text-subtle);
+		text-underline-offset: 3px;
+		transition: color var(--duration-hover) var(--ease-out);
+	}
+
+	.term-log :global(a:hover) {
+		color: var(--accent);
+	}
+
+	.term-body :global(.term-screen) {
+		position: absolute;
+		inset: 0;
+		margin: 0;
+		padding: var(--space-lg) var(--space-2xl);
+		overflow: hidden;
+		background: var(--surface);
+		font: inherit;
+		color: var(--status-ok);
+		white-space: pre;
+	}
+
+	.term-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		padding: var(--space-sm) var(--space-2xl) 0;
+	}
+
+	.term-chip {
+		padding: var(--space-2xs) var(--space-md);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: transparent;
+		font: inherit;
+		font-size: var(--size-label);
+		color: var(--text-muted);
+		cursor: pointer;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out);
+	}
+
+	.term-chip:hover {
+		border-color: var(--border-hover);
+		color: var(--text);
+	}
+
+	/* The prompt line: the input is fused into it, no box. */
+	.term-line {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-sm);
+		padding: var(--space-sm) var(--space-2xl) var(--space-lg);
+		cursor: text;
+	}
+
+	.term-prompt {
+		flex-shrink: 0;
+		white-space: pre;
+	}
+
+	.term-user {
+		color: var(--accent);
+	}
+
+	.term-prompt :global(.term-path) {
+		color: var(--text-muted);
+	}
+
+	.term-field {
+		position: relative;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.term-typed {
+		display: block;
+		overflow: hidden;
+		white-space: pre;
+	}
+
+	/* The real input sits invisible over the mirror, which draws the text. */
+	.term-input {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		outline: none;
+		background: transparent;
+		font: inherit;
+		color: transparent;
+		caret-color: transparent;
+	}
+
+	.term-input::selection {
+		background: var(--accent-soft);
+	}
+
+	.term-typed :global(.term-cursor) {
+		background: var(--accent);
+		color: var(--surface);
+		animation: term-blink var(--duration-blink) steps(1) infinite;
+	}
+
+	/* Unfocused, the block turns into an outline and stops blinking. */
+	.term-field:not(:focus-within) :global(.term-cursor) {
+		background: transparent;
+		color: inherit;
+		outline: 1px solid var(--accent);
+		outline-offset: -1px;
+		animation: none;
+	}
+
+	@keyframes term-blink {
+		50% {
+			background: transparent;
+			color: inherit;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.term-typed :global(.term-cursor) {
+			animation: none;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.term-panel {
+			height: var(--terminal-height-mobile);
+		}
+
+		.term-hint {
+			display: none;
+		}
+
+		.term-output,
+		.term-body :global(.term-screen) {
+			padding-inline: var(--space-xl);
+		}
+
+		.term-chips {
+			flex-wrap: nowrap;
+			overflow-x: auto;
+			scrollbar-width: none;
+			padding-inline: var(--space-xl);
+		}
+
+		.term-line {
+			padding-inline: var(--space-xl);
+		}
+
+		/* Phones zoom into inputs under 16px; the mirror keeps the look. */
+		.term-input {
+			font-size: max(var(--size-input-min), 1em);
+		}
+	}
+</style>

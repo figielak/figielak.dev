@@ -14,6 +14,9 @@
 	--surface: #161618;
 	--surface-hover: #1c1c1f;
 	--surface-inset: #111113;
+	/* Tiles on the dashboard: the surfaces above, see-through to the glow. */
+	--surface-glass: rgb(22 22 24 / 0.55);
+	--surface-glass-hover: rgb(28 28 31 / 0.62);
 
 	/* Borders */
 	--border: rgb(255 255 255 / 0.08);
@@ -49,6 +52,11 @@
 	--accent-level-2: rgb(229 72 77 / 0.45);
 	--accent-level-3: rgb(229 72 77 / 0.7);
 	--accent-level-4: var(--accent);
+
+	/* Blurred accent glow behind the dashboard tiles (koncept.md §4). At its
+	   peak under --surface-glass, --text-muted keeps 4.6:1; the accent there is
+	   only icons, charts and dots, which need 3:1. */
+	--glow: rgb(229 72 77 / 0.35);
 
 	/* Scrim over photos and covers, so text on them keeps AA contrast (§4). */
 	--scrim: rgb(0 0 0 / 0.85);
@@ -132,12 +140,33 @@
 	--size-number-short: 36px;
 	--tracking-label: 0.08em;
 
+	/* Terminal panel (koncept.md §8): above the navigation and the skip link. */
+	--z-terminal: 100;
+	--terminal-height: 45vh;
+	--terminal-height-mobile: 70dvh;
+	--terminal-max-height: 640px;
+	--size-terminal-text: 13px;
+	/* Below this, phones zoom into a focused input. */
+	--size-input-min: 16px;
+
+	/* Dashboard glow: two drifting blobs, blurred far past their edges. */
+	--glow-size: 60vmax;
+	--glow-blur: 120px;
+	/* Frosts what shows through a dashboard tile. */
+	--glass-blur: 16px;
+
 	/* Motion */
 	--ease-out: cubic-bezier(0.2, 0.8, 0.4, 1);
 	--duration-hover: 180ms;
 	--duration-pulse: 2s;
+	--duration-terminal-open: 200ms;
+	--duration-terminal-close: 150ms;
+	--duration-blink: 1s;
+	--duration-glow: 48s;
 	/* How far a clickable tile rises on hover. */
 	--lift: -2px;
+	/* The smaller rise of a tile that is not clickable (dashboard only). */
+	--lift-subtle: -1px;
 }
 
 /* Short desktop screens (1280×720): the dashboard's four rows leave a 1×1

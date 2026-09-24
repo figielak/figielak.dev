@@ -180,18 +180,18 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 ≥ 1024px (6 kolumn, 8 półrzędów; jeden ekran od 1440×900)
 "day      day      weather  music    lab      lab"    ×2
 "github   github   github   music    lab      lab"    ×2
-"featured featured featured dc       ig       waka"
-"featured featured featured gh       li       waka"
-"featured featured featured books    books    event"  ×2
+"featured featured featured dc       ig       event"
+"featured featured featured gh       li       event"
+"featured featured featured books    books    waka"   ×2
 
 640–1023px (4 kolumny)
 "day day weather music" / "github github github music" /
 "featured ×4" ×2 / "dc ig gh li" / "lab ×4" ×2 /
-"waka waka books books" / "event event books books"
+"event event books books" / "waka waka books books"
 
 < 640px (2 kolumny: szerokie karty na cały rząd, małe parami)
 "day day" / "weather music" / "github github" / "featured featured" /
-"dc ig" / "gh li" / "lab lab" / "waka event" / "books books"
+"dc ig" / "gh li" / "lab lab" / "event waka" / "books books"
 ```
 
 | Kafel | Grupa | Zawartość |
@@ -228,7 +228,7 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i
 ## 4. Zasady stylu bento
 
 - **Kafel:**
-  - tło `--surface`;
+  - tło `--surface`; na dashboardzie półprzezroczyste `--surface-glass`, przez które prześwituje rozmyta poświata akcentu (`--glow`) — dwie plamy powoli dryfujące pod siatką (`BaseLayout glow`, `BentoLayout alive`);
   - obramowanie 1px `--border`;
   - promień 20px;
   - padding 20px (dashboard: 16px).
@@ -244,7 +244,8 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i
   - pojedynczych wyróżnień w tekście;
   - jednego wykresu marki: kontrybucji GitHuba;
   - małych ikon przy etykietach kart (np. logo GitHuba, Last.fm, książka);
-  - sygnalizowania prawdziwych problemów (§5).
+  - sygnalizowania prawdziwych problemów (§5);
+  - stonowanej, mocno rozmytej poświaty w tle dashboardu — tło, nie element interfejsu.
 
   Aktywna zakładka w nawigacji, paski postępu i zajętości oraz skala jakości powietrza są neutralne.
 
@@ -278,6 +279,8 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--accent` | `#E5484D` | akcent: stonowana czerwień, kontrast AA na tle |
 | `--accent-hover` | `#EC5D5E` | akcent po najechaniu |
 | `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
+| `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
+| `--glow` | `rgb(229 72 77 / 0.35)` | rozmyta poświata pod kaflami dashboardu (tekst `--text-muted` na szkle zostaje ≥ 4,6:1) |
 
 Zasady:
 - **Kropki stanu: czerwień tylko przy problemie.** Czerwień czyta się jak „awaria”, więc gdyby świeciła wszędzie, prawdziwy problem zginąłby w tłumie.
@@ -346,9 +349,18 @@ Na start:
   - kafel unosi się lekko (`translateY(-2px)`);
   - pojawia się delikatny cień;
   - przejście trwa 150–200ms z `ease-out`.
+- **Hover na nieklikalnym kaflu (tylko dashboard):** mniejszy niż klikalny — obramowanie `--border-hover` i uniesienie o 1px (`--lift-subtle`), bez cienia i zmiany tła.
+- **Poświata dashboardu:** plamy dryfują w cyklach ok. 48 i 62 s.
 - **Pulsowanie kropki** (tylko rzeczy dziejące się teraz, patrz §5): łagodne, skala i przezroczystość, około 2s.
 - **Focus:** widoczny ring w kolorze akcentu (`:focus-visible`).
-- **`prefers-reduced-motion`:** wyłącza unoszenie, pulsowanie i animacje wejścia.
+- **`prefers-reduced-motion`:** wyłącza unoszenie, pulsowanie, dryf poświaty i animacje wejścia.
+
+**Terminal** (na całej stronie, `src/components/ui/Terminal.astro` + `src/scripts/terminal/`):
+- otwiera go klawisz `` ` `` (poza polami tekstowymi) albo przycisk `>_` w nawigacji — jedyna droga na ekranach dotykowych; zamyka ponownie `` ` ``, `Esc`, klik w tło lub `exit`;
+- panel zjeżdża z góry (ok. 45% wysokości, na telefonie 70%), tło kafla, reszta strony przyciemniona i zablokowana; fokus wraca tam, skąd przyszedł;
+- komendy to osobne moduły w `src/scripts/terminal/commands/` — nowa komenda to nowy plik; teksty w i18n (`term.*`);
+- komendy z danymi czytają te same `/api/*` co kafle i przy błędzie piszą spokojne „<źródło>: brak danych”;
+- output i historia zostają w `sessionStorage` na czas sesji; podpowiedź `` ` TERMINAL `` w stopce dashboardu (ukryta na dotyku).
 
 Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 - poświata podążająca za kursorem;
@@ -490,7 +502,7 @@ Dockerfile       # obraz dla Cloud Run
 - Aktualny cel
 - Now page
 - Książki
-- Mini terminal (`whoami`, `help`, `projects`…)
+- ~~Mini terminal~~ — zrobiony jako terminal na całej stronie (§8)
 - Mini gra (Snake)
 - Konami code / ukryty kafel
 - Odtwarzacz muzyki
@@ -544,7 +556,7 @@ Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
 6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Podpięte: GitHub (`/api/github`), Last.fm (`/api/music`) i WakaTime (`/api/waka`) — cache w pamięci instancji, wyspy w czystym TS (`src/scripts/live.ts`). Homelab: `POST /api/stats` → Firestore → `/api/homelab/*`, agent w repo homelaba — kod gotowy, zostaje konfiguracja GCP (docs/deploy.md) i wdrożenie. Zostały pogoda i powietrze (bez kluczy) oraz analityka.
-7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, odliczanie). Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
+7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, odliczanie). Terminal na całej stronie (§8) gotowy; `weather` czeka na endpoint pogody. Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
 
 ---
 
