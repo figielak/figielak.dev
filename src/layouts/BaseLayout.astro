@@ -10,9 +10,11 @@ interface Props {
 	/** Drops the content cap so the view spans the full viewport — the
 	    dashboard's six-column grid uses every pixel it can get. */
 	wide?: boolean;
+	/** Keeps the page out of search results — the private dashboard. */
+	noindex?: boolean;
 }
 
-const { title, description, wide = false } = Astro.props;
+const { title, description, wide = false, noindex = false } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -41,6 +43,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 
 		<title>{title}</title>
 		<meta name="description" content={description} />
+		{noindex && <meta name="robots" content="noindex, nofollow" />}
 
 		<meta property="og:type" content="website" />
 		<meta property="og:title" content={title} />

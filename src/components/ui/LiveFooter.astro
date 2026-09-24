@@ -1,0 +1,50 @@
+---
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { minutesSince, type Live } from '../../lib/live';
+
+/**
+ * Footer line of a live tile: "updated 3 min ago", or a detail passed in the
+ * slot. Rendered in every state and only hidden, so the tile never changes
+ * height (koncept.md §9).
+ */
+interface Props {
+	live: Live<object>;
+}
+
+const { live } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+const text = live.data ? t('state.updatedAgo').replace('{n}', String(minutesSince(live.data.updatedAt))) : '';
+---
+
+<span class="live-footer" data-state={live.state}>
+	{Astro.slots.has('default') && <span class="live-footer-detail"><slot /></span>}
+	<span class="live-footer-updated">{text || '\u00a0'}</span>
+</span>
+
+<style>
+	.live-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-subtle);
+		white-space: nowrap;
+	}
+
+	.live-footer-detail {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: var(--text-muted);
+	}
+
+	.live-footer-updated {
+		margin-left: auto;
+	}
+
+	.live-footer:is([data-state='loading'], [data-state='error']) {
+		visibility: hidden;
+	}
+</style>

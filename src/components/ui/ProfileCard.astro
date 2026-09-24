@@ -28,9 +28,14 @@ interface Props {
 	location: string;
 	bio: string;
 	socials: readonly Social[];
+	/** `lg` gives the photo more room, e.g. where parents want to see who teaches. */
+	avatarSize?: 'md' | 'lg';
 }
 
-const { name, role, status, location, bio, socials } = Astro.props;
+const { name, role, status, location, bio, socials, avatarSize = 'md' } = Astro.props;
+
+/* Rendered widths for 1x–3x screens; must match --size-avatar / --size-avatar-lg. */
+const avatarPx = avatarSize === 'lg' ? 160 : 96;
 
 /* Drop a square photo at src/assets/avatar.{jpg,png,webp,avif}; until one
    exists the card shows the empty placeholder frame. */
@@ -47,14 +52,15 @@ const avatar = Object.values(avatarFiles)[0]?.default;
 			avatar ? (
 				<Image
 					class="profile-avatar"
+					data-size={avatarSize}
 					src={avatar}
 					alt={name}
-					widths={[96, 192, 288]}
-					sizes="96px"
+					widths={[avatarPx, avatarPx * 2, avatarPx * 3]}
+					sizes={`${avatarPx}px`}
 					loading="eager"
 				/>
 			) : (
-				<div class="profile-avatar" aria-hidden="true" />
+				<div class="profile-avatar" data-size={avatarSize} aria-hidden="true" />
 			)
 		}
 
@@ -115,6 +121,11 @@ const avatar = Object.values(avatarFiles)[0]?.default;
 		border: 1px solid var(--border);
 		background: var(--surface-inset);
 		object-fit: cover;
+	}
+
+	.profile-avatar[data-size='lg'] {
+		width: var(--size-avatar-lg);
+		height: var(--size-avatar-lg);
 	}
 
 	.profile-name {

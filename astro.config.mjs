@@ -7,7 +7,11 @@ import { katexPlugin } from './src/plugins/katex.js';
 
 export default defineConfig({
 	site: 'https://figielak.dev',
-	integrations: [mdx(), sitemap()],
+	integrations: [
+		mdx(),
+		/* The private dashboard sits behind Cloudflare Access (koncept.md §14). */
+		sitemap({ filter: (page) => !page.includes('/dashboard/private') }),
+	],
 	markdown: {
 		processor: satteri({
 			features: { math: true },

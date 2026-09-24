@@ -1,0 +1,77 @@
+---
+import Tile from '../ui/Tile.astro';
+import { getLangFromUrl, useTranslations, type TranslationKey } from '../../i18n';
+
+/**
+ * "Now page" in a tile: what I am building, learning and reading. Static —
+ * edit the i18n strings and bump `updated` (koncept.md §13).
+ */
+interface Props {
+	area?: string;
+}
+
+const { area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const updated = new Date('2026-09-23');
+const items: { label: TranslationKey; value: TranslationKey }[] = [
+	{ label: 'now.building', value: 'now.building.value' },
+	{ label: 'now.learning', value: 'now.learning.value' },
+	{ label: 'now.reading', value: 'now.reading.value' },
+];
+const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric' }).format(updated);
+---
+
+<Tile area={area} label={t('tile.now')} dense>
+	<dl class="now">
+		{
+			items.map((item) => (
+				<div class="now-row">
+					<dt class="now-label">{t(item.label)}</dt>
+					<dd class="now-value">{t(item.value)}</dd>
+				</div>
+			))
+		}
+	</dl>
+
+	<time slot="footer" class="now-updated" datetime={updated.toISOString().slice(0, 10)}>
+		{t('now.updated').replace('{date}', date)}
+	</time>
+</Tile>
+
+<style>
+	.now {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-evenly;
+		gap: var(--space-sm);
+		height: 100%;
+		margin: 0;
+	}
+
+	.now-row {
+		display: grid;
+		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr);
+		align-items: baseline;
+		gap: var(--space-md);
+	}
+
+	.now-label {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-subtle);
+	}
+
+	.now-value {
+		margin: 0;
+		color: var(--text);
+	}
+
+	.now-updated {
+		font-family: var(--font-mono);
+		color: var(--text-subtle);
+	}
+</style>

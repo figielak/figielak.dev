@@ -1,0 +1,87 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import BigNumber from '../ui/BigNumber.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { WAKA_PLACEHOLDER, type Waka } from '../../lib/mocks/waka';
+
+/** Coding time from WakaTime, cached 1 h (koncept.md §9). */
+interface Props {
+	waka: Waka;
+	area?: string;
+}
+
+const { waka, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = waka.data ?? WAKA_PLACEHOLDER;
+
+const hm = (min: number) =>
+	t('duration.hm')
+		.replace('{h}', String(Math.floor(min / 60)))
+		.replace('{m}', String(min % 60));
+const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+---
+
+<Tile area={area} label={t('tile.waka')} dense>
+	<LiveDot slot="meta" state={dotState(waka.state)} />
+
+	<LiveBody state={waka.state} errorText={t('waka.unavailable')}>
+		<div class="waka">
+			<BigNumber value={short(d.todayMin)} caption={t('waka.today')} />
+			<ul class="waka-languages">
+				{
+					d.languages.map((language) => (
+						<li class="waka-language">
+							<span class="waka-name" data-skeleton>{language.name}</span>
+							<span class="waka-percent" data-skeleton>{language.percent}%</span>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={waka}>{t('waka.week').replace('{t}', hm(d.weekMin))}</LiveFooter>
+</Tile>
+
+<style>
+	.waka {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+		gap: var(--space-xl);
+		height: 100%;
+	}
+
+	.waka-languages {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.waka-language {
+		display: flex;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+	}
+
+	.waka-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--text-muted);
+	}
+
+	.waka-percent {
+		font-variant-numeric: tabular-nums;
+	}
+</style>

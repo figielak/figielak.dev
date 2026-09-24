@@ -1,0 +1,92 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { DEPLOY_PLACEHOLDER, type Deploy } from '../../lib/mocks/deploy';
+
+/** The last deploy of this site from the Cloudflare API (koncept.md §9). Private. */
+interface Props {
+	deploy: Deploy;
+	area?: string;
+}
+
+const { deploy, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = deploy.data ?? DEPLOY_PLACEHOLDER;
+
+const relative = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
+const minutes = Math.round((Date.now() - d.deployedAt.getTime()) / 60_000);
+const ago =
+	minutes < 60
+		? relative.format(-minutes, 'minute')
+		: minutes < 1440
+			? relative.format(-Math.round(minutes / 60), 'hour')
+			: relative.format(-Math.round(minutes / 1440), 'day');
+---
+
+<Tile area={area} label={t('tile.deploy')} dense>
+	<LiveDot slot="meta" state={dotState(deploy.state)} />
+
+	<LiveBody state={deploy.state} errorText={t('deploy.unavailable')}>
+		<div class="deploy">
+			<span class="deploy-status" data-status={d.status}>
+				<LiveDot state={d.status === 'failed' ? 'offline' : 'live'} />
+				<span data-skeleton>{t(`deploy.${d.status}`)}</span>
+			</span>
+			<time class="deploy-when" datetime={d.deployedAt.toISOString()} data-skeleton>{ago}</time>
+			<span class="deploy-commit" data-skeleton>
+				<span class="deploy-hash">{d.commit}</span>
+				{d.message}
+			</span>
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={deploy} />
+</Tile>
+
+<style>
+	.deploy {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: flex-start;
+		gap: var(--space-2xs);
+		height: 100%;
+		min-width: 0;
+	}
+
+	.deploy-status {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.deploy-when {
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.deploy-commit {
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+
+	.deploy-hash {
+		margin-right: var(--space-xs);
+		font-family: var(--font-mono);
+		color: var(--text-subtle);
+	}
+</style>

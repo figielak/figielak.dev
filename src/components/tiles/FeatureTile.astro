@@ -1,0 +1,146 @@
+---
+import Tile from '../ui/Tile.astro';
+import Icon from '../ui/Icon.astro';
+import type { IconName } from '../ui/Icon.astro';
+
+/**
+ * Small card for one point of an offer: an icon badge, an optional mono
+ * kicker, a title and a single line of detail. Meant to sit in a CardGrid so
+ * a list reads as a row of cards rather than a wall of text.
+ */
+interface Props {
+	icon: IconName;
+	title: string;
+	detail?: string;
+	/** Mono label above the title, e.g. "01" or "Klasa 8". */
+	kicker?: string;
+	/** Not offered yet: the whole card steps back. */
+	muted?: boolean;
+	/** Title set as a large mono figure, for prices and other numbers. */
+	numeric?: boolean;
+	/** Icon beside the text instead of above it, for wide cards (from 640px up). */
+	inline?: boolean;
+	href?: string;
+	external?: boolean;
+	/** Anything else lands on the tile root (data-*, aria-*...). */
+	[key: string]: unknown;
+}
+
+const {
+	icon,
+	title,
+	detail,
+	kicker,
+	muted = false,
+	numeric = false,
+	inline = false,
+	href,
+	external,
+	...rest
+} = Astro.props;
+---
+
+<Tile
+	href={href}
+	external={external}
+	class="feature"
+	data-muted={muted ? '' : undefined}
+	data-inline={inline ? '' : undefined}
+	{...rest}
+>
+	<div class="feature-inner">
+		<span class="feature-icon"><Icon name={icon} size={20} /></span>
+		<div class="feature-copy">
+			{kicker && <span class="feature-kicker">{kicker}</span>}
+			<span class="feature-title" data-numeric={numeric ? '' : undefined}>{title}</span>
+			{detail && <p class="feature-detail">{detail}</p>}
+		</div>
+	</div>
+</Tile>
+
+<style>
+	.feature {
+		position: relative;
+		height: 100%;
+	}
+
+	/* A clickable card's ↗ sits in the icon row instead of taking a row of
+	   its own above it. */
+	.feature :global(.tile-header) {
+		position: absolute;
+		top: var(--tile-padding);
+		right: var(--tile-padding);
+	}
+
+	.feature-inner {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+	}
+
+	.feature-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--size-feature-icon);
+		height: var(--size-feature-icon);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		color: var(--text);
+	}
+
+	.feature-copy {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+	}
+
+	.feature-kicker {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.feature-title {
+		font-size: var(--size-title);
+		font-weight: 500;
+		line-height: 1.3;
+	}
+
+	.feature-title[data-numeric] {
+		font-family: var(--font-mono);
+		font-size: var(--size-hero);
+		font-weight: 700;
+		line-height: 1.1;
+	}
+
+	.feature-detail {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.feature[data-muted] .feature-icon,
+	.feature[data-muted] .feature-title,
+	.feature[data-muted] .feature-detail {
+		color: var(--text-subtle);
+	}
+
+	.feature[data-muted] .feature-icon {
+		border-style: dashed;
+	}
+
+	@media (min-width: 640px) {
+		.feature[data-inline] .feature-inner {
+			flex-direction: row;
+			align-items: flex-start;
+			gap: var(--space-xl);
+		}
+
+		.feature[data-inline] .feature-icon {
+			flex: none;
+		}
+	}
+</style>

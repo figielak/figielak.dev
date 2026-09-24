@@ -1,0 +1,43 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import BigNumber from '../ui/BigNumber.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { DNS_PLACEHOLDER, type Dns } from '../../lib/mocks/network';
+
+/** Ads and trackers blocked today by the homelab DNS, pushed by the agent (koncept.md §9). */
+interface Props {
+	dns: Dns;
+	area?: string;
+}
+
+const { dns, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = dns.data ?? DNS_PLACEHOLDER;
+const number = new Intl.NumberFormat(lang);
+---
+
+<Tile area={area} label={t('tile.dns')} dense>
+	<LiveDot slot="meta" state={dotState(dns.state)} />
+
+	<LiveBody state={dns.state} errorText={t('dns.unavailable')}>
+		<div class="dns">
+			<BigNumber value={number.format(d.blockedToday)} caption={t('dns.blocked')} />
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={dns} />
+</Tile>
+
+<style>
+	.dns {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		height: 100%;
+	}
+</style>

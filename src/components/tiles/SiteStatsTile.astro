@@ -1,0 +1,81 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import BigNumber from '../ui/BigNumber.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { SITE_PLACEHOLDER, type SiteStats } from '../../lib/mocks/site';
+
+/** Visitors of this site from the analytics API, cached 1–5 min (koncept.md §9). Private. */
+interface Props {
+	site: SiteStats;
+	area?: string;
+}
+
+const { site, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = site.data ?? SITE_PLACEHOLDER;
+const number = new Intl.NumberFormat(lang);
+---
+
+<Tile area={area} label={t('tile.site')} dense>
+	<LiveDot slot="meta" state={dotState(site.state)} />
+
+	<LiveBody state={site.state} errorText={t('site.unavailable')}>
+		<div class="site">
+			<BigNumber value={number.format(d.visitorsToday)} caption={t('site.today')} />
+			<ul class="site-details">
+				<li class="site-online" data-skeleton>
+					<LiveDot state={site.state === 'ok' && d.online > 0 ? 'live' : 'offline'} />
+					{t('site.online').replace('{n}', String(d.online))}
+				</li>
+				<li data-skeleton>{t('site.week').replace('{n}', number.format(d.visitorsWeek))}</li>
+				<li class="site-top" data-skeleton>{t('site.top').replace('{path}', d.topPage)}</li>
+			</ul>
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={site} />
+</Tile>
+
+<style>
+	.site {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+		gap: var(--space-xl);
+		height: 100%;
+	}
+
+	.site-details {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2xs);
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+	}
+
+	.site-online {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		color: var(--text);
+	}
+
+	.site-top {
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+</style>

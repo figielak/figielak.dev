@@ -1,0 +1,50 @@
+---
+import Icon from './Icon.astro';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
+
+/**
+ * Quiet link between the public and the private dashboard. The private one is
+ * guarded by Cloudflare Access at the edge (koncept.md §14), so linking to it
+ * reveals nothing.
+ */
+interface Props {
+	to: 'public' | 'private';
+}
+
+const { to } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const href = localizePath(to === 'private' ? '/dashboard/private' : '/dashboard', lang);
+---
+
+<nav class="switch">
+	<a class="switch-link" href={href}>
+		{to === 'private' && <Icon name="lock" size={12} />}
+		{t(to === 'private' ? 'dashboard.private' : 'dashboard.public')}
+	</a>
+</nav>
+
+<style>
+	.switch {
+		display: flex;
+		justify-content: flex-end;
+		padding-top: var(--space-sm);
+	}
+
+	.switch-link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-subtle);
+		text-decoration: none;
+		transition: color var(--duration-hover) var(--ease-out);
+	}
+
+	.switch-link:hover {
+		color: var(--text);
+	}
+</style>

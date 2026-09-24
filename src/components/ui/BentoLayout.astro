@@ -93,4 +93,13 @@ const vars = [
 			grid-template-rows: var(--rows-lg);
 		}
 	}
+
+	/* One screen on desktop (koncept.md §7): tiles stop sizing the rows by
+	   their content, so the grid takes exactly the height the page leaves
+	   and the rows split it. Smaller screens scroll as usual. */
+	@media (min-width: 1024px) and (min-height: 720px) {
+		.bento[data-fill] > :global(*) {
+			contain: size;
+		}
+	}
 </style>

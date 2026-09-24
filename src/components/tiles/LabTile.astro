@@ -1,0 +1,14 @@
+---
+import MachineTile from './MachineTile.astro';
+import type { MachineStats } from '../../lib/mocks/stats';
+
+/** Homelab stats, pushed from inside the tailnet (koncept.md §9). */
+interface Props {
+	stats: MachineStats;
+	area?: string;
+}
+
+const { stats, area } = Astro.props;
+---
+
+<MachineTile stats={stats} area={area} label="tile.lab" offline="lab.offline" />

@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DashboardPrivate from '../../components/views/DashboardPrivate.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+
+/* Guarded by Cloudflare Access (koncept.md §14); kept out of search and the sitemap. */
+const t = useTranslations(getLangFromUrl(Astro.url));
+---
+
+<BaseLayout
+	title={t('meta.dashboardPrivate.title')}
+	description={t('meta.dashboardPrivate.description')}
+	wide
+	noindex
+>
+	<DashboardPrivate />
+</BaseLayout>

@@ -29,7 +29,7 @@ Wizytówka i korepetycje są spokojniejsze i mniej gęste. Dashboard jest pełn�
 | Wizytówka | `figielak.dev` | rekruterzy, potencjalni współpracownicy | w kilka sekund: kim jestem, co umiem, jak się skontaktować |
 | Projekty | `figielak.dev/projects` | rekruterzy, ciekawscy | lista projektów i opisy (case studies) w MDX |
 | Korepetycje | `figielak.dev/maths` | uczniowie, rodzice | kim jestem, jak wyglądam, gdzie studiuję, szybki kontakt; w przyszłości dostępność i rezerwacja online |
-| Dashboard | `figielak.dev/dashboard` | głównie ja, a także osoby chcące wiedzieć więcej | dane na żywo: pogoda, czas, GitHub, PC, homelab, rozkład zajęć |
+| Dashboard | `figielak.dev/dashboard` | głównie ja, a także osoby chcące wiedzieć więcej | dane na żywo: pogoda, czas, GitHub, homelab, muzyka; prywatnie usługi i deploy |
 
 **Decyzja:** główną strukturą są **ścieżki** (jeden projekt Astro, wspólne komponenty, jedna domena dla SEO).
 Subdomeny `maths.figielak.dev` i `dashboard.figielak.dev` działają jako **przekierowania 301** na ścieżki (reguły przekierowań w Cloudflare), co daje krótkie adresy do wysyłania ludziom.
@@ -131,20 +131,22 @@ Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama lin
      sticky              scroll
 ```
 
-**Lewa kolumna — karta tożsamości:** avatar, imię, rola „Korepetycje z matematyki”, status „Przyjmuję nowych uczniów”, lokalizacja, krótkie bio; akcje „Umów darmową lekcję” (pełny akcent, prowadzi do sekcji kontaktu) i „Zadzwoń”; ikony WhatsApp, Messenger, Instagram, e-mail. Bez CV, GitHuba i LinkedIna.
+**Lewa kolumna — karta tożsamości:** większe zdjęcie niż na wizytówce (160px — rodzic ma widzieć, kto uczy), imię, rola „Korepetycje z matematyki”, status „Przyjmuję nowych uczniów”, lokalizacja, jednozdaniowe bio; akcje „Umów darmową lekcję” (pełny akcent, prowadzi do sekcji kontaktu) i „Zadzwoń”; ikony WhatsApp, Messenger, Instagram, e-mail. Bez CV, GitHuba i LinkedIna.
 
-**Prawa kolumna — strumień sekcji:**
+**Prawa kolumna — strumień sekcji jako mini-bento.** Treść to rzędy kart (`FeatureTile` w `CardGrid`), nie wiersze tekstu — strona ma dać się przeskanować wzrokiem w kilka sekund. Każda karta: ikona, opcjonalna etykieta mono, tytuł i **jedno** krótkie zdanie. Większe odstępy między sekcjami niż na wizytówce (`Dossier relaxed`).
 
 | Sekcja | Zawartość |
 |---|---|
-| Pierwsza lekcja | jedyna sekcja w ramce (tło `--accent-soft`): pierwsza godzina za darmo, na zapoznanie i decyzję, czy odpowiadam uczniowi |
-| O mnie | kim jestem, wiek (liczony przy buildzie z daty urodzenia), kierunek i rok studiów, kilka zdań osobiście |
-| Co oferuję | egzamin ósmoklasisty (tylko klasa 8), matura podstawowa (dowolna klasa); matura rozszerzona jako „wkrótce” |
-| Jak uczę | metodyka + tryby nauki: od podstaw, na bieżąco z lekcjami, przed egzaminem, doraźnie |
-| Forma i cena | online / stacjonarnie (gdzie), „od X zł / 60 min” |
-| Kontakt | telefon i e-mail (kopiowanie jednym kliknięciem), WhatsApp, Messenger, Instagram |
+| Pierwsza lekcja | jedyna karta w tle `--accent-soft`: „0 zł”, pierwsza godzina za darmo (zapoznanie i decyzja, czy odpowiadam uczniowi), przycisk „Umów się” |
+| O mnie | 2–3 krótkie zdania + trzy fakty jako pigułki z ikoną: wiek (liczony przy buildzie z daty urodzenia), uczelnia, rok i kierunek |
+| Co oferuję | 3 karty: egzamin ósmoklasisty (tylko klasa 8), matura podstawowa (dowolna klasa), matura rozszerzona wyszarzona jako „Wkrótce” |
+| Jak uczę | jedno zdanie o metodzie + 4 karty trybów 2×2: od podstaw, na bieżąco z lekcjami, przed egzaminem, doraźnie |
+| Forma i cena | 3 karty: online, stacjonarnie (gdzie), cena „XX zł / 60 min” jako duża liczba mono |
+| Kontakt | telefon i e-mail (kopiowanie jednym kliknięciem) + 3 klikalne karty: WhatsApp, Messenger, Instagram |
 
 Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak jak e-mail na wizytówce.
+
+**Telefon:** siatki kart mają 2 kolumny (ostatnia nieparzysta karta na całą szerokość), a na dole ekranu jest przyklejony pasek „Umów darmową lekcję” / „Zadzwoń”, który chowa się, gdy widać sekcję kontaktu.
 
 **W przyszłości:**
 - matura rozszerzona w ofercie;
@@ -155,30 +157,58 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 ### 3.4 Dashboard (`/dashboard`)
 
 - **Ton:** najbardziej osobisty i gęsty, pełny styl „żywego dashboardu”.
-- **Siatka:** 6 kolumn. Na desktopie mieści się na jednym ekranie.
+- **Dwa tryby** o tej samej siatce 6 kolumn, na desktopie oba mieszczą się na jednym ekranie:
+
+| Tryb | Adres | Dla kogo | Dostęp |
+|---|---|---|---|
+| publiczny | `/dashboard` | odwiedzający | otwarty |
+| prywatny | `/dashboard/private` | ja | Cloudflare Access (patrz §14) |
+
+Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłódką / „Widok publiczny”). W nawigacji jest tylko tryb publiczny.
+
+**Tryb publiczny** — rzędy odpowiadają grupom: lokalne, praca, homelab, życie.
 
 ```
-"clock   weather github  github  github  visits"
-"pc      lab     sched   sched   music   uptime"
-"pc      lab     sched   sched   waka    links"
-"now     now     coffee  fact    term    term"
+"clock   weather air     sun     progress progress"
+"github  github  github  music   music    music"
+"github  github  github  waka    waka     dns"
+"books   books   coffee  net     event    event"
 ```
 
-Kafle must-have:
+| Kafel | Grupa | Zawartość |
+|---|---|---|
+| `clock` | lokalne | czas Europe/Warsaw, co sekundę |
+| `weather` | lokalne | temperatura, opis, miasto |
+| `air` | lokalne | jakość powietrza w Rzeszowie (GIOŚ): poziom słownie, skala 6 stopni w akcencie, PM2.5/PM10 |
+| `sun` | lokalne | wschód i zachód słońca, długość dnia — liczone lokalnie, bez API |
+| `progress` | lokalne | % ukończenia dnia, miesiąca i roku (paski) |
+| `github` | praca | wykres kontrybucji, liczba commitów, streak, repozytoria |
+| `waka` | praca | czas kodowania dziś i w tygodniu, top 3 języki (WakaTime) |
+| `dns` | homelab | liczba reklam zablokowanych dziś przez DNS |
+| `net` | homelab | transfer sieciowy dziś ↓/↑ |
+| `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm) |
+| `books` | życie | aktualnie czytane książki (statycznie, `src/lib/books.ts`) |
+| `coffee` | życie | licznik kaw: dziś i w roku |
+| `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
+
+**Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale.
+
+```
+"lab     lab     uptime  uptime  now     now"
+"lab     lab     deploy  deploy  site    site"
+"launch  launch  launch  launch  launch  launch"
+```
 
 | Kafel | Zawartość |
 |---|---|
-| `clock` | lokalny czas i strefa czasowa (Europe/Warsaw), czas aktualizowany co sekundę |
-| `weather` | temperatura, opis, miasto |
-| `github` | wykres kontrybucji, liczba commitów, streak, repozytoria |
-| `pc` | statystyki PC: CPU, RAM, GPU (paski), status online/offline |
-| `lab` | statystyki homelabu: CPU, RAM, GPU, dyski |
-| `uptime` | uptime serwera/homelabu i usług |
-| `sched` | rozkład zajęć: dziś i najbliższe zajęcia (patrz: prywatność) |
-| `links` | skróty do Homepage/Homarr i usług homelabu (działają tylko przez Tailscale) |
-| `visits` | licznik wizyt z kropką LIVE (z analityki) |
+| `lab` | statystyki homelabu: CPU, RAM, GPU, dyski, kontenery |
+| `uptime` | uptime homelabu i usług |
+| `now` | now page: buduję, uczę się, czytam |
+| `launch` | launchery usług homelabu (`*.home.example`, `src/lib/services.ts`), działają tylko przez Tailscale |
+| `deploy` | ostatni deploy strony: kiedy, commit, status |
+| `site` | statystyki strony: odwiedziny dziś / 7 dni, online, top strona |
 
-Miejsca na kafle fun-to-have: `music`, `waka`, `now`, `coffee`, `fact`, `term`. Mogą je zajmować też inne kafle z listy w sekcji 13.
+Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i inne z sekcji 13.
 
 ---
 
@@ -314,21 +344,26 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 | Pogoda | Open-Meteo (bez klucza) | cache 15 min |
 | GitHub | GitHub GraphQL API (token po stronie serwera) | cache 1h |
 | Czas | lokalnie w przeglądarce | co sekundę |
-| Wizyty | API Umami lub Plausible | cache 1–5 min |
-| PC i homelab | model **push**, opisany niżej | co 1–5 min |
+| Wizyty i statystyki strony (prywatne) | API Umami lub Plausible | cache 1–5 min |
+| Jakość powietrza | GIOŚ (bez klucza), stacja w Rzeszowie | cache 1h |
+| Wschód i zachód słońca, % dnia/miesiąca/roku | liczone lokalnie (build + przeglądarka) | — |
+| Blokada reklam (DNS), transfer sieciowy | AdGuard Home / Pi-hole i router przez push-agenta | przez push |
+| Ostatni deploy (prywatne) | Cloudflare API (token po stronie serwera) | cache 1–5 min |
+| Licznik kaw | do ustalenia (§17) | — |
+| Homelab | model **push**, opisany niżej | co 1–5 min |
 | Uptime | agent na homelabie (opcjonalnie Uptime Kuma) | przez push |
 | Rozkład zajęć | plik iCal (np. eksport z USOS, jeśli uczelnia go udostępnia) | cache 1h |
 | Teraz słucham / top artyści | Last.fm API | cache 30 s / 1h |
 | WakaTime | WakaTime API | cache 1h |
 
-### PC i homelab: model push
+### Homelab: model push
 
 - Homelab jest dostępny **tylko przez Tailscale**. Nie wystawiam go publicznie i nie wystawiam endpointów Homepage/Homarr.
-- Mały agent na PC i homelabie (skrypt, np. timer systemd lub cron) co kilka minut wysyła zanonimizowany JSON z CPU, RAM, GPU, dyskami i uptime:
+- Mały agent na homelabie (skrypt, np. timer systemd lub cron) co kilka minut wysyła zanonimizowany JSON z CPU, RAM, GPU, dyskami i uptime:
   - metodą POST na `/api/stats`;
   - z tajnym tokenem w nagłówku.
 - Worker zapisuje ostatni odczyt. Dashboard odczytuje go i odświeża co około 30 s.
-- **Limity zapisu:** darmowe Cloudflare KV ma niski dzienny limit zapisów (około 1000 dziennie). Przy wysyłce co 30 s z dwóch maszyn to się nie zmieści. Dlatego:
+- **Limity zapisu:** darmowe Cloudflare KV ma niski dzienny limit zapisów (około 1000 dziennie). Przy wysyłce co 30 s (ok. 2900 zapisów dziennie) to się nie zmieści. Dlatego:
   - albo wysyłam co 5 min,
   - albo używam D1 lub Durable Objects.
 
@@ -341,7 +376,7 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 | Ładowanie | szkielet w kształcie docelowej treści |
 | OK | dane i kropka LIVE |
 | Nieaktualne (dane starsze niż próg, np. 10 min) | dane, szara kropka, „aktualizacja X min temu” |
-| Błąd lub brak danych | spokojny tekst zastępczy (np. „PC offline”) |
+| Błąd lub brak danych | spokojny tekst zastępczy (np. „Homelab offline”) |
 
 Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na danych testowych (mock), potem podpinam prawdziwe źródła.**
 
@@ -381,7 +416,7 @@ src/
 public/
   fonts/  cv/
 cv/              # źródła Typst
-agent/           # skrypt statystyk dla PC/homelabu
+agent/           # skrypt statystyk homelabu
 ```
 
 ---
@@ -436,8 +471,9 @@ agent/           # skrypt statystyk dla PC/homelabu
 ## 14. Prywatność i bezpieczeństwo
 
 - **Rozkład zajęć** zdradza, gdzie i kiedy jestem, a strona z korepetycjami jest publiczna. Publicznie pokazuję tylko ogólną formę (np. „zajęcia do 14:00” lub „dziś wolne”) albo ukrywam kafel.
-- **Statystyki PC** zdradzają, kiedy jestem przy komputerze. Pokazuję je świadomie.
-- **Linki do homelabu** nie działają poza Tailscale, ale ujawniają nazwy hostów i tailnetu. W kaflu pokazuję ogólne etykiety.
+- **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu i uptime** są tylko w **prywatnym dashboardzie**.
+- **Prywatny dashboard** (`/dashboard/private*` i `/en/dashboard/private*`) chroni reguła **Cloudflare Access** na krawędzi (logowanie np. e-mailem lub GitHubem), ustawiana w panelu Cloudflare, nie w repo. Strona jest statyczna, ma `noindex` i nie trafia do sitemapy.
+- **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym pokazuję ogólne etykiety.
 - **Tokeny i klucze** trzymam wyłącznie w zmiennych środowiskowych po stronie serwera. Endpoint `/api/stats`:
   - wymaga tokenu;
   - ma limit żądań;
@@ -462,7 +498,7 @@ agent/           # skrypt statystyk dla PC/homelabu
 3. **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured.
 4. **Korepetycje:** treść i szybki kontakt.
 5. **Dashboard na danych testowych:** pełny układ i wszystkie 4 stany kafli.
-6. **Dane na żywo:** endpointy, cache, agent PC/homelab, analityka.
+6. **Dane na żywo:** endpointy, cache, agent homelabu, analityka.
 7. **Dodatki:** kafle fun-to-have, animacje, jasny motyw, motyw „crazy”, rezerwacja online na `/maths`.
 
 ---
@@ -476,4 +512,6 @@ agent/           # skrypt statystyk dla PC/homelabu
 - [ ] Źródło rozkładu zajęć i poziom szczegółowości publicznie
 - [ ] Narzędzie do rezerwacji korepetycji (Cal.com / własne)
 - [ ] Miasto w kaflu pogody
+- [ ] Źródło licznika kaw (ręczny endpoint, skrót w telefonie, NFC?)
+- [ ] Lista usług w launcherze i wydarzeń w odliczaniu (na razie wypełniacze)
 - [ ] Framework wysp: czysty TS w `<script>` czy Preact, gdy potrzebny stan

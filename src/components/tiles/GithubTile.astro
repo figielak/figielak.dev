@@ -1,0 +1,173 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { githubUrl } from '../../lib/contact';
+import { dotState } from '../../lib/live';
+import { GITHUB_PLACEHOLDER, type Github } from '../../lib/mocks/github';
+
+/**
+ * Contribution chart and headline numbers from the GitHub GraphQL API,
+ * cached 1 h (koncept.md §9). The chart uses four accent levels, not green.
+ */
+interface Props {
+	github: Github;
+	area?: string;
+}
+
+const { github, area } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+const d = github.data ?? GITHUB_PLACEHOLDER;
+
+const stats = [
+	{ value: d.contributions, label: t('github.contributions') },
+	{ value: d.streakDays, label: t('github.streak') },
+	{ value: d.repos, label: t('github.repos') },
+];
+---
+
+<Tile area={area} label={t('tile.github')} href={githubUrl} external dense>
+	<LiveDot slot="meta" state={dotState(github.state)} />
+
+	<LiveBody state={github.state} errorText={t('github.unavailable')}>
+		<div class="github">
+			<dl class="github-stats">
+				{
+					stats.map((stat) => (
+						<div class="github-stat">
+							<dt class="github-label">{stat.label}</dt>
+							<dd class="github-value" data-skeleton aria-live="polite">
+								{stat.value}
+							</dd>
+						</div>
+					))
+				}
+			</dl>
+
+			<div class="contrib" aria-hidden="true">
+				{
+					d.weeks.map((week) => (
+						<span class="contrib-week">
+							{week.map((level) => (
+								<span class="contrib-day" data-level={github.state === 'loading' ? 0 : level} />
+							))}
+						</span>
+					))
+				}
+			</div>
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={github}>
+		<span class="contrib-legend">
+			{t('github.less')}
+			{[0, 1, 2, 3, 4].map((level) => <span class="contrib-day" data-level={level} />)}
+			{t('github.more')}
+		</span>
+	</LiveFooter>
+</Tile>
+
+<style>
+	/* Stats beside the chart; the chart wraps under them when it would get
+	   narrower than --contrib-min (a tall 3×2 tile on desktop, phones). */
+	.github {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		align-content: center;
+		gap: var(--space-2xl);
+		height: 100%;
+		min-width: 0;
+	}
+
+	/* The year's total on top, streak and repos side by side under it. */
+	.github-stats {
+		display: grid;
+		grid-template-columns: repeat(2, auto);
+		gap: var(--space-md) var(--space-xl);
+		margin: 0;
+		flex: none;
+	}
+
+	.github-stat:first-child {
+		grid-column: 1 / -1;
+	}
+
+	/* Number above its label, while the markup keeps dt before dd. */
+	.github-stat {
+		display: flex;
+		flex-direction: column-reverse;
+	}
+
+	.github-value {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--size-title);
+		font-weight: 700;
+		line-height: 1.2;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.github-stat:first-child .github-value {
+		font-size: var(--size-hero);
+	}
+
+	.github-label {
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+
+	.contrib {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+		gap: var(--size-contrib-gap);
+		flex: 1 1 var(--contrib-min);
+		min-width: 0;
+	}
+
+	.contrib-week {
+		display: grid;
+		grid-template-rows: repeat(7, auto);
+		gap: var(--size-contrib-gap);
+	}
+
+	.contrib-day {
+		display: block;
+		aspect-ratio: 1;
+		border-radius: var(--space-2xs);
+		background: var(--surface-inset);
+	}
+
+	.contrib-day[data-level='1'] {
+		background: var(--accent-level-1);
+	}
+	.contrib-day[data-level='2'] {
+		background: var(--accent-level-2);
+	}
+	.contrib-day[data-level='3'] {
+		background: var(--accent-level-3);
+	}
+	.contrib-day[data-level='4'] {
+		background: var(--accent-level-4);
+	}
+
+	.contrib-legend {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2xs);
+	}
+
+	.contrib-legend .contrib-day {
+		width: var(--size-label);
+	}
+
+	/* Half a year fits a phone; the full year would shrink cells to dots. */
+	@media (max-width: 639px) {
+		.contrib-week:nth-child(-n + 26) {
+			display: none;
+		}
+	}
+</style>

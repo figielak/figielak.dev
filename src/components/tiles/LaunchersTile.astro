@@ -1,0 +1,80 @@
+---
+import Tile from '../ui/Tile.astro';
+import Icon from '../ui/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { services } from '../../lib/services';
+
+/**
+ * Shortcuts to homelab services (koncept.md §3.4). Private dashboard only:
+ * the host names are real and resolve only over Tailscale (§14).
+ */
+interface Props {
+	area?: string;
+}
+
+const { area } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+---
+
+<Tile area={area} label={t('tile.launch')} dense>
+	<ul class="launchers">
+		{
+			services.map((service) => (
+				<li>
+					<a class="launcher" href={service.url} target="_blank" rel="noopener noreferrer">
+						<Icon name={service.icon} size={16} />
+						<span class="launcher-name">{service.name}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+
+	<span slot="footer" class="launchers-note">{t('launch.tailscale')}</span>
+</Tile>
+
+<style>
+	.launchers {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(var(--launcher-min), 1fr));
+		align-content: center;
+		gap: var(--space-sm);
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.launcher {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		padding: var(--space-sm) var(--space-md);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		color: var(--text-muted);
+		text-decoration: none;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.launcher:hover {
+		border-color: var(--border-hover);
+		background: var(--surface-hover);
+		color: var(--text);
+	}
+
+	.launcher-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.launchers-note {
+		font-family: var(--font-mono);
+		color: var(--text-subtle);
+	}
+</style>

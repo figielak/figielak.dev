@@ -3,35 +3,44 @@
  * The shape is what /api/weather will return, so tiles do not change when
  * the real source is plugged in.
  */
-export type LiveState = 'loading' | 'ok' | 'stale' | 'error';
+import { mockUpdatedAt, STALE_AFTER_MIN, type Live, type LiveState } from '../live';
+
+export type { LiveState };
 
 export type WeatherCondition = 'clear' | 'partlyCloudy' | 'cloudy' | 'fog' | 'rain' | 'snow' | 'storm';
 
-export interface Weather {
-	state: LiveState;
-	/** Missing while loading or on error. */
-	data?: {
-		tempC: number;
-		condition: WeatherCondition;
-		city: string;
-		updatedAt: Date;
-	};
-}
+export type Weather = Live<{
+	tempC: number;
+	feelsLikeC: number;
+	windKmh: number;
+	condition: WeatherCondition;
+	city: string;
+}>;
 
-/** Data older than this is shown as stale (koncept.md §9). */
-export const WEATHER_STALE_AFTER_MIN = 10;
+export const WEATHER_STALE_AFTER_MIN = STALE_AFTER_MIN;
+
+/** Fills the layout while loading or on error, so the tile keeps its size. */
+export const WEATHER_PLACEHOLDER: NonNullable<Weather['data']> = {
+	tempC: 0,
+	feelsLikeC: 0,
+	windKmh: 0,
+	condition: 'cloudy',
+	city: '—',
+	updatedAt: new Date(0),
+};
 
 export function mockWeather(state: LiveState = 'ok'): Weather {
 	if (state === 'loading' || state === 'error') return { state };
 
-	const minutesAgo = state === 'stale' ? 25 : 2;
 	return {
 		state,
 		data: {
 			tempC: 14,
+			feelsLikeC: 12,
+			windKmh: 18,
 			condition: 'cloudy',
 			city: 'Rzeszów',
-			updatedAt: new Date(Date.now() - minutesAgo * 60_000),
+			updatedAt: mockUpdatedAt(state),
 		},
 	};
 }

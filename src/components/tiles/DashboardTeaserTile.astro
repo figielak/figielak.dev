@@ -127,13 +127,6 @@ const minutesAgo = weather.data
 		color: var(--text-subtle);
 	}
 
-	.skeleton {
-		display: block;
-		border-radius: var(--radius-inset);
-		background: var(--surface-inset);
-		animation: skeleton-pulse var(--duration-pulse) var(--ease-out) infinite;
-	}
-
 	.skeleton-temp {
 		width: var(--size-icon-button);
 		height: var(--size-title);
@@ -142,20 +135,5 @@ const minutesAgo = weather.data
 	.skeleton-line {
 		width: var(--dossier-period-width);
 		height: var(--size-body);
-	}
-
-	@keyframes skeleton-pulse {
-		50% {
-			opacity: 0.5;
-		}
-	}
-
-	.visually-hidden {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-		white-space: nowrap;
 	}
 </style>

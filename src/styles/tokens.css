@@ -34,6 +34,12 @@
 	/* Text on a full accent background. White on --accent is only 3.9:1, so
 	   the graphite reads on it instead (4.8:1, AA at body size). */
 	--accent-foreground: #0e0e10;
+	/* GitHub contribution levels 1–4 in the accent, never green (koncept.md §5).
+	   Level 0 is --surface-inset. */
+	--accent-level-1: rgb(229 72 77 / 0.25);
+	--accent-level-2: rgb(229 72 77 / 0.45);
+	--accent-level-3: rgb(229 72 77 / 0.7);
+	--accent-level-4: var(--accent);
 
 	/* Elevation */
 	--shadow-tile: 0 8px 24px rgb(0 0 0 / 0.32);
@@ -53,6 +59,7 @@
 	--space-lg: 12px;
 	--space-xl: 16px;
 	--space-2xl: 20px;
+	--space-3xl: 32px;
 
 	/* Tile padding */
 	--tile-padding: var(--space-2xl);
@@ -67,12 +74,19 @@
 	--size-icon-button: 44px;
 	--size-nav-control: 28px;
 	--size-avatar: 96px;
+	--size-avatar-lg: 160px;
+	--size-feature-icon: 36px;
+	--size-mobile-bar: 68px;
 	--nav-link-padding-x: 14px;
 	--dossier-profile-width: 320px;
 	--dossier-period-width: 110px;
 	--dashboard-row-min: 84px;
+	--launcher-min: 140px;
+	--contrib-min: 560px;
 	--project-card-min: 140px;
 	--size-teaser: 44px;
+	--size-bar: 6px;
+	--size-contrib-gap: 3px;
 
 	/* Width of the navigation band: the wordmark sits at its left edge and the
 	   controls at its right, so this value sets how far both sit from the
@@ -91,6 +105,7 @@
 	--size-title: 17px;
 	--size-hero: clamp(28px, 1.5rem + 1.6vw, 36px);
 	--size-number: clamp(32px, 1.5rem + 2.4vw, 48px);
+	--size-number-short: 36px;
 	--tracking-label: 0.08em;
 
 	/* Motion */
@@ -99,4 +114,12 @@
 	--duration-pulse: 2s;
 	/* How far a clickable tile rises on hover. */
 	--lift: -2px;
+}
+
+/* Short desktop screens (1280×720): the dashboard's four rows leave a 1×1
+   tile too little height for a 48px number and a line under it (§7). */
+@media (min-width: 1024px) and (max-height: 820px) {
+	:root {
+		--size-number: var(--size-number-short);
+	}
 }

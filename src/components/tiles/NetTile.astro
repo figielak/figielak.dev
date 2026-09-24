@@ -1,0 +1,82 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import Icon from '../ui/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { TRAFFIC_PLACEHOLDER, type Traffic } from '../../lib/mocks/network';
+
+/** Homelab network traffic today, pushed by the agent (koncept.md §9). */
+interface Props {
+	traffic: Traffic;
+	area?: string;
+}
+
+const { traffic, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = traffic.data ?? TRAFFIC_PLACEHOLDER;
+const number = new Intl.NumberFormat(lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+const rows = [
+	{ icon: 'arrow-down', label: t('net.down'), value: d.downGb },
+	{ icon: 'arrow-up', label: t('net.up'), value: d.upGb },
+] as const;
+---
+
+<Tile area={area} label={t('tile.net')} dense>
+	<LiveDot slot="meta" state={dotState(traffic.state)} />
+
+	<LiveBody state={traffic.state} errorText={t('net.unavailable')}>
+		<dl class="net">
+			{
+				rows.map((row) => (
+					<div class="net-row">
+						<dt class="net-label">
+							<Icon name={row.icon} size={14} />
+							<span class="visually-hidden">{row.label}</span>
+						</dt>
+						<dd class="net-value" data-skeleton aria-live="polite">
+							{number.format(row.value)} GB
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={traffic} />
+</Tile>
+
+<style>
+	.net {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: var(--space-sm);
+		height: 100%;
+		margin: 0;
+	}
+
+	.net-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.net-label {
+		display: inline-flex;
+		color: var(--text-subtle);
+	}
+
+	.net-value {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--size-title);
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+</style>

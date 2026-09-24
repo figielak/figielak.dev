@@ -1,0 +1,123 @@
+---
+import Tile from '../ui/Tile.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { daysUntil, nextEvent } from '../../lib/events';
+
+/**
+ * Countdown to the next important event from src/lib/events.ts
+ * (koncept.md §3.4). The build picks the event; the browser recounts the days,
+ * so the number stays right between deploys.
+ */
+interface Props {
+	area?: string;
+}
+
+const { area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const now = new Date();
+const event = nextEvent(now);
+const days = event ? daysUntil(event.date, now) : 0;
+const unit = (n: number) => (n === 0 ? t('event.today') : n === 1 ? t('event.day') : t('event.days'));
+const date = event
+	? new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(event.date))
+	: '';
+---
+
+<Tile area={area} label={t('tile.event')} dense>
+	{
+		event ? (
+			<div
+				class="event"
+				data-event={event.date}
+				data-unit-today={t('event.today')}
+				data-unit-one={t('event.day')}
+				data-unit-many={t('event.days')}
+			>
+				<span class="event-text">
+					<span class="event-title">{event.title[lang]}</span>
+					<time class="event-date" datetime={event.date}>
+						{date}
+					</time>
+				</span>
+				<p class="event-count">
+					<span class="event-days" aria-live="polite">{days}</span>
+					<span class="event-unit">{unit(days)}</span>
+				</p>
+			</div>
+		) : (
+			<p class="event-none">{t('event.none')}</p>
+		)
+	}
+</Tile>
+
+<script>
+	import { daysUntil } from '../../lib/events';
+
+	for (const el of document.querySelectorAll<HTMLElement>('[data-event]')) {
+		const { event = '', unitToday, unitOne, unitMany } = el.dataset;
+		const days = Math.max(0, daysUntil(event, new Date()));
+		el.querySelector('.event-days')!.textContent = String(days);
+		el.querySelector('.event-unit')!.textContent = days === 0 ? unitToday! : days === 1 ? unitOne! : unitMany!;
+	}
+</script>
+
+<style>
+	.event {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-xl);
+		height: 100%;
+		min-width: 0;
+	}
+
+	.event-text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-width: 0;
+	}
+
+	.event-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.event-date {
+		color: var(--text-muted);
+	}
+
+	.event-count {
+		display: flex;
+		flex: none;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: var(--space-2xs);
+		margin: 0;
+	}
+
+	.event-days {
+		font-family: var(--font-mono);
+		font-size: var(--size-number);
+		font-weight: 700;
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.event-unit {
+		color: var(--text-muted);
+	}
+
+	.event-none {
+		display: grid;
+		place-items: center;
+		height: 100%;
+		margin: 0;
+		color: var(--text-subtle);
+	}
+</style>

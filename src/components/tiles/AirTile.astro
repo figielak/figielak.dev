@@ -1,0 +1,86 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { AIR_LEVELS, AIR_PLACEHOLDER, type Air } from '../../lib/mocks/air';
+
+/**
+ * Air quality in Rzeszów from GIOŚ (koncept.md §3.4). The six index levels are
+ * a monochrome scale with the current one in the accent — no traffic-light
+ * colours (§5).
+ */
+interface Props {
+	air: Air;
+	area?: string;
+}
+
+const { air, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = air.data ?? AIR_PLACEHOLDER;
+/* No highlighted step while the level is only a placeholder. */
+const current = air.data ? AIR_LEVELS.indexOf(d.level) : -1;
+const level = t(`air.${d.level}`);
+---
+
+<Tile area={area} label={t('tile.air')} dense>
+	<LiveDot slot="meta" state={dotState(air.state)} />
+
+	<LiveBody state={air.state} errorText={t('air.unavailable')}>
+		<div class="air">
+			<span class="air-level" data-skeleton aria-live="polite">{level}</span>
+			<span class="air-scale" role="img" aria-label={t('air.scale').replace('{level}', level)}>
+				{AIR_LEVELS.map((_, i) => <span class="air-step" data-current={i === current ? '' : undefined} />)}
+			</span>
+			<span class="air-pm" data-skeleton>PM2.5 {d.pm25} · PM10 {d.pm10}</span>
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={air} />
+</Tile>
+
+<style>
+	.air {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: var(--space-sm);
+		height: 100%;
+		min-width: 0;
+	}
+
+	.air-level {
+		align-self: flex-start;
+		font-size: var(--size-title);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.air-scale {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: var(--space-2xs);
+	}
+
+	.air-step {
+		height: var(--size-bar);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+	}
+
+	.air-step[data-current] {
+		background: var(--accent);
+	}
+
+	.air-pm {
+		align-self: flex-start;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+</style>

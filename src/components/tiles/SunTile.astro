@@ -1,0 +1,95 @@
+---
+import Tile from '../ui/Tile.astro';
+import Icon from '../ui/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { sunTimes } from '../../lib/sun';
+
+/**
+ * Sunrise, sunset and day length in Rzeszów (koncept.md §3.4). Computed, not
+ * fetched: the build renders today's values and the browser recomputes them
+ * for the real date, so the tile has no loading or error state.
+ */
+interface Props {
+	area?: string;
+}
+
+const { area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const zone = 'Europe/Warsaw';
+
+const sun = sunTimes(new Date());
+const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: zone });
+const format = (date?: Date) => (date ? time.format(date) : '--:--');
+const minutes = Math.round((sun?.dayLength ?? 0) / 60_000);
+---
+
+<Tile area={area} label={t('tile.sun')} dense>
+	<div class="sun" data-sun data-locale={lang} data-time-zone={zone} data-day-length={t('sun.dayLength')}>
+		<p class="sun-row">
+			<Icon name="sunrise" size={16} />
+			<span class="visually-hidden">{t('sun.sunrise')}</span>
+			<time class="sun-time" data-sun-rise>{format(sun?.sunrise)}</time>
+		</p>
+		<p class="sun-row">
+			<Icon name="sunset" size={16} />
+			<span class="visually-hidden">{t('sun.sunset')}</span>
+			<time class="sun-time" data-sun-set>{format(sun?.sunset)}</time>
+		</p>
+	</div>
+
+	<span slot="footer" class="sun-length" data-sun-length>
+		{t('sun.dayLength').replace('{h}', String(Math.floor(minutes / 60))).replace('{m}', String(minutes % 60))}
+	</span>
+</Tile>
+
+<script>
+	import { sunTimes } from '../../lib/sun';
+
+	for (const el of document.querySelectorAll<HTMLElement>('[data-sun]')) {
+		const sun = sunTimes(new Date());
+		if (!sun) continue;
+
+		const { locale, timeZone, dayLength = '' } = el.dataset;
+		const time = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone });
+		const minutes = Math.round(sun.dayLength / 60_000);
+
+		el.querySelector('[data-sun-rise]')!.textContent = time.format(sun.sunrise);
+		el.querySelector('[data-sun-set]')!.textContent = time.format(sun.sunset);
+		const length = el.closest('.tile')?.querySelector('[data-sun-length]');
+		if (length) {
+			length.textContent = dayLength.replace('{h}', String(Math.floor(minutes / 60))).replace('{m}', String(minutes % 60));
+		}
+	}
+</script>
+
+<style>
+	.sun {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: var(--space-sm);
+		height: 100%;
+	}
+
+	.sun-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.sun-time {
+		font-family: var(--font-mono);
+		font-size: var(--size-title);
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+
+	.sun-length {
+		font-family: var(--font-mono);
+		color: var(--text-subtle);
+	}
+</style>

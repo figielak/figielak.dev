@@ -1,60 +1,59 @@
 ---
 import BentoLayout from '../ui/BentoLayout.astro';
-import Tile from '../ui/Tile.astro';
-import LiveDot from '../ui/LiveDot.astro';
-import { getLangFromUrl, useTranslations } from '../../i18n';
+import DashboardSwitch from '../ui/DashboardSwitch.astro';
+import ClockTile from '../tiles/ClockTile.astro';
+import WeatherTile from '../tiles/WeatherTile.astro';
+import AirTile from '../tiles/AirTile.astro';
+import SunTile from '../tiles/SunTile.astro';
+import ProgressTile from '../tiles/ProgressTile.astro';
+import GithubTile from '../tiles/GithubTile.astro';
+import WakaTile from '../tiles/WakaTile.astro';
+import DnsTile from '../tiles/DnsTile.astro';
+import NetTile from '../tiles/NetTile.astro';
+import MusicTile from '../tiles/MusicTile.astro';
+import BooksTile from '../tiles/BooksTile.astro';
+import CoffeeTile from '../tiles/CoffeeTile.astro';
+import EventTile from '../tiles/EventTile.astro';
+import { mockWeather } from '../../lib/mocks/weather';
+import { mockAir } from '../../lib/mocks/air';
+import { mockGithub } from '../../lib/mocks/github';
+import { mockWaka } from '../../lib/mocks/waka';
+import { mockDns, mockTraffic } from '../../lib/mocks/network';
+import { mockMusic } from '../../lib/mocks/music';
+import { mockCoffee } from '../../lib/mocks/coffee';
 
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
-
-/* koncept.md §3.4 */
+/*
+ * Public dashboard (koncept.md §3.4): local on top, then work, homelab and
+ * life. GitHub gets two rows — its chart does not fit one at 1280×720. Anything that tells when I am at the computer lives on the
+ * private dashboard instead (§14).
+ */
 const lg = [
-	'clock   weather github  github  github  visits',
-	'pc      lab     sched   sched   music   uptime',
-	'pc      lab     sched   sched   waka    links',
-	'now     now     coffee  fact    term    term',
+	'clock   weather air     sun     progress progress',
+	'github  github  github  music   music    music',
+	'github  github  github  waka    waka     dns',
+	'books   books   coffee  net     event    event',
 ];
 
 const md = [
-	'clock   weather github  github',
-	'visits  uptime  github  github',
-	'pc      pc      lab     lab',
-	'sched   sched   sched   links',
-	'music   waka    now     now',
-	'coffee  fact    term    term',
+	'clock    weather  air      sun',
+	'progress progress event    event',
+	'github   github   github   github',
+	'music    music    music    music',
+	'waka     waka     dns      net',
+	'books    books    coffee   coffee',
 ];
 
 const base = [
-	'clock   weather',
-	'github  github',
-	'visits  uptime',
-	'pc      pc',
-	'lab     lab',
-	'sched   sched',
-	'links   links',
-	'music   waka',
-	'now     now',
-	'coffee  fact',
-	'term    term',
+	'clock    weather',
+	'air      sun',
+	'progress progress',
+	'event    event',
+	'github   github',
+	'waka     waka',
+	'music    music',
+	'dns      net',
+	'books    coffee',
 ];
-
-const tiles = [
-	{ area: 'clock', label: 'tile.clock', live: true },
-	{ area: 'weather', label: 'tile.weather', live: true },
-	{ area: 'github', label: 'tile.github', live: true },
-	{ area: 'visits', label: 'tile.visits', live: true },
-	{ area: 'pc', label: 'tile.pc', live: true },
-	{ area: 'lab', label: 'tile.lab', live: true },
-	{ area: 'sched', label: 'tile.schedule', live: true },
-	{ area: 'uptime', label: 'tile.uptime', live: true },
-	{ area: 'music', label: 'tile.music', live: true },
-	{ area: 'waka', label: 'tile.waka', live: true },
-	{ area: 'links', label: 'tile.links', live: false },
-	{ area: 'now', label: 'tile.now', live: false },
-	{ area: 'coffee', label: 'tile.coffee', live: false },
-	{ area: 'fact', label: 'tile.fact', live: false },
-	{ area: 'term', label: 'tile.terminal', live: false },
-] as const;
 ---
 
 <BentoLayout
@@ -64,19 +63,19 @@ const tiles = [
 	md={{ areas: md, columns: 4 }}
 	lg={{ areas: lg, columns: 6, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
 >
-	{
-		tiles.map((tile) => (
-			<Tile area={tile.area} label={t(tile.label)} dense>
-				{tile.live && <LiveDot slot="meta" state="offline" />}
-				<p class="placeholder">{t('state.placeholder')}</p>
-			</Tile>
-		))
-	}
+	<ClockTile area="clock" />
+	<WeatherTile area="weather" weather={mockWeather()} />
+	<AirTile area="air" air={mockAir()} />
+	<SunTile area="sun" />
+	<ProgressTile area="progress" />
+	<GithubTile area="github" github={mockGithub()} />
+	<WakaTile area="waka" waka={mockWaka()} />
+	<DnsTile area="dns" dns={mockDns()} />
+	<NetTile area="net" traffic={mockTraffic()} />
+	<MusicTile area="music" music={mockMusic()} />
+	<BooksTile area="books" />
+	<CoffeeTile area="coffee" coffee={mockCoffee()} />
+	<EventTile area="event" />
 </BentoLayout>
 
-<style>
-	.placeholder {
-		margin: 0;
-		color: var(--text-subtle);
-	}
-</style>
+<DashboardSwitch to="private" />

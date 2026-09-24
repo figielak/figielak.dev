@@ -1,0 +1,220 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import Icon from '../ui/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { MUSIC_PLACEHOLDER, type Music } from '../../lib/mocks/music';
+
+/**
+ * What I am listening to and this week's top artists from Last.fm
+ * (koncept.md §9). The cover is the one place with full colour (§4).
+ * Stacked when narrow, side by side when the tile is wide and low.
+ */
+interface Props {
+	music: Music;
+	area?: string;
+}
+
+const { music, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = music.data ?? MUSIC_PLACEHOLDER;
+const playing = music.state === 'ok' && d.track.nowPlaying;
+---
+
+<Tile area={area} label={t('tile.music')} dense>
+	<LiveDot slot="meta" state={dotState(music.state)} />
+
+	<LiveBody state={music.state} errorText={t('music.unavailable')}>
+		<div class="music-frame">
+			<div class="music">
+				<div class="track">
+					<span class="track-cover" data-skeleton>
+						{d.track.coverUrl ? <img src={d.track.coverUrl} alt="" /> : <Icon name="music" size={20} />}
+					</span>
+					<span class="track-text">
+						<span class="track-status">
+							{playing && <LiveDot state="live" />}
+							{playing ? t('music.nowPlaying') : t('music.lastPlayed')}
+						</span>
+						<span class="track-title" data-skeleton aria-live="polite">{d.track.title}</span>
+						<span class="track-artist" data-skeleton>{d.track.artist}</span>
+					</span>
+				</div>
+
+				<div class="top">
+					<span class="top-label">{t('music.top')}</span>
+					<ol class="top-list">
+						{
+							d.topArtists.map((artist, i) => (
+								<li class="top-artist">
+									<span class="top-rank">{i + 1}</span>
+									<span class="top-name" data-skeleton>{artist.name}</span>
+									<span class="top-plays" data-skeleton>
+										{t('music.plays').replace('{n}', String(artist.plays))}
+									</span>
+								</li>
+							))
+						}
+					</ol>
+				</div>
+			</div>
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={music}>Last.fm</LiveFooter>
+</Tile>
+
+<style>
+	.music-frame {
+		height: 100%;
+		container-type: inline-size;
+	}
+
+	.music {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		gap: var(--space-lg);
+		height: 100%;
+		min-width: 0;
+	}
+
+	.track {
+		display: flex;
+		align-items: center;
+		gap: var(--space-lg);
+		min-width: 0;
+	}
+
+	.track-cover {
+		display: grid;
+		place-items: center;
+		flex: none;
+		width: var(--size-teaser);
+		height: var(--size-teaser);
+		overflow: hidden;
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		color: var(--text-subtle);
+	}
+
+	.track-cover img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.track-text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-width: 0;
+	}
+
+	.track-status {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-subtle);
+	}
+
+	.track-title,
+	.track-artist,
+	.top-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.track-title {
+		align-self: flex-start;
+		max-width: 100%;
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.track-artist {
+		align-self: flex-start;
+		max-width: 100%;
+		color: var(--text-muted);
+	}
+
+	.top {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+		padding-top: var(--space-md);
+		border-top: 1px solid var(--border);
+	}
+
+	.top-label {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-subtle);
+	}
+
+	.top-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.top-artist {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: baseline;
+		gap: var(--space-md);
+	}
+
+	/* Wide and low (3×1 on desktop): track and top artists side by side. */
+	@container (min-width: 480px) {
+		.music {
+			flex-direction: row;
+			align-items: center;
+			gap: var(--space-2xl);
+		}
+
+		.track,
+		.top {
+			flex: 1;
+			min-width: 0;
+		}
+
+		.top {
+			padding: 0 0 0 var(--space-2xl);
+			border-top: 0;
+			border-left: 1px solid var(--border);
+		}
+
+		/* No room for the heading; screen readers still get it. */
+		.top-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+	}
+
+	.top-rank,
+	.top-plays {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-subtle);
+	}
+</style>

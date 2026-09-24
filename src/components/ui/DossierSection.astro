@@ -32,7 +32,7 @@ const { label, action, id, class: className } = Astro.props;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-lg);
-		padding-bottom: var(--grid-gap);
+		padding-bottom: var(--dossier-section-gap, var(--grid-gap));
 		border-bottom: 1px solid var(--border-divider);
 		scroll-margin-top: var(--grid-gap);
 	}

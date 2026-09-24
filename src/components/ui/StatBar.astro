@@ -1,0 +1,74 @@
+---
+/**
+ * One labelled usage bar: `CPU  ████░░░░  23%`. The fill is the accent, as
+ * progress bars are one of its few uses (koncept.md §4).
+ */
+interface Props {
+	label: string;
+	/** Percent, 0–100. */
+	value: number;
+	/** Shown instead of the percentage, e.g. `14.2 / 32 GB`. */
+	detail?: string;
+}
+
+const { label, value, detail } = Astro.props;
+const percent = Math.round(Math.min(100, Math.max(0, value)));
+---
+
+<div class="stat">
+	<span class="stat-label" data-skeleton>{label}</span>
+	<span
+		class="stat-track"
+		role="meter"
+		aria-label={label}
+		aria-valuemin="0"
+		aria-valuemax="100"
+		aria-valuenow={percent}
+	>
+		<span class="stat-fill" style={`width: ${percent}%`}></span>
+	</span>
+	<span class="stat-value" data-skeleton aria-live="polite">{detail ?? `${percent}%`}</span>
+</div>
+
+<style>
+	.stat {
+		display: grid;
+		grid-template-columns: minmax(0, auto) 1fr;
+		align-items: center;
+		column-gap: var(--space-md);
+		row-gap: var(--space-2xs);
+	}
+
+	.stat-label {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.stat-value {
+		justify-self: end;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+
+	.stat-track {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		display: block;
+		height: var(--size-bar);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		overflow: hidden;
+	}
+
+	.stat-fill {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--accent);
+	}
+</style>

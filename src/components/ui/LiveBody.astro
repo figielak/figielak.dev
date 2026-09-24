@@ -1,0 +1,68 @@
+---
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import type { LiveState } from '../../lib/live';
+
+/**
+ * Body of a live tile in any of its four states (koncept.md §9).
+ *
+ * The content is always rendered — with placeholder data while loading or on
+ * error — so the tile keeps exactly the same size in every state:
+ *   loading  every `[data-skeleton]` element turns into a skeleton block
+ *   error    the content is hidden and a calm message sits in its place
+ */
+interface Props {
+	state: LiveState;
+	errorText: string;
+	class?: string;
+}
+
+const { state, errorText, class: className } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+const hidden = state === 'loading' || state === 'error';
+---
+
+<div class:list={['live-body', className]} data-live={state}>
+	<div class="live-content" aria-hidden={hidden ? 'true' : undefined}>
+		<slot />
+	</div>
+	{state === 'loading' && <span class="visually-hidden">{t('state.loading')}</span>}
+	{state === 'error' && <p class="live-error">{errorText}</p>}
+</div>
+
+<style>
+	.live-body {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.live-content {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		gap: var(--space-md);
+		min-height: 0;
+	}
+
+	.live-body[data-live='error'] > .live-content {
+		visibility: hidden;
+	}
+
+	.live-error {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		margin: 0;
+		color: var(--text-subtle);
+		text-align: center;
+	}
+
+	.live-body[data-live='loading'] :global([data-skeleton]) {
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		color: transparent;
+		animation: skeleton-pulse var(--duration-pulse) var(--ease-out) infinite;
+	}
+</style>
