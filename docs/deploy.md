@@ -45,6 +45,32 @@ gcloud secrets add-iam-policy-binding dashboard-password \
 Zmiana hasła: `… | gcloud secrets versions add dashboard-password --data-file=-`, potem
 ponowny deploy (Actions → Deploy → *Run workflow*).
 
+### Klucze do danych na żywo
+
+Kafle GitHub i Last.fm na `/dashboard` pobierają dane przez `/api/github` i `/api/music`
+(koncept.md §9). Klucze są sekretami serwera — tak jak hasło, workflow podpina je do
+Cloud Run, więc **muszą istnieć przed deployem**, inaczej krok *Deploy* się wywali.
+
+- **GitHub:** Settings → Developer settings → Personal access tokens → *Tokens (classic)*,
+  bez żadnych zakresów (wystarczy do publicznych danych), z datą ważności, którą
+  zapiszesz sobie w kalendarzu. Kontrybucje z prywatnych repo liczą się, jeśli w profilu
+  jest włączone *Include private contributions on my profile*.
+- **Last.fm:** [last.fm/api/account/create](https://www.last.fm/api/account/create) —
+  potrzebny jest tylko *API key* (bez *shared secret*).
+
+```bash
+for secret in github-token lastfm-api-key; do
+  read -rsp "$secret: " value; echo
+  printf '%s' "$value" | gcloud secrets create "$secret" --data-file=-
+  gcloud secrets add-iam-policy-binding "$secret" \
+    --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+    --role=roles/secretmanager.secretAccessor
+done
+```
+
+Nazwa użytkownika Last.fm nie jest sekretem — idzie jako GitHub Variable `LASTFM_USER` (krok 2).
+Nowy token: `… | gcloud secrets versions add github-token --data-file=-` i ponowny deploy.
+
 ### Konto serwisowe dla GitHub Actions
 
 ```bash
@@ -88,7 +114,7 @@ echo "GCP_SERVICE_ACCOUNT=$SA"
 Repo → Settings → Secrets and variables → Actions:
 
 - **Variables** (identyfikatory, nie sekrety): `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`,
-  `GCP_SERVICE_ACCOUNT` — wartości z końca kroku 1.
+  `GCP_SERVICE_ACCOUNT` — wartości z końca kroku 1; `LASTFM_USER` — nazwa konta Last.fm.
 - **Secrets** (dane, których nie ma w publicznym repo — koncept.md §14, `.env.example`):
   `CONTACT_EMAIL`, `CONTACT_PHONE`, `HOMELAB_DOMAIN`. Workflow wstawia je przy buildzie.
 
@@ -127,6 +153,8 @@ curl -sI https://figielak.dev | grep -iE '^(HTTP|server)'     # 200, server: clo
 curl -s  https://figielak.dev/api/health                      # {"ok":true,"revision":"figielak-dev-000…"}
 curl -sI https://figielak.dev/dashboard/private | head -1     # 401 — przeglądarka pyta o hasło
 curl -sI https://maths.figielak.dev | grep -i location        # https://figielak.dev/maths
+curl -s  https://figielak.dev/api/github | head -c 120         # {"weeks":[[…  (503 = brak klucza lub błąd GitHuba)
+curl -s  https://figielak.dev/api/music                        # {"track":{…},"topArtists":[…],…}
 ```
 
 ## Lokalnie
@@ -151,6 +179,7 @@ Problemy, które wystąpiły przy pierwszym wdrożeniu (2026-09-24).
 | Na stronie `+48 000 000 000`, `kontakt@example.com`, `home.example` | brak GitHub Secrets przy buildzie (albo dodane po deployu) | dodaj Secrets (nie Variables) i uruchom deploy ponownie |
 | `/dashboard/private` zwraca **503** | Cloud Run nie dostał `DASHBOARD_PASSWORD` | sprawdź sekret i flagę `--set-secrets` w workflow |
 | **429** przy logowaniu do trybu prywatnego | limit żądań w Cloudflare (liczą się też próby bez hasła) | odczekaj kilka sekund |
+| `/api/github` lub `/api/music` zwraca **503**, kafel „chwilowo niedostępny” | brak klucza, zła nazwa `LASTFM_USER` albo wygasły token GitHuba | przyczyna jest w logach Cloud Run (`[api] …`); nowy token jako nowa wersja sekretu |
 | Odmowa zwraca **500** zamiast 401 | znak spoza Latin-1 (np. „—”) w nagłówku `WWW-Authenticate` | w nagłówkach tylko ASCII |
 
 Logi Cloud Run: `gcloud run services logs read figielak-dev --region europe-west1 --limit 50`.

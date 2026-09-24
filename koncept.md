@@ -519,7 +519,7 @@ Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured. Jest tylko szkielet `/projects`.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`).
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Zostały endpointy (pogoda i powietrze na start — bez kluczy), Firestore, agent homelabu, analityka.
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Podpięte: GitHub (`/api/github`) i Last.fm (`/api/music`) — cache w pamięci instancji, wyspy w czystym TS (`src/scripts/live.ts`). Zostały pozostałe endpointy (pogoda i powietrze — bez kluczy), Firestore, agent homelabu, analityka.
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, kawa, odliczanie). Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
 
 ---

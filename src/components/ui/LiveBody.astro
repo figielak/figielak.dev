@@ -9,6 +9,9 @@ import type { LiveState } from '../../lib/live';
  * error — so the tile keeps exactly the same size in every state:
  *   loading  every `[data-skeleton]` element turns into a skeleton block
  *   error    the content is hidden and a calm message sits in its place
+ *
+ * Tiles fed from /api/* start as `loading` and switch in the browser
+ * (src/scripts/live.ts), so both messages are always in the markup.
  */
 interface Props {
 	state: LiveState;
@@ -25,8 +28,8 @@ const hidden = state === 'loading' || state === 'error';
 	<div class="live-content" aria-hidden={hidden ? 'true' : undefined}>
 		<slot />
 	</div>
-	{state === 'loading' && <span class="visually-hidden">{t('state.loading')}</span>}
-	{state === 'error' && <p class="live-error">{errorText}</p>}
+	<span class="live-loading visually-hidden">{t('state.loading')}</span>
+	<p class="live-error">{errorText}</p>
 </div>
 
 <style>
@@ -47,6 +50,11 @@ const hidden = state === 'loading' || state === 'error';
 
 	.live-body[data-live='error'] > .live-content {
 		visibility: hidden;
+	}
+
+	.live-body:not([data-live='loading']) > .live-loading,
+	.live-body:not([data-live='error']) > .live-error {
+		display: none;
 	}
 
 	.live-error {

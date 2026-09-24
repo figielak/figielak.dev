@@ -13,12 +13,13 @@ interface Props {
 
 const { live } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
-const text = live.data ? t('state.updatedAgo').replace('{n}', String(minutesSince(live.data.updatedAt))) : '';
+const template = t('state.updatedAgo');
+const text = live.data ? template.replace('{n}', String(minutesSince(live.data.updatedAt))) : '';
 ---
 
 <span class="live-footer" data-state={live.state}>
 	{Astro.slots.has('default') && <span class="live-footer-detail"><slot /></span>}
-	<span class="live-footer-updated">{text || '\u00a0'}</span>
+	<span class="live-footer-updated" data-template={template}>{text || '\u00a0'}</span>
 </span>
 
 <style>

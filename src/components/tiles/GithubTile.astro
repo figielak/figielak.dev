@@ -11,13 +11,20 @@ import { GITHUB_PLACEHOLDER, type Github } from '../../lib/mocks/github';
 /**
  * Contribution chart and headline numbers from the GitHub GraphQL API,
  * cached 1 h (koncept.md §9). The chart uses four accent levels.
+ *
+ * With `endpoint` the tile renders as loading and fills itself in the
+ * browser; without it, it shows `github` as given (mocks in /dev/tiles).
  */
 interface Props {
 	github: Github;
+	endpoint?: string;
 	area?: string;
 }
 
-const { github, area } = Astro.props;
+/* The API refreshes hourly, so an hour-old answer is still fresh. */
+const STALE_AFTER_MIN = 3 * 60;
+
+const { github, endpoint, area } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
 const d = github.data ?? GITHUB_PLACEHOLDER;
 
@@ -28,7 +35,16 @@ const stats = [
 ];
 ---
 
-<Tile area={area} label={t('tile.github')} href={githubUrl} external dense>
+<Tile
+	area={area}
+	label={t('tile.github')}
+	href={githubUrl}
+	external
+	dense
+	class="github-tile"
+	data-endpoint={endpoint}
+	data-stale-after={STALE_AFTER_MIN}
+>
 	<LiveDot slot="meta" state={dotState(github.state)} />
 
 	<LiveBody state={github.state} errorText={t('github.unavailable')}>
@@ -68,6 +84,21 @@ const stats = [
 		</span>
 	</LiveFooter>
 </Tile>
+
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import type { GithubData } from '../../lib/server/github';
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.github-tile[data-endpoint]')) {
+		watchLive<GithubData>(tile, (data) => {
+			const values = tile.querySelectorAll('.github-value');
+			[data.contributions, data.streakDays, data.repos].forEach((n, i) => setText(values[i], String(n)));
+
+			const days = tile.querySelectorAll('.contrib .contrib-day');
+			data.weeks.flat().forEach((level, i) => days[i]?.setAttribute('data-level', String(level)));
+		});
+	}
+</script>
 
 <style>
 	/* Stats beside the chart; the chart wraps under them when it would get

@@ -16,7 +16,8 @@ export const phone = import.meta.env.CONTACT_PHONE || '+48 000 000 000';
 export const emailEncoded = btoa(email);
 export const phoneEncoded = btoa(phone);
 
-export const githubUrl = 'https://github.com/figielak';
+export const githubUser = 'figielak';
+export const githubUrl = `https://github.com/${githubUser}`;
 
 /* The WhatsApp link is built in the browser from the phone number
    (a[data-whatsapp]), so it needs no URL of its own. */

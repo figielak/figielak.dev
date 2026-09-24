@@ -12,20 +12,24 @@ import { MUSIC_PLACEHOLDER, type Music } from '../../lib/mocks/music';
  * What I am listening to and this week's top artists from Last.fm
  * (koncept.md §9). The cover keeps its full colour (§4).
  * Stacked when narrow, side by side when the tile is wide and low.
+ *
+ * With `endpoint` the tile renders as loading and fills itself in the
+ * browser, refreshing every 30 s; without it, it shows `music` as given.
  */
 interface Props {
 	music: Music;
+	endpoint?: string;
 	area?: string;
 }
 
-const { music, area } = Astro.props;
+const { music, endpoint, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const d = music.data ?? MUSIC_PLACEHOLDER;
 const playing = music.state === 'ok' && d.track.nowPlaying;
 ---
 
-<Tile area={area} label={t('tile.music')} dense>
+<Tile area={area} label={t('tile.music')} dense class="music-tile" data-endpoint={endpoint}>
 	<LiveDot slot="meta" state={dotState(music.state)} />
 
 	<LiveBody state={music.state} errorText={t('music.unavailable')}>
@@ -33,12 +37,13 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 			<div class="music">
 				<div class="track">
 					<span class="track-cover" data-skeleton>
-						{d.track.coverUrl ? <img src={d.track.coverUrl} alt="" /> : <Icon name="music" size={20} />}
+						<img src={d.track.coverUrl} alt="" hidden={!d.track.coverUrl} />
+						<Icon name="music" size={20} />
 					</span>
 					<span class="track-text">
-						<span class="track-status">
-							{playing && <LiveDot state="live" />}
-							{playing ? t('music.nowPlaying') : t('music.lastPlayed')}
+						<span class="track-status" data-now={t('music.nowPlaying')} data-last={t('music.lastPlayed')}>
+							<span class="track-dot" hidden={!playing}><LiveDot state="live" /></span>
+							<span class="track-status-text">{playing ? t('music.nowPlaying') : t('music.lastPlayed')}</span>
 						</span>
 						<span class="track-title" data-skeleton aria-live="polite">{d.track.title}</span>
 						<span class="track-artist" data-skeleton>{d.track.artist}</span>
@@ -47,7 +52,7 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 
 				<div class="top">
 					<span class="top-label">{t('music.top')}</span>
-					<ol class="top-list">
+					<ol class="top-list" data-template={t('music.plays')}>
 						{
 							d.topArtists.map((artist, i) => (
 								<li class="top-artist">
@@ -67,6 +72,44 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 
 	<LiveFooter slot="footer" live={music}>Last.fm</LiveFooter>
 </Tile>
+
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import type { Music } from '../../lib/mocks/music';
+
+	type MusicData = Omit<NonNullable<Music['data']>, 'updatedAt'>;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.music-tile[data-endpoint]')) {
+		watchLive<MusicData>(
+			tile,
+			({ track, topArtists }) => {
+				const cover = tile.querySelector<HTMLImageElement>('.track-cover img');
+				if (cover) {
+					if (track.coverUrl && cover.getAttribute('src') !== track.coverUrl) cover.src = track.coverUrl;
+					cover.hidden = !track.coverUrl;
+				}
+
+				const status = tile.querySelector<HTMLElement>('.track-status');
+				tile.querySelector<HTMLElement>('.track-dot')!.hidden = !track.nowPlaying;
+				const statusText = track.nowPlaying ? status?.dataset.now : status?.dataset.last;
+				setText(tile.querySelector('.track-status-text'), statusText ?? '');
+				setText(tile.querySelector('.track-title'), track.title);
+				setText(tile.querySelector('.track-artist'), track.artist);
+
+				const list = tile.querySelector<HTMLElement>('.top-list');
+				tile.querySelectorAll('.top-artist').forEach((row, i) => {
+					const artist = topArtists[i];
+					setText(row.querySelector('.top-name'), artist?.name ?? '—');
+					setText(
+						row.querySelector('.top-plays'),
+						artist ? (list?.dataset.template ?? '{n}').replace('{n}', String(artist.plays)) : '',
+					);
+				});
+			},
+			30_000,
+		);
+	}
+</script>
 
 <style>
 	.music-frame {
@@ -100,6 +143,15 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 		border-radius: var(--radius-inset);
 		background: var(--surface-inset);
 		color: var(--text-subtle);
+	}
+
+	/* The icon stands in until a cover loads, and for releases without one. */
+	.track-cover img:not([hidden]) + :global(svg) {
+		display: none;
+	}
+
+	.track-cover img[hidden] {
+		display: none;
 	}
 
 	.track-cover img {
