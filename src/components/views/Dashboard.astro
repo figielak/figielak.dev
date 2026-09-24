@@ -9,44 +9,61 @@ import ProgressTile from '../tiles/ProgressTile.astro';
 import GithubTile from '../tiles/GithubTile.astro';
 import WakaTile from '../tiles/WakaTile.astro';
 import DnsTile from '../tiles/DnsTile.astro';
+import LabTile from '../tiles/LabTile.astro';
+import UptimeTile from '../tiles/UptimeTile.astro';
 import NetTile from '../tiles/NetTile.astro';
 import MusicTile from '../tiles/MusicTile.astro';
 import BooksTile from '../tiles/BooksTile.astro';
 import EventTile from '../tiles/EventTile.astro';
 import { mockWeather } from '../../lib/mocks/weather';
 import { mockAir } from '../../lib/mocks/air';
-import { mockDns, mockTraffic } from '../../lib/mocks/network';
 
 /*
  * Public dashboard (koncept.md §3.4): local on top, then work, homelab and
- * life. GitHub gets two rows — its chart does not fit one at 1280×720. Anything that tells when I am at the computer lives on the
- * private dashboard instead (§14).
+ * life. GitHub gets two rows — its chart does not fit one at 1280×720.
+ * Homelab numbers are public: it is a server, so they do not tell when I am
+ * at the computer (§14).
  */
+/* Eight columns keep every tile on one screen from 1280×720 (§7). Only the
+   small local tiles are 1×1; anything with a caption gets two columns. */
+const xl = [
+	'clock   weather air     sun     progress progress lab    lab',
+	'github  github  github  music   music    music    uptime uptime',
+	'github  github  github  waka    waka     waka     uptime uptime',
+	'books   books   event   event   dns      dns      net    net',
+];
+
+/* 1024–1279px: six columns are too few for one screen, so it scrolls. */
 const lg = [
 	'clock   weather air     sun     progress progress',
 	'github  github  github  music   music    music',
-	'github  github  github  waka    waka     dns',
-	'books   books   books   net     event    event',
+	'github  github  github  waka    waka     waka',
+	'lab     lab     lab     uptime  uptime   uptime',
+	'dns     dns     net     net     event    event',
+	'books   books   books   books   books    books',
 ];
 
 const md = [
 	'clock    weather  air      sun',
-	'progress progress event    event',
+	'progress progress lab      lab',
+	'dns      dns      net      net',
 	'github   github   github   github',
 	'music    music    music    music',
-	'waka     waka     dns      net',
-	'books    books    books    books',
+	'waka     waka     event    event',
+	'uptime   uptime   books    books',
 ];
 
 const base = [
 	'clock    weather',
 	'air      sun',
 	'progress progress',
+	'lab      lab',
 	'event    event',
 	'github   github',
 	'waka     waka',
 	'music    music',
 	'dns      net',
+	'uptime   uptime',
 	'books    books',
 ];
 ---
@@ -57,6 +74,7 @@ const base = [
 	base={{ areas: base, columns: 2 }}
 	md={{ areas: md, columns: 4 }}
 	lg={{ areas: lg, columns: 6, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
+	xl={{ areas: xl, columns: 8, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
 >
 	<ClockTile area="clock" />
 	<WeatherTile area="weather" weather={mockWeather()} />
@@ -65,8 +83,10 @@ const base = [
 	<ProgressTile area="progress" />
 	<GithubTile area="github" github={{ state: 'loading' }} endpoint="/api/github" />
 	<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
-	<DnsTile area="dns" dns={mockDns()} />
-	<NetTile area="net" traffic={mockTraffic()} />
+	<DnsTile area="dns" dns={{ state: 'loading' }} endpoint="/api/homelab/dns" />
+	<NetTile area="net" traffic={{ state: 'loading' }} endpoint="/api/homelab/net" />
+	<LabTile area="lab" stats={{ state: 'loading' }} endpoint="/api/homelab/lab" />
+	<UptimeTile area="uptime" uptime={{ state: 'loading' }} endpoint="/api/homelab/uptime" />
 	<MusicTile area="music" music={{ state: 'loading' }} endpoint="/api/music" />
 	<BooksTile area="books" />
 	<EventTile area="event" />

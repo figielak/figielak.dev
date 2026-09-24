@@ -6,16 +6,13 @@
  *
  * Any user name is accepted; only the password counts.
  */
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { sameSecret } from './server/secret';
 
 /* Header values must be Latin-1 — no typographic dashes here. */
 const REALM = 'figielak.dev private';
 
 /* Read at request time — `import.meta.env` would bake it into the build. */
 const password = () => process.env.DASHBOARD_PASSWORD ?? '';
-
-/** Hashing first gives equal-length buffers, so the comparison is constant-time. */
-const digest = (value: string) => createHash('sha256').update(value).digest();
 
 function presentedPassword(request: Request): string | null {
 	const header = request.headers.get('authorization') ?? '';
@@ -39,7 +36,7 @@ export function ownerGate(request: Request): Response | null {
 	}
 
 	const given = presentedPassword(request);
-	if (given !== null && timingSafeEqual(digest(given), digest(expected))) return null;
+	if (given !== null && sameSecret(given, expected)) return null;
 
 	return new Response('Unauthorized', {
 		status: 401,

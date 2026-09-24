@@ -1,24 +1,35 @@
 /**
- * Mock homelab uptime until the push agent reports it (koncept.md §9).
+ * Homelab uptime and service status as the uptime tile shows them, and mocks
+ * for /dev/tiles and `astro dev`. Live data: /api/homelab/uptime (koncept.md §9).
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
 /** Generic service kinds — no host names on a public page (koncept.md §14). */
-export type ServiceKind = 'media' | 'files' | 'dns' | 'backup';
+export const SERVICE_KINDS = ['media', 'files', 'dns', 'backup'] as const;
+export type ServiceKind = (typeof SERVICE_KINDS)[number];
 
+export interface ServiceStatus {
+	kind: ServiceKind;
+	up: boolean;
+	/** Percent over the last 30 days, 0–100. */
+	uptime30d?: number;
+	/** Average response time over the last 30 days. */
+	avgMs?: number;
+}
+
+/**
+ * Only the kinds that exist are listed; the tile shows the rest as "—",
+ * not as down.
+ */
 export type Uptime = Live<{
+	/** Host uptime; fractional. */
 	uptimeDays: number;
-	services: { kind: ServiceKind; up: boolean }[];
+	services: ServiceStatus[];
 }>;
 
 export const UPTIME_PLACEHOLDER: NonNullable<Uptime['data']> = {
 	uptimeDays: 0,
-	services: [
-		{ kind: 'media', up: false },
-		{ kind: 'files', up: false },
-		{ kind: 'dns', up: false },
-		{ kind: 'backup', up: false },
-	],
+	services: [],
 	updatedAt: new Date(0),
 };
 
@@ -28,12 +39,11 @@ export function mockUptime(state: LiveState = 'ok'): Uptime {
 	return {
 		state,
 		data: {
-			uptimeDays: 42,
+			uptimeDays: 3.4,
 			services: [
-				{ kind: 'media', up: true },
-				{ kind: 'files', up: true },
-				{ kind: 'dns', up: true },
-				{ kind: 'backup', up: false },
+				{ kind: 'media', up: true, uptime30d: 99.2, avgMs: 38 },
+				{ kind: 'dns', up: true, uptime30d: 99.97, avgMs: 4 },
+				{ kind: 'backup', up: false, uptime30d: 96.1, avgMs: 120 },
 			],
 			updatedAt: mockUpdatedAt(state),
 		},

@@ -60,7 +60,7 @@ jobs:
             --min-instances 0 \
             --max-instances 3 \
             --memory 512Mi \
-            --set-secrets DASHBOARD_PASSWORD=dashboard-password:latest,GITHUB_TOKEN=github-token:latest,LASTFM_API_KEY=lastfm-api-key:latest,WAKATIME_API_KEY=wakatime-api-key:latest \
+            --set-secrets DASHBOARD_PASSWORD=dashboard-password:latest,GITHUB_TOKEN=github-token:latest,LASTFM_API_KEY=lastfm-api-key:latest,WAKATIME_API_KEY=wakatime-api-key:latest,STATS_PUSH_TOKEN=stats-push-token:latest \
             --set-env-vars "LASTFM_USER=$LASTFM_USER" \
             --quiet
           echo "url=$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')" >> "$GITHUB_OUTPUT"

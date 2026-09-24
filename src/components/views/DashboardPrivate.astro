@@ -1,38 +1,31 @@
 ---
 import BentoLayout from '../ui/BentoLayout.astro';
 import DashboardSwitch from '../ui/DashboardSwitch.astro';
-import LabTile from '../tiles/LabTile.astro';
-import UptimeTile from '../tiles/UptimeTile.astro';
 import NowTile from '../tiles/NowTile.astro';
 import LaunchersTile from '../tiles/LaunchersTile.astro';
 import DeployTile from '../tiles/DeployTile.astro';
 import SiteStatsTile from '../tiles/SiteStatsTile.astro';
-import { mockLab } from '../../lib/mocks/stats';
-import { mockUptime } from '../../lib/mocks/uptime';
 import { mockDeploy } from '../../lib/mocks/deploy';
 import { mockSite } from '../../lib/mocks/site';
 
 /*
  * Private dashboard (koncept.md §3.4), behind a password on the server (§14):
- * homelab stats, launchers with real host names, deploys and site analytics.
+ * launchers with real host names, deploys, site analytics and the now page.
+ * Homelab stats are public (/dashboard).
  */
 const lg = [
-	'lab     lab     uptime  uptime  now     now',
-	'lab     lab     deploy  deploy  site    site',
+	'deploy  deploy  site    site    now     now',
 	'launch  launch  launch  launch  launch  launch',
 ];
 
 const md = [
 	'launch  launch  launch  launch',
-	'lab     lab     uptime  uptime',
-	'lab     lab     deploy  deploy',
-	'site    site    now     now',
+	'deploy  deploy  site    site',
+	'now     now     now     now',
 ];
 
 const base = [
 	'launch  launch',
-	'lab     lab',
-	'uptime  uptime',
 	'deploy  deploy',
 	'site    site',
 	'now     now',
@@ -46,8 +39,6 @@ const base = [
 	md={{ areas: md, columns: 4 }}
 	lg={{ areas: lg, columns: 6, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
 >
-	<LabTile area="lab" stats={mockLab()} />
-	<UptimeTile area="uptime" uptime={mockUptime()} />
 	<NowTile area="now" />
 	<LaunchersTile area="launch" />
 	<DeployTile area="deploy" deploy={mockDeploy()} />

@@ -1,6 +1,7 @@
 /**
- * Mock homelab stats until the push agent and /api/stats exist
- * (koncept.md §9).
+ * Homelab stats as the lab tile shows them, and mocks for /dev/tiles and
+ * `astro dev`. Live data: the push agent → /api/stats → /api/homelab/lab
+ * (koncept.md §9). Sizes are GiB.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
@@ -19,8 +20,8 @@ export type MachineStats = Live<{
 	cpuTempC: number;
 	ramUsedGb: number;
 	ramTotalGb: number;
-	/** Percent, 0–100. */
-	gpu: number;
+	/** Percent, 0–100. The Pi has no GPU, so the agent leaves it out. */
+	gpu?: number;
 	disks: Disk[];
 	containers?: number;
 }>;
@@ -30,11 +31,8 @@ export const MACHINE_PLACEHOLDER: NonNullable<MachineStats['data']> = {
 	cpuTempC: 0,
 	ramUsedGb: 0,
 	ramTotalGb: 0,
-	gpu: 0,
-	disks: [
-		{ kind: 'system', usedGb: 0, totalGb: 1 },
-		{ kind: 'data', usedGb: 0, totalGb: 1 },
-	],
+	/* One row per disk the homelab has; the storage HDD joins later. */
+	disks: [{ kind: 'system', usedGb: 0, totalGb: 1 }],
 	containers: 0,
 	updatedAt: new Date(0),
 };
@@ -45,16 +43,12 @@ export function mockLab(state: LiveState = 'ok'): MachineStats {
 	return {
 		state,
 		data: {
-			cpu: 11,
-			cpuTempC: 44,
-			ramUsedGb: 9.6,
-			ramTotalGb: 16,
-			gpu: 3,
-			disks: [
-				{ kind: 'system', usedGb: 58, totalGb: 256 },
-				{ kind: 'storage', usedGb: 2870, totalGb: 4000 },
-			],
-			containers: 14,
+			cpu: 6.4,
+			cpuTempC: 57.9,
+			ramUsedGb: 0.84,
+			ramTotalGb: 3.71,
+			disks: [{ kind: 'system', usedGb: 9.6, totalGb: 116.9 }],
+			containers: 8,
 			updatedAt: mockUpdatedAt(state),
 		},
 	};

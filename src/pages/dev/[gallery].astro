@@ -48,17 +48,19 @@ export function getStaticPaths() {
 					<div class="tall">
 						<GithubTile github={mockGithub(state)} />
 					</div>
-					<div class="tall">
+					<div class="wide">
 						<LabTile stats={mockLab(state)} />
 					</div>
-					<div class="wide">
+					<div class="tall">
 						<UptimeTile uptime={mockUptime(state)} />
 					</div>
 					<div class="pair">
 						<AirTile air={mockAir(state)} />
+					</div>
+					<div class="wide">
 						<DnsTile dns={mockDns(state)} />
 					</div>
-					<div class="pair">
+					<div class="wide">
 						<NetTile traffic={mockTraffic(state)} />
 					</div>
 					<div class="wide">

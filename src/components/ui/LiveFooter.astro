@@ -3,8 +3,8 @@ import { getLangFromUrl, useTranslations } from '../../i18n';
 import { minutesSince, type Live } from '../../lib/live';
 
 /**
- * Footer line of a live tile: "updated 3 min ago", or a detail passed in the
- * slot. Rendered in every state and only hidden, so the tile never changes
+ * Footer line of a live tile: "3 min ago" — short, so it fits a 1×1 tile —
+ * and an optional detail passed in the slot. Rendered in every state and only hidden, so the tile never changes
  * height (koncept.md §9).
  */
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 
 const { live } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
-const template = t('state.updatedAgo');
+const template = t('state.ago');
 const text = live.data ? template.replace('{n}', String(minutesSince(live.data.updatedAt))) : '';
 ---
 

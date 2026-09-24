@@ -8,30 +8,73 @@ import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { DNS_PLACEHOLDER, type Dns } from '../../lib/mocks/network';
 
-/** Ads and trackers blocked today by the homelab DNS, pushed by the agent (koncept.md §9). */
+/**
+ * Ads and trackers blocked by the homelab DNS today, with today's queries and
+ * the last 7 days; pushed by the agent (koncept.md §9).
+ *
+ * With `endpoint` the tile renders as loading and fills itself in the
+ * browser; without it, it shows `dns` as given (mocks in /dev/tiles).
+ */
 interface Props {
 	dns: Dns;
+	endpoint?: string;
 	area?: string;
 }
 
-const { dns, area } = Astro.props;
+const { dns, endpoint, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const d = dns.data ?? DNS_PLACEHOLDER;
 const number = new Intl.NumberFormat(lang);
+
+const caption = t('dns.ofQueries').replace('{n}', number.format(d.queriesToday));
+const week = (blocked?: number, queries?: number) =>
+	t('dns.week').replace(
+		'{n}',
+		blocked === undefined || queries === undefined ? '—' : `${number.format(blocked)} / ${number.format(queries)}`,
+	);
 ---
 
-<Tile area={area} label={t('tile.dns')} dense>
+<Tile
+	area={area}
+	label={t('tile.dns')}
+	dense
+	class="dns-tile"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-of-queries={t('dns.ofQueries')}
+	data-week={t('dns.week')}
+>
 	<LiveDot slot="meta" state={dotState(dns.state)} />
 
 	<LiveBody state={dns.state} errorText={t('dns.unavailable')}>
 		<div class="dns">
-			<BigNumber value={number.format(d.blockedToday)} caption={t('dns.blocked')} />
+			<BigNumber value={number.format(d.blockedToday)} caption={caption} />
 		</div>
 	</LiveBody>
 
-	<LiveFooter slot="footer" live={dns} />
+	<LiveFooter slot="footer" live={dns}>{week(d.blockedWeek, d.queriesWeek)}</LiveFooter>
 </Tile>
+
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import type { DnsSection } from '../../lib/server/homelab';
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.dns-tile[data-endpoint]')) {
+		const { lang = 'pl', ofQueries = '{n}', week = '{n}' } = tile.dataset;
+		const number = new Intl.NumberFormat(lang);
+
+		watchLive<DnsSection>(tile, (data) => {
+			setText(tile.querySelector('.big-value'), number.format(data.blockedToday));
+			setText(tile.querySelector('.big-caption'), ofQueries.replace('{n}', number.format(data.queriesToday)));
+			const lastWeek =
+				data.blockedWeek === undefined || data.queriesWeek === undefined
+					? '—'
+					: `${number.format(data.blockedWeek)} / ${number.format(data.queriesWeek)}`;
+			setText(tile.querySelector('.live-footer-detail'), week.replace('{n}', lastWeek));
+		});
+	}
+</script>
 
 <style>
 	.dns {

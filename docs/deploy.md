@@ -73,6 +73,40 @@ done
 Nazwa użytkownika Last.fm nie jest sekretem — idzie jako GitHub Variable `LASTFM_USER` (krok 2).
 Nowy token: `… | gcloud secrets versions add github-token --data-file=-` i ponowny deploy.
 
+### Homelab: Firestore i token agenta
+
+Agent na homelabie (osobne repo, kontener Dockera) co 60 s wysyła `POST /api/stats` z tokenem;
+endpoint zapisuje odczyt w Firestore, a kafle czytają go przez `/api/homelab/*` (koncept.md §9,
+kontrakt w `src/lib/server/homelab.ts`). Serwer rozmawia z Firestore przez REST jako konto
+Cloud Run, bez kluczy. Workflow podpina token do Cloud Run, więc **sekret, baza i rola muszą
+istnieć przed deployem**.
+
+```bash
+# Nowa sesja Cloud Shell nie pamięta zmiennych z kroku 1.
+PROJECT_ID=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+
+gcloud services enable firestore.googleapis.com
+# Baza „(default)” — tylko ona ma darmowy limit (20 tys. zapisów dziennie; agent robi ~1440).
+gcloud firestore databases create --location=europe-west1 --type=firestore-native
+
+gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role=roles/datastore.user --condition=None
+
+# Token: ta sama wartość trafia do .env agenta (zapisz w menedżerze haseł).
+openssl rand -base64 32 | tr -d '\n' | gcloud secrets create stats-push-token --data-file=-
+gcloud secrets versions access latest --secret=stats-push-token; echo
+gcloud secrets add-iam-policy-binding stats-push-token \
+  --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role=roles/secretmanager.secretAccessor
+```
+
+Odpowiedzi `POST /api/stats`: **204** wszystko zapisane; **200** część sekcji odrzucona
+(`rejected` z powodem — agent loguje); **400** zła koperta albo żadna poprawna sekcja; **401** zły
+token; **503** brak tokenu na serwerze albo Firestore niedostępny. Treść musi mieć
+`Content-Type: application/json` — Astro odrzuca POST-y wyglądające na formularz (403).
+
 ### Konto serwisowe dla GitHub Actions
 
 ```bash
@@ -141,7 +175,12 @@ gcloud beta run domain-mappings describe --domain figielak.dev --region "$REGION
 2. **SSL/TLS → Overview:** tryb **Full (strict)**.
 3. **Security → WAF → Rate limiting rules** (1 reguła w darmowym planie): gdy URI path zawiera
    `/dashboard/private`, blokuj po 10 żądaniach na 10 s z jednego IP. Hasło chroni serwer,
-   a ta reguła ogranicza zgadywanie.
+   a ta reguła ogranicza zgadywanie. `/api/stats` (agent: 1 żądanie na minutę z jednego IP)
+   też powinien mieć limit: jeśli próg reguły nie jest surowszy niż ~10 żądań na minutę, dopisz
+   do jej wyrażenia `or (http.request.uri.path eq "/api/stats")`; jeśli jest, potrzebna osobna
+   reguła (np. 20 na minutę) — na darmowym planie może nie być na nią miejsca.
+   **Bot Fight Mode** (Security → Bots) może blokować agenta, a na darmowym planie reguła WAF
+   go nie omija — wtedy agent wysyła na adres `https://figielak-dev-….run.app/api/stats`.
 4. **Rules → Redirect Rules:** `maths.figielak.dev/*` → `https://figielak.dev/maths` (301),
    `dashboard.figielak.dev/*` → `https://figielak.dev/dashboard` (301). Subdomeny potrzebują
    rekordu DNS z proxy (np. `AAAA 100::`), żeby reguła zadziałała (koncept.md §2).
@@ -158,6 +197,8 @@ curl -sI https://maths.figielak.dev | grep -i location        # https://figielak
 curl -s  https://figielak.dev/api/github | head -c 120         # {"weeks":[[…  (503 = brak klucza lub błąd GitHuba)
 curl -s  https://figielak.dev/api/music                        # {"track":{…},"topArtists":[…],…}
 curl -s  https://figielak.dev/api/waka                         # {"todayMin":…,"weekMin":…,"languages":[…],…}
+curl -s  -X POST https://figielak.dev/api/stats -o /dev/null -w '%{http_code}\n'   # 401 — bez tokenu
+curl -s  https://figielak.dev/api/homelab/lab                  # {"cpu":…,"disks":[…],…} (503 = agent jeszcze nic nie wysłał)
 ```
 
 ## Lokalnie
@@ -184,6 +225,8 @@ Problemy, które wystąpiły przy pierwszym wdrożeniu (2026-09-24).
 | **429** przy logowaniu do trybu prywatnego | limit żądań w Cloudflare (liczą się też próby bez hasła) | odczekaj kilka sekund |
 | `/api/github`, `/api/music` lub `/api/waka` zwraca **503**, kafel „chwilowo niedostępny” | brak klucza, zła nazwa `LASTFM_USER` albo wygasły token GitHuba | przyczyna jest w logach Cloud Run (`[api] …`); nowy token jako nowa wersja sekretu |
 | Deploy pada na *Creating Revision*: `Secret …/versions/latest was not found` | sekret nie istnieje albo nie ma wersji (pusta wartość przy `read`) | `gcloud secrets versions list <nazwa>`; brakującą wartość dodaj przez `gcloud secrets versions add` |
+| `/api/stats` zwraca **503** `storage unavailable` | Firestore nie jest włączony, baza nie istnieje albo konto Compute nie ma `roles/datastore.user` | szczegóły w logach (`[api/stats]`); krok „Homelab: Firestore i token agenta” |
+| Agent dostaje **403** z Cloudflare (strona HTML) | Bot Fight Mode albo reguła WAF | agent wysyła na adres `*.run.app` |
 | Odmowa zwraca **500** zamiast 401 | znak spoza Latin-1 (np. „—”) w nagłówku `WWW-Authenticate` | w nagłówkach tylko ASCII |
 
 Logi Cloud Run: `gcloud run services logs read figielak-dev --region europe-west1 --limit 50`.

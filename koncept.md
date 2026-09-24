@@ -29,7 +29,7 @@ Wizytówka i korepetycje są spokojniejsze i mniej gęste. Dashboard jest pełn�
 | Wizytówka | `figielak.dev` | rekruterzy, potencjalni współpracownicy | w kilka sekund: kim jestem, co umiem, jak się skontaktować |
 | Projekty | `figielak.dev/projects` | rekruterzy, ciekawscy | lista projektów i opisy (case studies) w MDX |
 | Korepetycje | `figielak.dev/maths` | uczniowie, rodzice | kim jestem, jak wyglądam, gdzie studiuję, szybki kontakt; w przyszłości dostępność i rezerwacja online |
-| Dashboard | `figielak.dev/dashboard` | głównie ja, a także osoby chcące wiedzieć więcej | dane na żywo: pogoda, czas, GitHub, homelab, muzyka; prywatnie usługi i deploy |
+| Dashboard | `figielak.dev/dashboard` | głównie ja, a także osoby chcące wiedzieć więcej | dane na żywo: pogoda, czas, GitHub, homelab, muzyka; prywatnie launchery usług, deploy i statystyki strony |
 
 **Decyzja:** główną strukturą są **ścieżki** (jeden projekt Astro, wspólne komponenty, jedna domena dla SEO).
 Subdomeny `maths.figielak.dev` i `dashboard.figielak.dev` działają jako **przekierowania 301** na ścieżki (reguły przekierowań w Cloudflare), co daje krótkie adresy do wysyłania ludziom.
@@ -157,7 +157,7 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 ### 3.4 Dashboard (`/dashboard`)
 
 - **Ton:** najbardziej osobisty i gęsty, pełny styl „żywego dashboardu”.
-- **Dwa tryby** o tej samej siatce 6 kolumn, na desktopie oba mieszczą się na jednym ekranie:
+- **Dwa tryby**, na desktopie oba mieszczą się na jednym ekranie. Publiczny ma od 1280px siatkę 8 kolumn (w 6 nie mieści się na jednym ekranie), prywatny 6 kolumn:
 
 | Tryb | Adres | Dla kogo | Dostęp |
 |---|---|---|---|
@@ -166,13 +166,23 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 
 Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłódką / „Widok publiczny”). W nawigacji jest tylko tryb publiczny.
 
-**Tryb publiczny** — rzędy odpowiadają grupom: lokalne, praca, homelab, życie.
+**Tryb publiczny** — lokalne u góry, praca po lewej, homelab w prawej kolumnie i na dole, życie pomiędzy.
+Kafle 1×1 mają tylko małe kafle lokalne; każdy kafel z podpisem dostaje co najmniej 2 kolumny.
 
 ```
+≥ 1280px (8 kolumn, jeden ekran od 1280×720)
+"clock   weather air     sun     progress progress lab    lab"
+"github  github  github  music   music    music    uptime uptime"
+"github  github  github  waka    waka     waka     uptime uptime"
+"books   books   event   event   dns      dns      net    net"
+
+1024–1279px (6 kolumn, przewija się)
 "clock   weather air     sun     progress progress"
 "github  github  github  music   music    music"
-"github  github  github  waka    waka     dns"
-"books   books   books   net     event    event"
+"github  github  github  waka    waka     waka"
+"lab     lab     lab     uptime  uptime   uptime"
+"dns     dns     net     net     event    event"
+"books   books   books   books   books    books"
 ```
 
 | Kafel | Grupa | Zawartość |
@@ -184,24 +194,23 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 | `progress` | lokalne | % ukończenia dnia, miesiąca i roku (paski) |
 | `github` | praca | wykres kontrybucji, liczba commitów, streak, repozytoria |
 | `waka` | praca | czas kodowania dziś i w tygodniu, top 3 języki (WakaTime) |
-| `dns` | homelab | liczba reklam zablokowanych dziś przez DNS |
-| `net` | homelab | transfer sieciowy dziś ↓/↑ |
+| `lab` | homelab | CPU, RAM i dysk w % (paski obok siebie), kontenery i temperatura CPU |
+| `uptime` | homelab | uptime hosta; usługi pod ogólnymi nazwami (Media, Pliki, DNS, Kopie): up/down, dostępność z 30 dni, średni czas odpowiedzi; brakująca usługa „—” |
+| `dns` | homelab | zablokowane dziś i ich udział w zapytaniach; 7 dni: zablokowane / zapytania (AdGuard) |
+| `net` | homelab | transfer **samego homelaba** (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta |
 | `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm) |
 | `books` | życie | aktualnie czytane książki (statycznie, `src/lib/books.ts`) |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
 
-**Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale.
+**Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne.
 
 ```
-"lab     lab     uptime  uptime  now     now"
-"lab     lab     deploy  deploy  site    site"
+"deploy  deploy  site    site    now     now"
 "launch  launch  launch  launch  launch  launch"
 ```
 
 | Kafel | Zawartość |
 |---|---|
-| `lab` | statystyki homelabu: CPU, RAM, GPU, dyski, kontenery |
-| `uptime` | uptime homelabu i usług |
 | `now` | now page: buduję, uczę się, czytam |
 | `launch` | launchery usług homelabu (domena z `HOMELAB_DOMAIN`, lista w `src/lib/services.ts`), działają tylko przez Tailscale |
 | `deploy` | ostatni deploy strony: kiedy, commit, status |
@@ -293,7 +302,7 @@ Reguły poniżej dotyczą **widoków w bento**: projektów i dashboardu.
 
 - **Kolumny:**
   - projekty mają 4 kolumny;
-  - dashboard ma 6 kolumn.
+  - dashboard ma 6 kolumn, publiczny od 1280px 8 (`xl` w `BentoLayout`).
 - **Odstęp między kaflami:** 12px (dashboard: 10px).
 - **„Mieści się na jednym ekranie”** dotyczy desktopu. Dashboard ma się zmieścić bez scrolla od 1280×720 w górę, a docelowy widok to 1440×900. Poniżej tego scroll jest dozwolony.
 - **Tablet (640–1024px):** 4 kolumny; dashboard przechodzi z 6 na 4.
@@ -352,10 +361,11 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 | Wizyty i statystyki strony (prywatne) | API Umami lub Plausible | cache 1–5 min |
 | Jakość powietrza | GIOŚ (bez klucza), stacja w Rzeszowie | cache 1h |
 | Wschód i zachód słońca, % dnia/miesiąca/roku | liczone lokalnie (build + przeglądarka) | — |
-| Blokada reklam (DNS), transfer sieciowy | AdGuard Home / Pi-hole i router przez push-agenta | przez push |
+| Blokada reklam (DNS) | AdGuard Home (`/control/stats`, retencja 7 dni) przez push-agenta | przez push |
+| Transfer sieciowy | `/proc/net/dev` na Pi przez push-agenta (ruch homelaba, nie domu) | przez push |
 | Ostatni deploy (prywatne) | Cloud Run Admin API (rewizje usługi) lub GitHub Actions API | cache 1–5 min |
 | Homelab | model **push**, opisany niżej | co 1–5 min |
-| Uptime | agent na homelabie (opcjonalnie Uptime Kuma) | przez push |
+| Uptime usług | Uptime Kuma (`/metrics`: status, dostępność i czas odpowiedzi z 30 dni) przez push-agenta | przez push |
 | Rozkład zajęć | plik iCal (np. eksport z USOS, jeśli uczelnia go udostępnia) | cache 1h |
 | Teraz słucham / top artyści | Last.fm API | cache 30 s / 1h |
 | WakaTime | WakaTime API | cache 1h |
@@ -363,11 +373,13 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 ### Homelab: model push
 
 - Homelab jest dostępny **tylko przez Tailscale**. Nie wystawiam go publicznie i nie wystawiam endpointów Homepage/Homarr.
-- Mały agent na homelabie (skrypt, np. timer systemd lub cron) co kilka minut wysyła zanonimizowany JSON z CPU, RAM, GPU, dyskami i uptime:
-  - metodą POST na `/api/stats`;
-  - z tajnym tokenem w nagłówku.
-- Endpoint zapisuje ostatni odczyt w **Firestore**. Dashboard odczytuje go i odświeża co około 30 s.
-- **Limity zapisu:** Cloud Run skaluje się do zera i nie trzyma stanu w pamięci, więc odczyt musi trafić do bazy. Darmowy Firestore daje 20 tys. zapisów dziennie; wysyłka co 30 s to ok. 2900 zapisów, więc się mieści. Przed wdrożeniem sprawdzam aktualne limity.
+- Agent na homelabie (kontener Dockera w osobnym repo homelaba, `network_mode: host`) co 60 s zbiera dane z `/proc`, AdGuarda i Uptime Kumy i wysyła zanonimizowany JSON:
+  - metodą POST na `/api/stats`, z tokenem `Authorization: Bearer` (`STATS_PUSH_TOKEN`);
+  - tylko liczby i ogólne rodzaje (`dns`, `media`…) — nazwy hostów, domeny, IP i nazwy monitorów zostają na Pi;
+  - kontrakt (v1) opisuje `src/lib/server/homelab.ts`.
+- Sekcje (`lab`, `dns`, `traffic`, `services`) są niezależne: agent pomija tę, której źródło nie odpowiedziało, a endpoint odrzuca tylko błędną sekcję. Każda ma własny czas, więc przy awarii jednego źródła szarzeje tylko jego kafel.
+- Endpoint zapisuje ostatni odczyt w **Firestore** (jeden dokument, REST bez biblioteki klienta). Kafle czytają go przez `/api/homelab/{lab,dns,net,uptime}` (cache 30 s) i odświeżają się co około minutę.
+- **Limity zapisu:** Cloud Run skaluje się do zera i nie trzyma stanu w pamięci, więc odczyt musi trafić do bazy. Darmowy Firestore daje 20 tys. zapisów dziennie; wysyłka co 60 s to ok. 1440 zapisów.
 
 ### Stany każdego kafla z danymi na żywo (obowiązkowe)
 
@@ -418,7 +430,6 @@ src/
 public/
   fonts/  cv/
 cv/              # źródła Typst
-agent/           # skrypt statystyk homelabu
 docs/            # deploy.md — konfiguracja Cloud Run i Cloudflare
 Dockerfile       # obraz dla Cloud Run
 ```
@@ -480,7 +491,7 @@ Dockerfile       # obraz dla Cloud Run
   - sekrety serwera (`/api/*`) są w Secret Manager, nie w repo i nie w GitHub Variables;
   - zanim zrobię commit, sprawdzam diff pod kątem powyższych danych; jeśli coś wycieknie, przepisuję historię i od razu zmieniam ujawniony sekret.
 - **Rozkład zajęć** zdradza, gdzie i kiedy jestem, a strona z korepetycjami jest publiczna. Publicznie pokazuję tylko ogólną formę (np. „zajęcia do 14:00” lub „dziś wolne”) albo ukrywam kafel.
-- **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu i uptime** są tylko w **prywatnym dashboardzie**.
+- **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu, uptime i ruch DNS** są publiczne: to serwer, który działa cały czas, więc nie zdradzają mojej obecności. Pokazuję tylko liczby i ogólne nazwy usług, a DNS jako sumy dzienne i tygodniowe — bez wykresu godzinowego, z którego widać, kiedy jestem w domu.
 - **Prywatny dashboard** (`/dashboard/private` i `/en/dashboard/private`) chroni **hasło sprawdzane na serwerze** (HTTP Basic Auth, `src/lib/owner.ts`). Cloudflare Zero Trust (Access) nie jest dostępny.
   - Strony prywatne renderuje serwer (`prerender = false`), a nie plik statyczny. Dzięki temu sprawdzenie obejmuje każdą odmianę ścieżki i adres `*.run.app`, który omija Cloudflare.
   - Hasło (`DASHBOARD_PASSWORD`) jest w Secret Manager i trafia do Cloud Run jako zmienna środowiskowa przy starcie, nie przy buildzie. Bez hasła serwer odmawia wszystkim (poza `astro dev`).
@@ -489,9 +500,9 @@ Dockerfile       # obraz dla Cloud Run
   - Ten sam strażnik chroni przyszłe prywatne endpointy (`/api/private/*`).
 - **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym pokazuję ogólne etykiety.
 - **Tokeny i klucze** trzymam wyłącznie w zmiennych środowiskowych po stronie serwera. Endpoint `/api/stats`:
-  - wymaga tokenu;
-  - ma limit żądań;
-  - waliduje dane.
+  - wymaga tokenu (`STATS_PUSH_TOKEN`, porównanie w stałym czasie);
+  - ma limit żądań (reguła w Cloudflare, docs/deploy.md);
+  - waliduje dane: znane wersje, zakresy liczb, tylko znane rodzaje; do bazy trafiają wyłącznie znane pola.
 
 ---
 
@@ -517,7 +528,7 @@ Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured. Jest tylko szkielet `/projects`.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`).
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Podpięte: GitHub (`/api/github`), Last.fm (`/api/music`) i WakaTime (`/api/waka`) — cache w pamięci instancji, wyspy w czystym TS (`src/scripts/live.ts`). Zostały pozostałe endpointy (pogoda i powietrze — bez kluczy), Firestore, agent homelabu, analityka.
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Podpięte: GitHub (`/api/github`), Last.fm (`/api/music`) i WakaTime (`/api/waka`) — cache w pamięci instancji, wyspy w czystym TS (`src/scripts/live.ts`). Homelab: `POST /api/stats` → Firestore → `/api/homelab/*`, agent w repo homelaba — kod gotowy, zostaje konfiguracja GCP (docs/deploy.md) i wdrożenie. Zostały pogoda i powietrze (bez kluczy) oraz analityka.
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, odliczanie). Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
 
 ---

@@ -23,13 +23,15 @@ interface Props {
 	md: Breakpoint;
 	/** >= 1024px */
 	lg: Breakpoint;
+	/** >= 1280px, optional — for a grid that needs more columns to fit one screen. */
+	xl?: Breakpoint;
 	dense?: boolean;
 	/** Stretch to fill the remaining height of a flex parent. */
 	fill?: boolean;
 	class?: string;
 }
 
-const { base, md, lg, dense = false, fill = false, class: className } = Astro.props;
+const { base, md, lg, xl, dense = false, fill = false, class: className } = Astro.props;
 
 const toAreas = (rows: string[]) => rows.map((row) => `"${row}"`).join(' ');
 const toColumns = (count: number) => `repeat(${count}, minmax(0, 1fr))`;
@@ -48,6 +50,9 @@ const vars = [
 	`--areas-lg: ${toAreas(lg.areas)}`,
 	`--columns-lg: ${toColumns(lg.columns)}`,
 	`--rows-lg: ${toRows(lg)}`,
+	...(xl
+		? [`--areas-xl: ${toAreas(xl.areas)}`, `--columns-xl: ${toColumns(xl.columns)}`, `--rows-xl: ${toRows(xl)}`]
+		: []),
 ].join('; ');
 ---
 
@@ -55,6 +60,7 @@ const vars = [
 	class:list={['bento', className]}
 	data-dense={dense ? '' : undefined}
 	data-fill={fill ? '' : undefined}
+	data-xl={xl ? '' : undefined}
 	style={vars}
 >
 	<slot />
@@ -94,11 +100,26 @@ const vars = [
 		}
 	}
 
+	@media (min-width: 1280px) {
+		.bento[data-xl] {
+			grid-template-columns: var(--columns-xl);
+			grid-template-areas: var(--areas-xl);
+			grid-template-rows: var(--rows-xl);
+		}
+	}
+
 	/* One screen on desktop (koncept.md §7): tiles stop sizing the rows by
 	   their content, so the grid takes exactly the height the page leaves
-	   and the rows split it. Smaller screens scroll as usual. */
+	   and the rows split it. Smaller screens scroll as usual; a grid with an
+	   xl layout fits one screen only from 1280px. */
 	@media (min-width: 1024px) and (min-height: 720px) {
-		.bento[data-fill] > :global(*) {
+		.bento[data-fill]:not([data-xl]) > :global(*) {
+			contain: size;
+		}
+	}
+
+	@media (min-width: 1280px) and (min-height: 720px) {
+		.bento[data-fill][data-xl] > :global(*) {
 			contain: size;
 		}
 	}
