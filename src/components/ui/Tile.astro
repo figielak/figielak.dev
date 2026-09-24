@@ -1,5 +1,6 @@
 ---
 import TileLabel from './TileLabel.astro';
+import Icon, { type IconName } from './Icon.astro';
 
 /**
  * The one building block every tile is made of (koncept.md §4).
@@ -10,8 +11,12 @@ interface Props {
 	/** Name of the `grid-template-areas` slot this tile occupies. */
 	area?: string;
 	label?: string;
+	/** Small icon before the label, in the accent (koncept.md §4). */
+	icon?: IconName;
 	href?: string;
 	external?: boolean;
+	/** The ↗ of a clickable tile; off for tiles that are one big button (social). */
+	arrow?: boolean;
 	/** Full accent background — at most one or two tiles per view. */
 	accent?: boolean;
 	/** Denser padding, used by the dashboard. */
@@ -24,8 +29,10 @@ interface Props {
 const {
 	area,
 	label,
+	icon,
 	href,
 	external = false,
+	arrow = true,
 	accent = false,
 	dense = false,
 	class: className,
@@ -48,12 +55,15 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 	{...rest}
 >
 	{
-		(label || Astro.slots.has('label') || interactive) && (
+		(label || Astro.slots.has('label') || (interactive && arrow)) && (
 			<header class="tile-header">
-				{label ? <TileLabel>{label}</TileLabel> : <slot name="label" />}
+				<span class="tile-title">
+					{icon && <Icon name={icon} size={14} />}
+					{label ? <TileLabel>{label}</TileLabel> : <slot name="label" />}
+				</span>
 				<span class="tile-header-end">
 					<slot name="meta" />
-					{interactive && (
+					{interactive && arrow && (
 						<svg
 							class="tile-arrow"
 							viewBox="0 0 24 24"
@@ -120,7 +130,15 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 		box-shadow: var(--shadow-tile);
 	}
 
+	/* Full accent: the text tokens switch to the graphite that reads on it, so
+	   what is inside the tile needs no idea it sits on the accent. */
 	.tile[data-accent] {
+		--text: var(--accent-foreground);
+		--text-muted: var(--accent-foreground);
+		--text-subtle: var(--accent-foreground-subtle);
+		--surface-inset: var(--accent-inset);
+		--status-down: var(--accent-foreground);
+		--tile-icon: var(--accent-foreground);
 		background: var(--accent);
 		border-color: var(--accent);
 		color: var(--accent-foreground);
@@ -136,6 +154,14 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 		align-items: center;
 		justify-content: space-between;
 		gap: var(--space-sm);
+	}
+
+	.tile-title {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		min-width: 0;
+		color: var(--tile-icon, var(--accent));
 	}
 
 	.tile-header-end {

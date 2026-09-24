@@ -1,18 +1,25 @@
 ---
 /**
- * Status dot for live tiles. Only `live` uses the accent and pulses; stale and
- * offline stay subtle (koncept.md §5).
+ * Status dot (koncept.md §5). Red is kept for problems, so a real one stands out:
+ * - a tile's freshness: `live` is quiet grey, `stale` and `offline` (error) are red;
+ * - a thing's status: `up` is green, `down` is red, `none` (unknown, idle) is grey.
+ * `pulse` animates the dot, for things happening right now.
  */
 interface Props {
-	state?: 'live' | 'stale' | 'offline';
+	state?: 'live' | 'stale' | 'offline' | 'up' | 'down' | 'none';
+	pulse?: boolean;
 	label?: string;
 }
 
-const { state = 'live', label } = Astro.props;
+const { state = 'live', pulse = false, label } = Astro.props;
 ---
 
-<span class="live-dot" data-state={state} role={label ? 'img' : undefined} aria-label={label}
-></span>
+<span
+	class="live-dot"
+	data-state={state}
+	data-pulse={pulse ? '' : undefined}
+	role={label ? 'img' : undefined}
+	aria-label={label}></span>
 
 <style>
 	.live-dot {
@@ -24,8 +31,17 @@ const { state = 'live', label } = Astro.props;
 		flex: none;
 	}
 
-	.live-dot[data-state='live'] {
-		background: var(--accent);
+	.live-dot[data-state='up'] {
+		background: var(--status-ok);
+	}
+
+	.live-dot[data-state='stale'],
+	.live-dot[data-state='offline'],
+	.live-dot[data-state='down'] {
+		background: var(--status-down);
+	}
+
+	.live-dot[data-pulse] {
 		animation: pulse var(--duration-pulse) var(--ease-out) infinite;
 	}
 

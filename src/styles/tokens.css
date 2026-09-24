@@ -26,20 +26,41 @@
 	--text-muted: #8b8b92;
 	--text-subtle: #5c5c63;
 
-	/* Accent — used sparingly: LIVE dots, progress bars, primary CTAs,
-	   active states, single inline highlights. */
+	/* Status dots (koncept.md §5): green for up / active, red only for a
+	   problem — down, stale or missing data. Fresh data stays --text-subtle. */
+	--status-ok: #46a758;
+	--status-down: var(--accent);
+
+	/* Accent — used sparingly: progress bars, primary CTAs, active states,
+	   single inline highlights. */
 	--accent: #e5484d;
 	--accent-hover: #ec5d5e;
 	--accent-soft: rgb(229 72 77 / 0.12);
 	/* Text on a full accent background. White on --accent is only 3.9:1, so
 	   the graphite reads on it instead (4.8:1, AA at body size). */
 	--accent-foreground: #0e0e10;
+	/* On a full accent tile: secondary text and dots, and inset elements
+	   (skeletons, empty bars). The subtle one is for non-essential detail. */
+	--accent-foreground-subtle: rgb(14 14 16 / 0.7);
+	--accent-inset: rgb(14 14 16 / 0.14);
 	/* GitHub contribution levels 1–4 in the accent, never green (koncept.md §5).
 	   Level 0 is --surface-inset. */
 	--accent-level-1: rgb(229 72 77 / 0.25);
 	--accent-level-2: rgb(229 72 77 / 0.45);
 	--accent-level-3: rgb(229 72 77 / 0.7);
 	--accent-level-4: var(--accent);
+
+	/* Scrim over photos and covers, so text on them keeps AA contrast (§4). */
+	--scrim: rgb(0 0 0 / 0.85);
+	--scrim-soft: rgb(0 0 0 / 0.5);
+
+	/* Social tiles: the brand colour as a gradient under a white logo and name.
+	   Each end keeps white text at AA (4.5:1 or more). */
+	--brand-discord: linear-gradient(135deg, #5865f2, #4752c4);
+	--brand-instagram: linear-gradient(135deg, #cc2366, #e0303c);
+	--brand-github: linear-gradient(135deg, #2f3542, #1f4fa8);
+	--brand-linkedin: linear-gradient(135deg, #0a66c2, #004182);
+	--brand-foreground: #ffffff;
 
 	/* Elevation */
 	--shadow-tile: 0 8px 24px rgb(0 0 0 / 0.32);
@@ -82,9 +103,12 @@
 	--dossier-period-width: 110px;
 	--dashboard-row-min: 84px;
 	--launcher-min: 140px;
-	--contrib-min: 560px;
 	--project-card-min: 140px;
 	--size-teaser: 44px;
+	--size-book-cover: 72px;
+	--featured-shot-min: 160px;
+	--gallery-column: 460px;
+	--size-social-row: 80px;
 	--size-bar: 6px;
 	--size-contrib-gap: 3px;
 

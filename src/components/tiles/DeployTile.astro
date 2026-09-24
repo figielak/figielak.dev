@@ -28,13 +28,16 @@ const ago =
 			: relative.format(-Math.round(minutes / 1440), 'day');
 ---
 
-<Tile area={area} label={t('tile.deploy')} dense>
+<Tile area={area} label={t('tile.deploy')} icon="rocket" dense>
 	<LiveDot slot="meta" state={dotState(deploy.state)} />
 
 	<LiveBody state={deploy.state} errorText={t('deploy.unavailable')}>
 		<div class="deploy">
 			<span class="deploy-status" data-status={d.status}>
-				<LiveDot state={d.status === 'failed' ? 'offline' : 'live'} />
+				<LiveDot
+					state={!deploy.data ? 'none' : d.status === 'failed' ? 'down' : d.status === 'success' ? 'up' : 'none'}
+					pulse={d.status === 'building'}
+				/>
 				<span data-skeleton>{t(`deploy.${d.status}`)}</span>
 			</span>
 			<time class="deploy-when" datetime={d.deployedAt.toISOString()} data-skeleton>{ago}</time>

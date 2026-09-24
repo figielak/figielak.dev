@@ -1,0 +1,100 @@
+---
+import Section from './Section.astro';
+import { getLangFromUrl, useTranslations } from '../../../i18n';
+import { DNS_PLACEHOLDER, type Dns } from '../../../lib/mocks/network';
+
+/**
+ * Ads and trackers blocked by the homelab DNS today, out of today's queries,
+ * and the 7-day sums; pushed by the agent (koncept.md §9).
+ */
+interface Props {
+	dns: Dns;
+	endpoint?: string;
+}
+
+const { dns, endpoint } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = dns.data ?? DNS_PLACEHOLDER;
+const number = new Intl.NumberFormat(lang);
+
+const week = (blocked?: number, queries?: number) =>
+	blocked === undefined || queries === undefined
+		? ''
+		: t('dns.week').replace('{n}', `${number.format(blocked)} / ${number.format(queries)}`);
+---
+
+<Section
+	title={t('tile.dns')}
+	live={dns}
+	class="dns-section"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-of-queries={t('dns.ofQueries')}
+	data-week={t('dns.week')}
+>
+	<div class="dns">
+		<p class="dns-today">
+			<span class="dns-blocked" data-skeleton aria-live="polite">{number.format(d.blockedToday)}</span>
+			<span class="dns-queries" data-skeleton>
+				{t('dns.ofQueries').replace('{n}', number.format(d.queriesToday))}
+			</span>
+		</p>
+		<span class="dns-week" data-skeleton>{week(d.blockedWeek, d.queriesWeek)}</span>
+	</div>
+</Section>
+
+<script>
+	import { setText, watchLive } from '../../../scripts/live';
+	import type { DnsSection } from '../../../lib/server/homelab';
+
+	for (const section of document.querySelectorAll<HTMLElement>('.dns-section[data-endpoint]')) {
+		const { lang = 'pl', ofQueries = '{n}', week = '{n}' } = section.dataset;
+		const number = new Intl.NumberFormat(lang);
+
+		watchLive<DnsSection>(section, (data) => {
+			setText(section.querySelector('.dns-blocked'), number.format(data.blockedToday));
+			setText(section.querySelector('.dns-queries'), ofQueries.replace('{n}', number.format(data.queriesToday)));
+			const lastWeek =
+				data.blockedWeek === undefined || data.queriesWeek === undefined
+					? ''
+					: week.replace('{n}', `${number.format(data.blockedWeek)} / ${number.format(data.queriesWeek)}`);
+			setText(section.querySelector('.dns-week'), lastWeek);
+		});
+	}
+</script>
+
+<style>
+	.dns {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+	}
+
+	.dns-today {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-sm);
+		margin: 0;
+		white-space: nowrap;
+	}
+
+	.dns-blocked {
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.dns-queries {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: var(--text-muted);
+	}
+
+	.dns-week {
+		align-self: flex-start;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+</style>

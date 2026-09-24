@@ -79,7 +79,7 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 |---|---|
 | avatar | zdjęcie lub inicjał |
 | imię i rola | nagłówek hero + rola pod spodem |
-| status | kropka akcentu z pulsowaniem + „Dostępny do pracy” |
+| status | zielona kropka z pulsowaniem + „Dostępny do pracy” |
 | lokalizacja | miasto i kraj |
 | bio | 2–3 zdania o mnie |
 | akcje | „Napisz” (pełny akcent) i „Pobierz CV” (PDF z Typst, PL/EN zgodnie z językiem); **kopiowanie e-maila jednym kliknięciem** z potwierdzeniem „Skopiowano ✓” |
@@ -157,7 +157,7 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 ### 3.4 Dashboard (`/dashboard`)
 
 - **Ton:** najbardziej osobisty i gęsty, pełny styl „żywego dashboardu”.
-- **Dwa tryby**, na desktopie oba mieszczą się na jednym ekranie. Publiczny ma od 1280px siatkę 8 kolumn (w 6 nie mieści się na jednym ekranie), prywatny 6 kolumn:
+- **Dwa tryby**, na desktopie oba mieszczą się na jednym ekranie (publiczny od 1440×900, §7). Oba mają siatkę 6 kolumn:
 
 | Tryb | Adres | Dla kogo | Dostęp |
 |---|---|---|---|
@@ -166,40 +166,45 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 
 Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłódką / „Widok publiczny”). W nawigacji jest tylko tryb publiczny.
 
-**Tryb publiczny** — lokalne u góry, praca po lewej, homelab w prawej kolumnie i na dole, życie pomiędzy.
-Kafle 1×1 mają tylko małe kafle lokalne; każdy kafel z podpisem dostaje co najmniej 2 kolumny.
+**Tryb publiczny** — karty w różnych kształtach, żeby siatka miała bentowy rytm, a nie równe rzędy:
+- to, co opisuje jedną rzecz, jest jedną kartą: czas, słońce i postęp to „Dzień”, pogoda i powietrze to „Pogoda”, a maszyna, usługi, transfer i blokada reklam to jeden „Homelab”;
+- kształt wynika z treści: GitHub jest szeroki i niski, bo wykres kontrybucji to długi pasek; muzyka jest wysoka i wąska jak okładka; homelab jest duży, bo ma najwięcej danych;
+- wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, połowa wysokości), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
+- sociale (Discord, Instagram, GitHub, LinkedIn) to cztery małe kafle 2×2: cały kafel jest przyciskiem w kolorach marki (gradient z tokenów `--brand-*`, biały tekst z kontrastem AA), z białym logo (Simple Icons) nad nazwą wersalikami, bez ↗;
+- Muzyka, Czytam i projekt przełamują ścianę tekstu obrazem, a Wakatime jako jedyny pełny akcentowy blok jest kotwicą;
+- pojedyncza liczba (odliczanie) dostaje mały kafel.
+
+Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od reszty.
 
 ```
-≥ 1280px (8 kolumn, jeden ekran od 1280×720)
-"clock   weather air     sun     progress progress lab    lab"
-"github  github  github  music   music    music    uptime uptime"
-"github  github  github  waka    waka     waka     uptime uptime"
-"books   books   event   event   dns      dns      net    net"
+≥ 1024px (6 kolumn, 8 półrzędów; jeden ekran od 1440×900)
+"day      day      weather  music    lab      lab"    ×2
+"github   github   github   music    lab      lab"    ×2
+"featured featured featured dc       ig       waka"
+"featured featured featured gh       li       waka"
+"featured featured featured books    books    event"  ×2
 
-1024–1279px (6 kolumn, przewija się)
-"clock   weather air     sun     progress progress"
-"github  github  github  music   music    music"
-"github  github  github  waka    waka     waka"
-"lab     lab     lab     uptime  uptime   uptime"
-"dns     dns     net     net     event    event"
-"books   books   books   books   books    books"
+640–1023px (4 kolumny)
+"day day weather music" / "github github github music" /
+"featured ×4" ×2 / "dc ig gh li" / "lab ×4" ×2 /
+"waka waka books books" / "event event books books"
+
+< 640px (2 kolumny: szerokie karty na cały rząd, małe parami)
+"day day" / "weather music" / "github github" / "featured featured" /
+"dc ig" / "gh li" / "lab lab" / "waka event" / "books books"
 ```
 
 | Kafel | Grupa | Zawartość |
 |---|---|---|
-| `clock` | lokalne | czas Europe/Warsaw, co sekundę |
-| `weather` | lokalne | temperatura, opis, miasto |
-| `air` | lokalne | jakość powietrza w Rzeszowie (GIOŚ): poziom słownie, skala 6 stopni w akcencie, PM2.5/PM10 |
-| `sun` | lokalne | wschód i zachód słońca, długość dnia — liczone lokalnie, bez API |
-| `progress` | lokalne | % ukończenia dnia, miesiąca i roku (paski) |
-| `github` | praca | wykres kontrybucji, liczba commitów, streak, repozytoria |
-| `waka` | praca | czas kodowania dziś i w tygodniu, top 3 języki (WakaTime) |
-| `lab` | homelab | CPU, RAM i dysk w % (paski obok siebie), kontenery i temperatura CPU |
-| `uptime` | homelab | uptime hosta; usługi pod ogólnymi nazwami (Media, Pliki, DNS, Kopie): up/down, dostępność z 30 dni, średni czas odpowiedzi; brakująca usługa „—” |
-| `dns` | homelab | zablokowane dziś i ich udział w zapytaniach; 7 dni: zablokowane / zapytania (AdGuard) |
-| `net` | homelab | transfer **samego homelaba** (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta |
-| `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm) |
-| `books` | życie | aktualnie czytane książki (statycznie, `src/lib/books.ts`) |
+| `day` | lokalne | czas Europe/Warsaw co sekundę i data; wschód i zachód słońca, długość dnia; paski % dnia, miesiąca i roku — wszystko liczone lokalnie, bez API i bez kropki |
+| `weather` | lokalne | dwie sekcje: pogoda (temperatura, opis, miasto) i jakość powietrza w Rzeszowie (GIOŚ: poziom słownie, skala 6 stopni; PM2.5/PM10 tylko na telefonie i tablecie) |
+| `github` | praca | liczba kontrybucji, streak, repozytoria, legenda i „X min temu” w jednym rzędzie; pod nimi wykres roku na całą szerokość |
+| `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz ↗”; kilka projektów w karuzeli (`src/lib/featured.ts` — dane testowe do czasu kolekcji projektów, §3.2) |
+| `dc` `ig` `gh` `li` | kontakt | linki do profili: kafel w kolorach marki, białe logo i nazwa |
+| `waka` | praca | czas kodowania dziś i w tygodniu, top języki (WakaTime); jedyny pełny akcentowy blok; w wąskim kaflu tylko liczba i najczęstszy język |
+| `lab` | homelab | cztery sekcje: **maszyna** (CPU, RAM, dysk w % — czerwone od 85% — kontenery, temperatura CPU), **usługi** (uptime hosta; usługi pod ogólnymi nazwami: Media, Pliki, DNS, Kopie — up/down, dostępność z 30 dni jako liczba i pasek od 90%, średni czas odpowiedzi; usługi bez danych zebrane w jedną linię „Brak danych: …”), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
+| `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole |
+| `books` | życie | aktualnie czytane książki z okładkami (statycznie, `src/lib/books.ts`, okładki w `src/assets/books/`) |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
 
 **Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne.
@@ -231,17 +236,20 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i
   - etykieta (mono, uppercase, szara) u góry;
   - treść lub duża liczba;
   - detal lub akcja na dole.
-- **Klikalne kafle** mają ikonę ↗ w prawym górnym albo dolnym rogu.
+- **Klikalne kafle** mają ikonę ↗ w prawym górnym albo dolnym rogu. Wyjątek: kafle sociali, które w całości są przyciskiem marki (§3.4).
 - **Hierarchia przez rozmiar:** najważniejsze treści dostają największe kafle.
-- **Akcent jest rzadki.** Używam go do:
-  - kropek LIVE;
-  - pasków postępu;
+- **Akcent jest rzadki**, bo czerwień czyta się jak „błąd” — im rzadziej występuje, tym mocniej się wyróżnia. Używam go do:
   - głównych CTA;
-  - aktywnych stanów;
-  - pojedynczych wyróżnień w tekście.
+  - potwierdzeń i bieżących wpisów (np. „Skopiowano ✓”, „obecnie” w edukacji);
+  - pojedynczych wyróżnień w tekście;
+  - jednego wykresu marki: kontrybucji GitHuba;
+  - małych ikon przy etykietach kart (np. logo GitHuba, Last.fm, książka);
+  - sygnalizowania prawdziwych problemów (§5).
 
-  Maksymalnie 1–2 kafle na widok mogą mieć pełne akcentowe tło (np. CV, kontakt).
-- **Ikony interfejsu** (strzałki, akcje, etykiety): jedna rodzina outline (Tabler), w kolorze tekstu.
+  Aktywna zakładka w nawigacji, paski postępu i zajętości oraz skala jakości powietrza są neutralne.
+
+  Maksymalnie 1–2 kafle na widok mogą mieć pełne akcentowe tło (np. CV, kontakt; na dashboardzie Wakatime). W takim kaflu tekst, ikony i kropki są grafitowe (`--accent-foreground`), a `Tile` sam podmienia tokeny tekstu.
+- **Ikony interfejsu** (strzałki, akcje): jedna rodzina outline (Tabler), w kolorze tekstu. Wyjątek: ikona przy etykiecie karty (`Tile icon`) jest w kolorze akcentu.
 - **Kolor w treści — dozwolony, nie wymagany.** Interfejs (tła, ramki, tekst, akcent) zostaje grafitowy z jednym czerwonym akcentem. Treść może mieć pełny kolor tam, gdzie dodaje życia i informacji:
   - prawdziwe loga marek i technologii w ich kolorach (np. Simple Icons w kolorze marki, logo uczelni, usług);
   - okładki książek i albumów, zdjęcia, zrzuty ekranu projektów;
@@ -272,8 +280,13 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
 
 Zasady:
-- Stany na żywo: domyślnie `online` i `LIVE` mają kolor `--accent` z pulsowaniem, a `offline` i nieaktualne dane mają kolor `--text-subtle`. Kolory semantyczne (np. zielony „online”, skala jakości powietrza) są dozwolone, jeśli poprawiają czytelność — wtedy dodaję je jako tokeny.
-- Wykres kontrybucji GitHuba rysuję w odcieniach akcentu (4 poziomy przezroczystości).
+- **Kropki stanu: czerwień tylko przy problemie.** Czerwień czyta się jak „awaria”, więc gdyby świeciła wszędzie, prawdziwy problem zginąłby w tłumie.
+  - Kropka w rogu kafla (świeżość danych): świeże dane — `--text-subtle`, bez pulsu; nieaktualne dane i błąd — `--status-down` (czerwień). Kafle, które nie mogą być nieaktualne (zegar, zajawka dashboardu), nie mają kropki.
+  - Status rzeczy (usługi, deploy, „online”, „teraz gra”, „Dostępny do pracy”): działa — `--status-ok` (zielony); nie działa — `--status-down`; brak danych lub bezczynność — `--text-subtle`.
+  - Pulsują tylko rzeczy dziejące się teraz: „Dostępny do pracy”, „teraz gra”, trwający build.
+- **Paski** (postęp, CPU/RAM/dysk) mają neutralne wypełnienie `--text-muted`. Paski homelaba robią się czerwone (`--status-down`) od progu zajętości (85%). Bieżący stopień skali powietrza ma kolor `--text`.
+- Inne kolory semantyczne (np. skala jakości powietrza) są dozwolone, jeśli poprawiają czytelność — wtedy dodaję je jako tokeny.
+- Wykres kontrybucji GitHuba rysuję w odcieniach akcentu (4 poziomy przezroczystości) — to jedyny wykres w akcencie.
 - Kolor treści (loga, okładki, zdjęcia, grafiki) opisuje §4 „Kolor w treści”.
 
 ---
@@ -302,9 +315,9 @@ Reguły poniżej dotyczą **widoków w bento**: projektów i dashboardu.
 
 - **Kolumny:**
   - projekty mają 4 kolumny;
-  - dashboard ma 6 kolumn, publiczny od 1280px 8 (`xl` w `BentoLayout`).
+  - dashboard ma 6 kolumn (publiczny mieści się na jednym ekranie od 1440×900 dzięki `xl` i `tall` w `BentoLayout`, które dzielą wysokość ekranu na rzędy).
 - **Odstęp między kaflami:** 12px (dashboard: 10px).
-- **„Mieści się na jednym ekranie”** dotyczy desktopu. Dashboard ma się zmieścić bez scrolla od 1280×720 w górę, a docelowy widok to 1440×900. Poniżej tego scroll jest dozwolony.
+- **„Mieści się na jednym ekranie”** dotyczy desktopu. Publiczny dashboard mieści się bez scrolla od 1440×900 (docelowy widok), prywatny od 1280×720. Poniżej tego scroll jest dozwolony.
 - **Tablet (640–1024px):** 4 kolumny; dashboard przechodzi z 6 na 4.
 - **Telefon (<640px):**
   - siatka ma **2 kolumny** i kafle układają się od lewej do prawej, **nigdy jedna kolumna jeden pod drugim**;
@@ -333,7 +346,7 @@ Na start:
   - kafel unosi się lekko (`translateY(-2px)`);
   - pojawia się delikatny cień;
   - przejście trwa 150–200ms z `ease-out`.
-- **Kropka LIVE:** kolor akcentu, łagodne pulsowanie (skala i przezroczystość, około 2s).
+- **Pulsowanie kropki** (tylko rzeczy dziejące się teraz, patrz §5): łagodne, skala i przezroczystość, około 2s.
 - **Focus:** widoczny ring w kolorze akcentu (`:focus-visible`).
 - **`prefers-reduced-motion`:** wyłącza unoszenie, pulsowanie i animacje wejścia.
 
@@ -386,11 +399,13 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 | Stan | Wygląd |
 |---|---|
 | Ładowanie | szkielet w kształcie docelowej treści |
-| OK | dane i kropka LIVE |
-| Nieaktualne (dane starsze niż próg, np. 10 min) | dane, szara kropka, „aktualizacja X min temu” |
-| Błąd lub brak danych | spokojny tekst zastępczy (np. „Homelab offline”) |
+| OK | dane i szara kropka |
+| Nieaktualne (dane starsze niż próg, np. 10 min) | dane, czerwona kropka, „aktualizacja X min temu” |
+| Błąd lub brak danych | czerwona kropka i spokojny tekst zastępczy (np. „Homelab offline”) |
 
 Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na danych testowych (mock), potem podpinam prawdziwe źródła.**
+
+**Kafle z kilkoma źródłami** (Pogoda: pogoda + powietrze; Homelab: maszyna, usługi, transfer) składają się z sekcji, z których każda ma własne 4 stany. Kropka kafla pokazuje najgorszy stan sekcji; sekcja z błędem pokazuje krótkie „Brak danych”, a „Homelab offline” pojawia się dopiero, gdy padną wszystkie sekcje. „Aktualizacja X min temu” sekcji widać tylko przy nieaktualnych danych.
 
 ---
 
@@ -527,7 +542,7 @@ Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
    - zrzut w wyróżnionym projekcie.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured. Jest tylko szkielet `/projects`.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
-5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`).
+5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
 6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Podpięte: GitHub (`/api/github`), Last.fm (`/api/music`) i WakaTime (`/api/waka`) — cache w pamięci instancji, wyspy w czystym TS (`src/scripts/live.ts`). Homelab: `POST /api/stats` → Firestore → `/api/homelab/*`, agent w repo homelaba — kod gotowy, zostaje konfiguracja GCP (docs/deploy.md) i wdrożenie. Zostały pogoda i powietrze (bez kluczy) oraz analityka.
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, odliczanie). Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
 

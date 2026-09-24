@@ -21,7 +21,7 @@ const d = site.data ?? SITE_PLACEHOLDER;
 const number = new Intl.NumberFormat(lang);
 ---
 
-<Tile area={area} label={t('tile.site')} dense>
+<Tile area={area} label={t('tile.site')} icon="chart-bar" dense>
 	<LiveDot slot="meta" state={dotState(site.state)} />
 
 	<LiveBody state={site.state} errorText={t('site.unavailable')}>
@@ -29,7 +29,7 @@ const number = new Intl.NumberFormat(lang);
 			<BigNumber value={number.format(d.visitorsToday)} caption={t('site.today')} />
 			<ul class="site-details">
 				<li class="site-online" data-skeleton>
-					<LiveDot state={site.state === 'ok' && d.online > 0 ? 'live' : 'offline'} />
+					<LiveDot state={site.state === 'ok' && d.online > 0 ? 'up' : 'none'} />
 					{t('site.online').replace('{n}', String(d.online))}
 				</li>
 				<li data-skeleton>{t('site.week').replace('{n}', number.format(d.visitorsWeek))}</li>

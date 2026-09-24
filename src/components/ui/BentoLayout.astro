@@ -28,10 +28,12 @@ interface Props {
 	dense?: boolean;
 	/** Stretch to fill the remaining height of a flex parent. */
 	fill?: boolean;
+	/** With `fill` and `xl`: fit one screen only from 1440×900, not 1280×720. */
+	tall?: boolean;
 	class?: string;
 }
 
-const { base, md, lg, xl, dense = false, fill = false, class: className } = Astro.props;
+const { base, md, lg, xl, dense = false, fill = false, tall = false, class: className } = Astro.props;
 
 const toAreas = (rows: string[]) => rows.map((row) => `"${row}"`).join(' ');
 const toColumns = (count: number) => `repeat(${count}, minmax(0, 1fr))`;
@@ -61,6 +63,7 @@ const vars = [
 	data-dense={dense ? '' : undefined}
 	data-fill={fill ? '' : undefined}
 	data-xl={xl ? '' : undefined}
+	data-tall={tall ? '' : undefined}
 	style={vars}
 >
 	<slot />
@@ -119,8 +122,22 @@ const vars = [
 	}
 
 	@media (min-width: 1280px) and (min-height: 720px) {
-		.bento[data-fill][data-xl] > :global(*) {
+		.bento[data-fill][data-xl]:not([data-tall]) > :global(*) {
 			contain: size;
+		}
+	}
+
+	/* A grid with more rows (the public dashboard) needs a taller screen;
+	   below it the grid grows with its content and the page scrolls. */
+	@media (min-width: 1280px) and (min-height: 860px) {
+		.bento[data-fill][data-xl][data-tall] > :global(*) {
+			contain: size;
+		}
+	}
+
+	@media not all and (min-width: 1280px) and (min-height: 860px) {
+		.bento[data-fill][data-tall] {
+			min-height: auto;
 		}
 	}
 </style>

@@ -1,7 +1,8 @@
 ---
 /**
- * One labelled usage bar: `CPU  ████░░░░  23%`. The fill is the accent, as
- * progress bars are one of its few uses (koncept.md §4).
+ * One labelled usage bar: `CPU  ████░░░░  23%`. The fill is neutral; red is
+ * kept for problems (koncept.md §5), so with `alertAt` the bar turns red once
+ * the value reaches that percentage.
  */
 interface Props {
 	label: string;
@@ -9,13 +10,19 @@ interface Props {
 	value: number;
 	/** Shown instead of the percentage, e.g. `14.2 / 32 GB`. */
 	detail?: string;
+	/** Percent from which the bar is shown as a problem, e.g. a nearly full disk. */
+	alertAt?: number;
 }
 
-const { label, value, detail } = Astro.props;
+const { label, value, detail, alertAt } = Astro.props;
 const percent = Math.round(Math.min(100, Math.max(0, value)));
 ---
 
-<div class="stat">
+<div
+	class="stat"
+	data-alert-at={alertAt}
+	data-alert={alertAt !== undefined && percent >= alertAt ? '' : undefined}
+>
 	<span class="stat-label" data-skeleton>{label}</span>
 	<span
 		class="stat-track"
@@ -69,6 +76,10 @@ const percent = Math.round(Math.min(100, Math.max(0, value)));
 		display: block;
 		height: 100%;
 		border-radius: inherit;
-		background: var(--accent);
+		background: var(--text-muted);
+	}
+
+	.stat[data-alert] .stat-fill {
+		background: var(--status-down);
 	}
 </style>

@@ -4,46 +4,84 @@ import LiveDot from '../ui/LiveDot.astro';
 import LiveBody from '../ui/LiveBody.astro';
 import LiveFooter from '../ui/LiveFooter.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
-import { dotState } from '../../lib/live';
+import { dotState, worstState } from '../../lib/live';
 import { WEATHER_PLACEHOLDER, type Weather } from '../../lib/mocks/weather';
+import { AIR_LEVELS, AIR_PLACEHOLDER, type Air } from '../../lib/mocks/air';
 
-/** Current weather from Open-Meteo, cached 15 min (koncept.md §9). */
+/**
+ * Weather from Open-Meteo, cached 15 min, and air quality in Rzeszów from
+ * GIOŚ (koncept.md §3.4, §9) — two sources, so two sections with their own
+ * states; the dot and the footer follow the worse of them.
+ *
+ * The six air index levels are a quiet scale with the current one in the
+ * text colour — red would read as a warning even for "good".
+ */
 interface Props {
 	weather: Weather;
+	air: Air;
 	area?: string;
 }
 
-const { weather, area } = Astro.props;
-const t = useTranslations(getLangFromUrl(Astro.url));
-const d = weather.data ?? WEATHER_PLACEHOLDER;
+const { weather, air, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const w = weather.data ?? WEATHER_PLACEHOLDER;
+const a = air.data ?? AIR_PLACEHOLDER;
+/* No highlighted step while the level is only a placeholder. */
+const current = air.data ? AIR_LEVELS.indexOf(a.level) : -1;
+const level = t(`air.${a.level}`);
+const state = worstState([weather.state, air.state]);
+const footer = weather.state === state ? weather : air;
 ---
 
-<Tile area={area} label={t('tile.weather')} dense>
-	<LiveDot slot="meta" state={dotState(weather.state)} />
+<Tile area={area} label={t('tile.weather')} icon="cloud" dense>
+	<LiveDot slot="meta" state={dotState(state)} />
 
-	<LiveBody state={weather.state} errorText={t('weather.unavailable')}>
-		<div class="weather">
-			<span class="weather-temp" data-skeleton aria-live="polite">{d.tempC}°</span>
-			<span class="weather-line" data-skeleton>{t(`weather.${d.condition}`)} · {d.city}</span>
-			<span class="weather-line weather-detail" data-skeleton>
-				{t('weather.feelsLike').replace('{n}', String(d.feelsLikeC))} · {
-					t('weather.wind').replace('{n}', String(d.windKmh))
-				}
-			</span>
-		</div>
-	</LiveBody>
+	<div class="weather">
+		<LiveBody state={weather.state} errorText={t('weather.unavailable')}>
+			<div class="weather-now">
+				<span class="weather-temp" data-skeleton aria-live="polite">{w.tempC}°</span>
+				<span class="weather-line" data-skeleton>{t(`weather.${w.condition}`)} · {w.city}</span>
+			</div>
+		</LiveBody>
 
-	<LiveFooter slot="footer" live={weather} />
+		<LiveBody state={air.state} errorText={t('air.unavailable')}>
+			<div class="air">
+				<span class="air-level" data-skeleton aria-live="polite">
+					<span class="air-label">{t('tile.air')}</span>
+					{level}
+				</span>
+				<span class="air-scale" role="img" aria-label={t('air.scale').replace('{level}', level)}>
+					{AIR_LEVELS.map((_, i) => <span class="air-step" data-current={i === current ? '' : undefined} />)}
+				</span>
+				<span class="air-pm" data-skeleton>PM2.5 {a.pm25} · PM10 {a.pm10}</span>
+			</div>
+		</LiveBody>
+	</div>
+
+	<LiveFooter slot="footer" live={footer} />
 </Tile>
 
 <style>
+	/* Weather takes the room it needs; air quality sits at the bottom. */
 	.weather {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
-		justify-content: center;
-		gap: var(--space-2xs);
+		justify-content: space-between;
+		gap: var(--space-md);
 		height: 100%;
+		min-width: 0;
+	}
+
+	.weather > :global(.live-body) {
+		height: auto;
+	}
+
+	.weather-now {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2xs);
 		min-width: 0;
 		container-type: inline-size;
 	}
@@ -54,7 +92,6 @@ const d = weather.data ?? WEATHER_PLACEHOLDER;
 		font-weight: 700;
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
-		margin-bottom: var(--space-2xs);
 	}
 
 	.weather-line {
@@ -65,15 +102,65 @@ const d = weather.data ?? WEATHER_PLACEHOLDER;
 		color: var(--text-muted);
 	}
 
-	.weather-detail {
+	.air {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+		min-width: 0;
+	}
+
+	.air-level {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		min-width: 0;
+		white-space: nowrap;
+	}
+
+	.air-label {
+		font-family: var(--font-mono);
 		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
 		color: var(--text-subtle);
 	}
 
-	/* Short desktop screens leave a 1×1 tile room for two lines only (§7). */
-	@media (min-width: 1024px) and (max-height: 820px) {
-		.weather-detail {
+	.air-scale {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: var(--space-2xs);
+	}
+
+	.air-step {
+		height: var(--size-bar);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+	}
+
+	.air-step[data-current] {
+		background: var(--text);
+	}
+
+	.air-pm {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* In the desktop grid the 1×1 tile has no room for the PM line and the
+	   full-size number. */
+	@media (min-width: 1024px) {
+		.air-pm {
 			display: none;
+		}
+
+		.weather-temp {
+			font-size: min(var(--size-number-short), 30cqi);
 		}
 	}
 </style>

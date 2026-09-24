@@ -8,7 +8,7 @@ import ProfileCard from '../ui/ProfileCard.astro';
 import type { Social } from '../ui/ProfileCard.astro';
 import DashboardTeaserTile from '../tiles/DashboardTeaserTile.astro';
 import { mockWeather } from '../../lib/mocks/weather';
-import { emailEncoded, githubUrl } from '../../lib/contact';
+import { emailEncoded, githubUrl, linkedinUrl } from '../../lib/contact';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
 const lang = getLangFromUrl(Astro.url);
@@ -29,7 +29,7 @@ const socials: Social[] = [
 	{
 		label: 'LinkedIn',
 		icon: 'linkedin',
-		href: 'https://www.linkedin.com/in/krystian-figiela/',
+		href: linkedinUrl,
 		external: true,
 	},
 	/* href is filled in by CopyValue's script from the encoded address. */

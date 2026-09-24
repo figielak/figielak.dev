@@ -15,11 +15,20 @@ export interface Live<T> {
 /** Data older than this is shown as stale (koncept.md §9). */
 export const STALE_AFTER_MIN = 10;
 
-/** The LIVE dot a tile shows for its state. */
+/** The dot a tile shows for its state: grey while loading or fresh, red once there is a problem. */
 export function dotState(state: LiveState): 'live' | 'stale' | 'offline' {
-	if (state === 'ok') return 'live';
+	if (state === 'loading' || state === 'ok') return 'live';
 	if (state === 'stale') return 'stale';
 	return 'offline';
+}
+
+/**
+ * State of a tile made of sections with their own sources (koncept.md §9):
+ * the most serious of theirs, so one failing source is enough to show it.
+ */
+export function worstState(states: LiveState[]): LiveState {
+	for (const state of ['error', 'stale', 'loading'] as const) if (states.includes(state)) return state;
+	return 'ok';
 }
 
 /** Whole minutes since `date`, never less than one. */

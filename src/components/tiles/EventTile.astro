@@ -5,8 +5,9 @@ import { daysUntil, nextEvent } from '../../lib/events';
 
 /**
  * Countdown to the next important event from src/lib/events.ts
- * (koncept.md §3.4). The build picks the event; the browser recounts the days,
- * so the number stays right between deploys.
+ * (koncept.md §3.4) — a small square: the event on top, the days under it.
+ * The build picks the event; the browser recounts the days, so the number
+ * stays right between deploys.
  */
 interface Props {
 	area?: string;
@@ -25,7 +26,7 @@ const date = event
 	: '';
 ---
 
-<Tile area={area} label={t('tile.event')} dense>
+<Tile area={area} label={t('tile.event')} icon="hourglass" dense>
 	{
 		event ? (
 			<div
@@ -66,9 +67,9 @@ const date = event
 <style>
 	.event {
 		display: flex;
-		align-items: center;
+		flex-direction: column;
 		justify-content: space-between;
-		gap: var(--space-xl);
+		gap: var(--space-md);
 		height: 100%;
 		min-width: 0;
 	}
@@ -89,15 +90,16 @@ const date = event
 	}
 
 	.event-date {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		color: var(--text-muted);
 	}
 
 	.event-count {
 		display: flex;
-		flex: none;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: var(--space-2xs);
+		align-items: baseline;
+		gap: var(--space-sm);
 		margin: 0;
 	}
 

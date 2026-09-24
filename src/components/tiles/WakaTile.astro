@@ -9,7 +9,8 @@ import { dotState } from '../../lib/live';
 import { WAKA_PLACEHOLDER, type Waka } from '../../lib/mocks/waka';
 
 /**
- * Coding time from WakaTime, cached 1 h (koncept.md §9).
+ * Coding time from WakaTime, cached 1 h (koncept.md §9). The dashboard's one
+ * full accent tile (§4) — its anchor; Tile switches the text tokens for it.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser; without it, it shows `waka` as given (mocks in /dev/tiles).
@@ -38,6 +39,8 @@ const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padSt
 <Tile
 	area={area}
 	label={t('tile.waka')}
+	icon="code"
+	accent
 	dense
 	class="waka-tile"
 	data-endpoint={endpoint}
@@ -93,6 +96,11 @@ const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padSt
 </script>
 
 <style>
+	/* The tile is the container, so a narrow one can also drop the footer detail. */
+	:global(.waka-tile) {
+		container-type: inline-size;
+	}
+
 	.waka {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -127,5 +135,20 @@ const short = (min: number) => `${Math.floor(min / 60)}:${String(min % 60).padSt
 
 	.waka-percent {
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* One column wide (beside the social tiles): the number, its caption and
+	   only the top language; the week in the footer does not fit. */
+	@container (max-width: 280px) {
+		.waka {
+			grid-template-columns: minmax(0, 1fr);
+			align-content: center;
+			gap: var(--space-md);
+		}
+
+		.waka-language:nth-child(n + 2),
+		:global(.waka-tile .live-footer-detail) {
+			display: none;
+		}
 	}
 </style>

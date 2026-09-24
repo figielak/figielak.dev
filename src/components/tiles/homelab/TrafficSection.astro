@@ -1,0 +1,129 @@
+---
+import Section from './Section.astro';
+import Icon from '../../ui/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../../i18n';
+import { decimal } from '../../../lib/units';
+import { TRAFFIC_PLACEHOLDER, type Traffic } from '../../../lib/mocks/network';
+
+/**
+ * Traffic of the homelab itself — the Pi's Wi-Fi, not the whole home — today
+ * and in total since the agent first ran; pushed by the agent (koncept.md §9).
+ */
+interface Props {
+	traffic: Traffic;
+	endpoint?: string;
+}
+
+const { traffic, endpoint } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = traffic.data ?? TRAFFIC_PLACEHOLDER;
+
+const rows = [
+	{ icon: 'arrow-down', label: t('net.down'), value: d.downGbToday },
+	{ icon: 'arrow-up', label: t('net.up'), value: d.upGbToday },
+] as const;
+
+const sinceDate = (iso: string) =>
+	new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'numeric' }).format(new Date(`${iso}T12:00:00Z`));
+const total = (data: typeof d) =>
+	t('net.total')
+		.replace('{date}', sinceDate(data.totalSince))
+		.replace('{down}', decimal(data.downGbTotal, lang))
+		.replace('{up}', decimal(data.upGbTotal, lang));
+---
+
+<Section
+	title={t('homelab.traffic')}
+	live={traffic}
+	class="traffic-section"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-total={t('net.total')}
+>
+	<div class="traffic">
+		<dl class="traffic-today">
+			{
+				rows.map((row) => (
+					<div class="traffic-row">
+						<dt class="traffic-label">
+							<Icon name={row.icon} size={14} />
+							<span class="visually-hidden">{row.label}</span>
+						</dt>
+						<dd class="traffic-value" data-skeleton aria-live="polite">
+							{decimal(row.value, lang)} GB
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+		<span class="traffic-total" data-skeleton>{total(d)}</span>
+	</div>
+</Section>
+
+<script>
+	import { setText, watchLive } from '../../../scripts/live';
+	import { decimal } from '../../../lib/units';
+	import type { TrafficSection } from '../../../lib/server/homelab';
+
+	for (const section of document.querySelectorAll<HTMLElement>('.traffic-section[data-endpoint]')) {
+		const { lang = 'pl', total = '' } = section.dataset;
+		const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'numeric' });
+
+		watchLive<TrafficSection>(section, (data) => {
+			const values = section.querySelectorAll('.traffic-value');
+			setText(values[0], `${decimal(data.downGbToday, lang)} GB`);
+			setText(values[1], `${decimal(data.upGbToday, lang)} GB`);
+			setText(
+				section.querySelector('.traffic-total'),
+				total
+					.replace('{date}', date.format(new Date(`${data.totalSince}T12:00:00Z`)))
+					.replace('{down}', decimal(data.downGbTotal, lang))
+					.replace('{up}', decimal(data.upGbTotal, lang)),
+			);
+		});
+	}
+</script>
+
+<style>
+	/* Today's two numbers, the running total beside them. */
+	.traffic {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-xs) var(--space-xl);
+	}
+
+	.traffic-today {
+		display: flex;
+		gap: var(--space-xl);
+		margin: 0;
+	}
+
+	.traffic-row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-xs);
+	}
+
+	.traffic-label {
+		display: inline-flex;
+		color: var(--text-subtle);
+	}
+
+	.traffic-value {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	.traffic-total {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+</style>

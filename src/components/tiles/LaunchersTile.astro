@@ -16,7 +16,7 @@ const { area } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
 ---
 
-<Tile area={area} label={t('tile.launch')} dense>
+<Tile area={area} label={t('tile.launch')} icon="bolt" dense>
 	<ul class="launchers">
 		{
 			services.map((service) => (

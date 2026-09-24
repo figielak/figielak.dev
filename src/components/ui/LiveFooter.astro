@@ -9,15 +9,17 @@ import { minutesSince, type Live } from '../../lib/live';
  */
 interface Props {
 	live: Live<object>;
+	/** Only show the line once the data is stale — for a section of a larger tile. */
+	staleOnly?: boolean;
 }
 
-const { live } = Astro.props;
+const { live, staleOnly = false } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
 const template = t('state.ago');
 const text = live.data ? template.replace('{n}', String(minutesSince(live.data.updatedAt))) : '';
 ---
 
-<span class="live-footer" data-state={live.state}>
+<span class="live-footer" data-state={live.state} data-stale-only={staleOnly ? '' : undefined}>
 	{Astro.slots.has('default') && <span class="live-footer-detail"><slot /></span>}
 	<span class="live-footer-updated" data-template={template}>{text || '\u00a0'}</span>
 </span>
@@ -45,7 +47,8 @@ const text = live.data ? template.replace('{n}', String(minutesSince(live.data.u
 		margin-left: auto;
 	}
 
-	.live-footer:is([data-state='loading'], [data-state='error']) {
+	.live-footer:is([data-state='loading'], [data-state='error']),
+	.live-footer[data-stale-only]:not([data-state='stale']) {
 		visibility: hidden;
 	}
 </style>

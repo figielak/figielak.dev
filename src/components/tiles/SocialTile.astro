@@ -1,0 +1,92 @@
+---
+import Tile from '../ui/Tile.astro';
+import Github from '../../assets/brands/github.svg';
+import Linkedin from '../../assets/brands/linkedin.svg';
+import Instagram from '../../assets/brands/instagram.svg';
+import Discord from '../../assets/brands/discord.svg';
+import { discordUrl, githubUrl, instagramUrl, linkedinUrl } from '../../lib/contact';
+
+/**
+ * A link to one of my profiles (koncept.md §3.4): the whole tile is one button
+ * in the brand's colours — a gradient from tokens.css — with the white logo
+ * (Simple Icons, CC0) over the name. No ↗: the tile itself is the button.
+ */
+type Brand = 'github' | 'linkedin' | 'instagram' | 'discord';
+
+interface Props {
+	brand: Brand;
+	area?: string;
+}
+
+const brands = {
+	github: { name: 'GitHub', href: githubUrl, Logo: Github },
+	linkedin: { name: 'LinkedIn', href: linkedinUrl, Logo: Linkedin },
+	instagram: { name: 'Instagram', href: instagramUrl, Logo: Instagram },
+	discord: { name: 'Discord', href: discordUrl, Logo: Discord },
+} as const;
+
+const { brand, area } = Astro.props;
+const { name, href, Logo } = brands[brand];
+---
+
+<Tile area={area} href={href} external arrow={false} dense class="social-tile" data-brand={brand}>
+	<span class="social">
+		<Logo class="social-logo" width={26} height={26} aria-hidden="true" />
+		<span class="social-name">{name}</span>
+	</span>
+</Tile>
+
+<style>
+	/* Selectors this long so they beat Tile's own background and hover. */
+	:global(.tile.social-tile[data-interactive][data-brand]),
+	:global(.tile.social-tile[data-interactive][data-brand]:hover) {
+		border-color: transparent;
+		background: var(--social-bg);
+		color: var(--brand-foreground);
+	}
+
+	:global(.tile.social-tile[data-interactive][data-brand]:hover) {
+		filter: brightness(1.1);
+	}
+
+	:global(.social-tile[data-brand='discord']) {
+		--social-bg: var(--brand-discord);
+	}
+
+	:global(.social-tile[data-brand='instagram']) {
+		--social-bg: var(--brand-instagram);
+	}
+
+	:global(.social-tile[data-brand='github']) {
+		--social-bg: var(--brand-github);
+	}
+
+	:global(.social-tile[data-brand='linkedin']) {
+		--social-bg: var(--brand-linkedin);
+	}
+
+	.social {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-md);
+		height: 100%;
+		min-width: 0;
+	}
+
+	.social-logo {
+		flex: none;
+	}
+
+	.social-name {
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--size-label);
+		font-weight: 700;
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+</style>

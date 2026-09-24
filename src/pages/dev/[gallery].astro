@@ -4,12 +4,11 @@ import TileLabel from '../../components/ui/TileLabel.astro';
 import DashboardTeaserTile from '../../components/tiles/DashboardTeaserTile.astro';
 import WeatherTile from '../../components/tiles/WeatherTile.astro';
 import GithubTile from '../../components/tiles/GithubTile.astro';
-import LabTile from '../../components/tiles/LabTile.astro';
-import UptimeTile from '../../components/tiles/UptimeTile.astro';
-import AirTile from '../../components/tiles/AirTile.astro';
+import HomelabTile from '../../components/tiles/HomelabTile.astro';
 import WakaTile from '../../components/tiles/WakaTile.astro';
-import DnsTile from '../../components/tiles/DnsTile.astro';
-import NetTile from '../../components/tiles/NetTile.astro';
+import EventTile from '../../components/tiles/EventTile.astro';
+import FeaturedTile from '../../components/tiles/FeaturedTile.astro';
+import SocialTile from '../../components/tiles/SocialTile.astro';
 import MusicTile from '../../components/tiles/MusicTile.astro';
 import DeployTile from '../../components/tiles/DeployTile.astro';
 import SiteStatsTile from '../../components/tiles/SiteStatsTile.astro';
@@ -27,8 +26,9 @@ import { mockSite } from '../../lib/mocks/site';
 
 /**
  * Dev-only gallery: every live tile in all four states side by side
- * (koncept.md §9). getStaticPaths returns nothing in a build, so the page
- * never ships.
+ * (koncept.md §9), the homelab with its sections in different states, and
+ * the tiles without live data that the dashboard layout depends on.
+ * getStaticPaths returns nothing in a build, so the page never ships.
  */
 export function getStaticPaths() {
 	return import.meta.env.DEV ? [{ params: { gallery: 'tiles' } }] : [];
@@ -42,31 +42,25 @@ export function getStaticPaths() {
 				<section class="state">
 					<TileLabel>{state}</TileLabel>
 					<DashboardTeaserTile weather={mockWeather(state)} />
-					<div class="square">
-						<WeatherTile weather={mockWeather(state)} />
+					<div class="pair">
+						<WeatherTile weather={mockWeather(state)} air={mockAir(state)} />
+						<EventTile />
 					</div>
-					<div class="tall">
+					<div class="low">
 						<GithubTile github={mockGithub(state)} />
 					</div>
-					<div class="wide">
-						<LabTile stats={mockLab(state)} />
-					</div>
-					<div class="tall">
-						<UptimeTile uptime={mockUptime(state)} />
-					</div>
-					<div class="pair">
-						<AirTile air={mockAir(state)} />
-					</div>
-					<div class="wide">
-						<DnsTile dns={mockDns(state)} />
-					</div>
-					<div class="wide">
-						<NetTile traffic={mockTraffic(state)} />
+					<div class="big">
+						<HomelabTile
+							stats={mockLab(state)}
+							uptime={mockUptime(state)}
+							traffic={mockTraffic(state)}
+							dns={mockDns(state)}
+						/>
 					</div>
 					<div class="wide">
 						<WakaTile waka={mockWaka(state)} />
 					</div>
-					<div class="tall">
+					<div class="pair tall">
 						<MusicTile music={mockMusic(state)} />
 					</div>
 					<div class="pair">
@@ -78,13 +72,39 @@ export function getStaticPaths() {
 				</section>
 			))
 		}
+		<section class="state">
+			<TileLabel>mixed sections</TileLabel>
+			<div class="pair">
+				<WeatherTile weather={mockWeather('ok')} air={mockAir('error')} />
+				<WeatherTile weather={mockWeather('stale')} air={mockAir('ok')} />
+			</div>
+			<div class="big">
+				<HomelabTile
+					stats={mockLab('ok')}
+					uptime={mockUptime('stale')}
+					traffic={mockTraffic('error')}
+					dns={mockDns('ok')}
+				/>
+			</div>
+			<TileLabel>static</TileLabel>
+			<div class="big">
+				<FeaturedTile />
+			</div>
+			<div class="socials">
+				<SocialTile brand="discord" />
+				<SocialTile brand="instagram" />
+				<SocialTile brand="github" />
+				<SocialTile brand="linkedin" />
+			</div>
+		</section>
 	</div>
 </BaseLayout>
 
 <style>
 	.gallery {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(var(--dossier-profile-width), 1fr));
+		/* About two dashboard columns wide, so the boxes match the real areas. */
+		grid-template-columns: repeat(auto-fill, minmax(var(--gallery-column), 1fr));
 		gap: var(--grid-gap);
 	}
 
@@ -94,32 +114,42 @@ export function getStaticPaths() {
 		gap: var(--space-sm);
 	}
 
-	/* Fixed boxes roughly the size of the dashboard areas, so a tile that
-	   changes size between states is easy to spot. */
-	.square,
+	/* Fixed boxes with the proportions of the dashboard areas at 1440×900, so
+	   a tile that changes size between states is easy to spot. */
+	.pair,
+	.low,
 	.wide,
-	.tall,
-	.pair {
+	.big {
 		display: grid;
 	}
 
-	/* Two 1×1 tiles side by side. */
+	/* Two 1×1 tiles side by side; `tall` makes them 1×2. */
 	.pair {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: var(--grid-gap-dense);
-		aspect-ratio: 2;
+		aspect-ratio: 1.8;
 	}
 
-	.square {
-		aspect-ratio: 1;
-		max-width: 50%;
+	.pair.tall {
+		aspect-ratio: 0.9;
+	}
+
+	.low {
+		aspect-ratio: 2.4;
 	}
 
 	.wide {
-		aspect-ratio: 5 / 2;
+		aspect-ratio: 1.85;
 	}
 
-	.tall {
-		aspect-ratio: 1;
+	.big {
+		aspect-ratio: 0.9;
+	}
+
+	.socials {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-auto-rows: var(--size-social-row);
+		gap: var(--grid-gap-dense);
 	}
 </style>

@@ -1,0 +1,232 @@
+---
+import { Image } from 'astro:assets';
+import Tile from '../ui/Tile.astro';
+import Pill from '../ui/Pill.astro';
+import Icon from '../ui/Icon.astro';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
+import { featuredProjects } from '../../lib/featured';
+
+/**
+ * The featured project (koncept.md §3.4) — the one card that sells something,
+ * so it is the biggest: the screenshot fills most of it and the name, stack
+ * and a link fit one bar under it. Several projects become a carousel that
+ * scrolls sideways with snap points, with dots in the header.
+ */
+interface Props {
+	area?: string;
+}
+
+/* Rendered widths of the screenshot for 1x–2x screens and the card sizes. */
+const SHOT_WIDTHS = [480, 720, 960, 1440];
+
+const { area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const projects = featuredProjects;
+---
+
+<Tile area={area} label={t('home.featured')} icon="star" dense class="featured-tile">
+	{
+		projects.length > 1 && (
+			<span slot="meta" class="featured-dots">
+				{projects.map((project, i) => (
+					<button
+						type="button"
+						class="featured-dot"
+						data-slide={i}
+						aria-label={t('featured.slide').replace('{name}', project.title)}
+						aria-current={i === 0 ? 'true' : undefined}
+					/>
+				))}
+			</span>
+		)
+	}
+
+	<div class="featured-track" tabindex="0" aria-label={t('home.featured')}>
+		{
+			projects.map((project) => (
+				<article class="featured-slide">
+					<div class="featured-shot">
+						{project.image ? (
+							<Image
+								src={project.image}
+								alt={t('featured.shot').replace('{name}', project.title)}
+								widths={SHOT_WIDTHS}
+								sizes="(min-width: 1024px) 50vw, 100vw"
+							/>
+						) : (
+							<span class="featured-empty">
+								<Icon name="photo" size={24} />
+								{t('state.placeholder')}
+							</span>
+						)}
+					</div>
+					<div class="featured-bar">
+						<span class="featured-text">
+							<span class="featured-title">{project.title}</span>
+							<span class="featured-summary">{project.summary[lang]}</span>
+						</span>
+						<ul class="featured-stack">
+							{project.stack.map((item) => (
+								<li>
+									<Pill>{item}</Pill>
+								</li>
+							))}
+						</ul>
+						<a class="button featured-link" href={localizePath(project.href, lang)}>
+							{t('featured.open')} ↗
+						</a>
+					</div>
+				</article>
+			))
+		}
+	</div>
+</Tile>
+
+<script>
+	for (const tile of document.querySelectorAll<HTMLElement>('.featured-tile')) {
+		const track = tile.querySelector<HTMLElement>('.featured-track');
+		const dots = [...tile.querySelectorAll<HTMLButtonElement>('.featured-dot')];
+		if (!track || dots.length === 0) continue;
+
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+		for (const dot of dots) {
+			dot.addEventListener('click', () => {
+				const i = Number(dot.dataset.slide);
+				track.scrollTo({ left: i * track.clientWidth, behavior: reduced.matches ? 'auto' : 'smooth' });
+			});
+		}
+
+		/* The dot follows the slide in view, however it got there (dots, swipe, keys). */
+		track.addEventListener(
+			'scroll',
+			() => {
+				const current = Math.round(track.scrollLeft / track.clientWidth);
+				dots.forEach((dot, i) =>
+					i === current ? dot.setAttribute('aria-current', 'true') : dot.removeAttribute('aria-current'),
+				);
+			},
+			{ passive: true },
+		);
+	}
+</script>
+
+<style>
+	.featured-dots {
+		display: inline-flex;
+		gap: var(--space-xs);
+	}
+
+	.featured-dot {
+		width: var(--size-dot);
+		height: var(--size-dot);
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: var(--text-subtle);
+		cursor: pointer;
+		transition:
+			width var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.featured-dot[aria-current] {
+		width: calc(var(--size-dot) * 3);
+		background: var(--text);
+	}
+
+	/* One project per page; sideways scroll snaps to whole slides. */
+	.featured-track {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: 100%;
+		height: 100%;
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+		border-radius: var(--radius-inset);
+	}
+
+	.featured-track::-webkit-scrollbar {
+		display: none;
+	}
+
+	.featured-slide {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		min-width: 0;
+		min-height: 0;
+		scroll-snap-align: start;
+	}
+
+	.featured-shot {
+		flex: 1;
+		min-height: var(--featured-shot-min);
+		overflow: hidden;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+	}
+
+	.featured-shot :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top left;
+	}
+
+	.featured-empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-sm);
+		height: 100%;
+		color: var(--text-subtle);
+	}
+
+	/* Name and summary, the stack, the link — one bar. */
+	.featured-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-sm) var(--space-xl);
+		min-width: 0;
+	}
+
+	.featured-text {
+		display: flex;
+		flex: 1 1 12rem;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.featured-title {
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.featured-summary {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--text-muted);
+	}
+
+	.featured-stack {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.featured-link {
+		flex: none;
+	}
+</style>

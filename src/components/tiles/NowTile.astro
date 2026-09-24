@@ -23,7 +23,7 @@ const items: { label: TranslationKey; value: TranslationKey }[] = [
 const date = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric' }).format(updated);
 ---
 
-<Tile area={area} label={t('tile.now')} dense>
+<Tile area={area} label={t('tile.now')} icon="target" dense>
 	<dl class="now">
 		{
 			items.map((item) => (

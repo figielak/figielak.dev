@@ -1,93 +1,100 @@
 ---
 import BentoLayout from '../ui/BentoLayout.astro';
 import DashboardSwitch from '../ui/DashboardSwitch.astro';
-import ClockTile from '../tiles/ClockTile.astro';
+import DayTile from '../tiles/DayTile.astro';
 import WeatherTile from '../tiles/WeatherTile.astro';
-import AirTile from '../tiles/AirTile.astro';
-import SunTile from '../tiles/SunTile.astro';
-import ProgressTile from '../tiles/ProgressTile.astro';
 import GithubTile from '../tiles/GithubTile.astro';
 import WakaTile from '../tiles/WakaTile.astro';
-import DnsTile from '../tiles/DnsTile.astro';
-import LabTile from '../tiles/LabTile.astro';
-import UptimeTile from '../tiles/UptimeTile.astro';
-import NetTile from '../tiles/NetTile.astro';
+import HomelabTile from '../tiles/HomelabTile.astro';
 import MusicTile from '../tiles/MusicTile.astro';
 import BooksTile from '../tiles/BooksTile.astro';
 import EventTile from '../tiles/EventTile.astro';
+import FeaturedTile from '../tiles/FeaturedTile.astro';
+import SocialTile from '../tiles/SocialTile.astro';
 import { mockWeather } from '../../lib/mocks/weather';
 import { mockAir } from '../../lib/mocks/air';
 
 /*
- * Public dashboard (koncept.md §3.4): local on top, then work, homelab and
- * life. GitHub gets two rows — its chart does not fit one at 1280×720.
- * Homelab numbers are public: it is a server, so they do not tell when I am
- * at the computer (§14).
+ * Public dashboard (koncept.md §3.4): cards in different shapes — the bento
+ * rhythm. The day and the weather top left, GitHub wide and low under them,
+ * music tall and narrow like a cover, the homelab big because it holds the
+ * most; the featured project is the biggest, as the one card that sells
+ * something. WakaTime is the one accent block beside the social tiles.
+ * Homelab numbers are public: it is a server, so they do not tell when I am at
+ * the computer (§14).
+ *
+ * Rows are half-height units, so the social tiles can be half as tall as the
+ * rest: one screen from 1440×900 (§7), a little scroll on 1280×720.
  */
-/* Eight columns keep every tile on one screen from 1280×720 (§7). Only the
-   small local tiles are 1×1; anything with a caption gets two columns. */
-const xl = [
-	'clock   weather air     sun     progress progress lab    lab',
-	'github  github  github  music   music    music    uptime uptime',
-	'github  github  github  waka    waka     waka     uptime uptime',
-	'books   books   event   event   dns      dns      net    net',
-];
-
-/* 1024–1279px: six columns are too few for one screen, so it scrolls. */
 const lg = [
-	'clock   weather air     sun     progress progress',
-	'github  github  github  music   music    music',
-	'github  github  github  waka    waka     waka',
-	'lab     lab     lab     uptime  uptime   uptime',
-	'dns     dns     net     net     event    event',
-	'books   books   books   books   books    books',
+	'day      day      weather  music    lab      lab',
+	'day      day      weather  music    lab      lab',
+	'github   github   github   music    lab      lab',
+	'github   github   github   music    lab      lab',
+	'featured featured featured dc       ig       waka',
+	'featured featured featured gh       li       waka',
+	'featured featured featured books    books    event',
+	'featured featured featured books    books    event',
 ];
 
 const md = [
-	'clock    weather  air      sun',
-	'progress progress lab      lab',
-	'dns      dns      net      net',
-	'github   github   github   github',
-	'music    music    music    music',
-	'waka     waka     event    event',
-	'uptime   uptime   books    books',
+	'day      day      weather  music',
+	'github   github   github   music',
+	'featured featured featured featured',
+	'featured featured featured featured',
+	'dc       ig       gh       li',
+	'lab      lab      lab      lab',
+	'lab      lab      lab      lab',
+	'waka     waka     books    books',
+	'event    event    books    books',
 ];
 
+/* Wide cards take the row, small ones go in pairs — never one column. */
 const base = [
-	'clock    weather',
-	'air      sun',
-	'progress progress',
-	'lab      lab',
-	'event    event',
+	'day      day',
+	'weather  music',
 	'github   github',
-	'waka     waka',
-	'music    music',
-	'dns      net',
-	'uptime   uptime',
+	'featured featured',
+	'dc       ig',
+	'gh       li',
+	'lab      lab',
+	'waka     event',
 	'books    books',
 ];
 ---
 
 <BentoLayout
 	fill
+	tall
 	dense
 	base={{ areas: base, columns: 2 }}
 	md={{ areas: md, columns: 4 }}
-	lg={{ areas: lg, columns: 6, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
-	xl={{ areas: xl, columns: 8, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
+	lg={{ areas: lg, columns: 6 }}
+	xl={{ areas: lg, columns: 6, rowSize: 'minmax(auto, 1fr)' }}
 >
-	<ClockTile area="clock" />
-	<WeatherTile area="weather" weather={mockWeather()} />
-	<AirTile area="air" air={mockAir()} />
-	<SunTile area="sun" />
-	<ProgressTile area="progress" />
+	<DayTile area="day" />
+	<WeatherTile area="weather" weather={mockWeather()} air={mockAir()} />
 	<GithubTile area="github" github={{ state: 'loading' }} endpoint="/api/github" />
-	<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
-	<DnsTile area="dns" dns={{ state: 'loading' }} endpoint="/api/homelab/dns" />
-	<NetTile area="net" traffic={{ state: 'loading' }} endpoint="/api/homelab/net" />
-	<LabTile area="lab" stats={{ state: 'loading' }} endpoint="/api/homelab/lab" />
-	<UptimeTile area="uptime" uptime={{ state: 'loading' }} endpoint="/api/homelab/uptime" />
 	<MusicTile area="music" music={{ state: 'loading' }} endpoint="/api/music" />
+	<HomelabTile
+		area="lab"
+		stats={{ state: 'loading' }}
+		uptime={{ state: 'loading' }}
+		traffic={{ state: 'loading' }}
+		dns={{ state: 'loading' }}
+		endpoints={{
+			lab: '/api/homelab/lab',
+			uptime: '/api/homelab/uptime',
+			net: '/api/homelab/net',
+			dns: '/api/homelab/dns',
+		}}
+	/>
+	<FeaturedTile area="featured" />
+	<SocialTile area="dc" brand="discord" />
+	<SocialTile area="ig" brand="instagram" />
+	<SocialTile area="gh" brand="github" />
+	<SocialTile area="li" brand="linkedin" />
+	<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
 	<BooksTile area="books" />
 	<EventTile area="event" />
 </BentoLayout>

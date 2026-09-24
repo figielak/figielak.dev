@@ -1,0 +1,114 @@
+---
+import Section from './Section.astro';
+import StatBar from '../../ui/StatBar.astro';
+import { getLangFromUrl, useTranslations } from '../../../i18n';
+import { percent } from '../../../lib/units';
+import { MACHINE_PLACEHOLDER, type MachineStats } from '../../../lib/mocks/stats';
+
+/**
+ * Machine usage pushed by the agent (koncept.md §9): CPU, RAM and one bar
+ * per disk side by side, GPU only when the machine has one; containers and
+ * CPU temperature under them. A bar turns red from ALERT_AT, so a nearly full
+ * disk or a busy CPU stands out.
+ */
+interface Props {
+	stats: MachineStats;
+	endpoint?: string;
+}
+
+const ALERT_AT = 85;
+
+const { stats, endpoint } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+const d = stats.data ?? MACHINE_PLACEHOLDER;
+
+const details = (containers: number | undefined, tempC: number) =>
+	[
+		containers === undefined ? undefined : t('stats.containers').replace('{n}', String(containers)),
+		t('stats.cpuTemp').replace('{n}', String(Math.round(tempC))),
+	]
+		.filter(Boolean)
+		.join(' · ');
+---
+
+<Section
+	title={t('homelab.machine')}
+	live={stats}
+	class="machine-section"
+	data-endpoint={endpoint}
+	data-containers={t('stats.containers')}
+	data-temp={t('stats.cpuTemp')}
+>
+	<div class="machine">
+		<div class="machine-bars">
+			<StatBar label={t('stats.cpu')} value={d.cpu} alertAt={ALERT_AT} />
+			<StatBar label={t('stats.ram')} value={percent(d.ramUsedGb, d.ramTotalGb)} alertAt={ALERT_AT} />
+			{d.gpu !== undefined && <StatBar label={t('stats.gpu')} value={d.gpu} alertAt={ALERT_AT} />}
+			{
+				d.disks.map((disk) => (
+					<StatBar
+						label={t(`disk.${disk.kind}`)}
+						value={percent(disk.usedGb, disk.totalGb)}
+						alertAt={ALERT_AT}
+					/>
+				))
+			}
+		</div>
+		<span class="machine-details" data-skeleton>{details(d.containers, d.cpuTempC)}</span>
+	</div>
+</Section>
+
+<script>
+	import { setText, watchLive } from '../../../scripts/live';
+	import { percent } from '../../../lib/units';
+	import type { LabSection } from '../../../lib/server/homelab';
+
+	/* Rows come from the first render: CPU, RAM, then the disks in order. */
+	function setBar(stat: HTMLElement | undefined, value: number) {
+		if (!stat) return;
+		const rounded = String(Math.round(Math.min(100, Math.max(0, value))));
+		const alertAt = Number(stat.dataset.alertAt);
+		stat.toggleAttribute('data-alert', !Number.isNaN(alertAt) && Number(rounded) >= alertAt);
+		stat.querySelector<HTMLElement>('.stat-fill')?.style.setProperty('width', `${rounded}%`);
+		stat.querySelector('.stat-track')?.setAttribute('aria-valuenow', rounded);
+		setText(stat.querySelector('.stat-value'), `${rounded}%`);
+	}
+
+	for (const section of document.querySelectorAll<HTMLElement>('.machine-section[data-endpoint]')) {
+		const { containers = '{n}', temp = '{n}' } = section.dataset;
+
+		watchLive<LabSection>(section, (data) => {
+			const [cpu, ram, ...disks] = section.querySelectorAll<HTMLElement>('.stat');
+			setBar(cpu, data.cpu);
+			setBar(ram, percent(data.ramUsedGb, data.ramTotalGb));
+			data.disks.forEach((disk, i) => setBar(disks[i], percent(disk.usedGb, disk.totalGb)));
+
+			const details = [
+				data.containers === undefined ? undefined : containers.replace('{n}', String(data.containers)),
+				temp.replace('{n}', String(Math.round(data.cpuTempC))),
+			].filter(Boolean);
+			setText(section.querySelector('.machine-details'), details.join(' · '));
+		});
+	}
+</script>
+
+<style>
+	.machine {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+	}
+
+	.machine-bars {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(6rem, 100%), 1fr));
+		gap: var(--space-sm) var(--space-xl);
+	}
+
+	.machine-details {
+		align-self: flex-start;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+</style>

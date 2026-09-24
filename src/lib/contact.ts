@@ -18,6 +18,8 @@ export const phoneEncoded = btoa(phone);
 
 export const githubUser = 'figielak';
 export const githubUrl = `https://github.com/${githubUser}`;
+export const linkedinUrl = 'https://www.linkedin.com/in/krystian-figiela/';
+export const discordUrl = 'https://discord.com/users/444565321807036416';
 
 /* The WhatsApp link is built in the browser from the phone number
    (a[data-whatsapp]), so it needs no URL of its own. */

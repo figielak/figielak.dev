@@ -3,15 +3,15 @@ import Tile from '../ui/Tile.astro';
 import LiveDot from '../ui/LiveDot.astro';
 import LiveBody from '../ui/LiveBody.astro';
 import LiveFooter from '../ui/LiveFooter.astro';
-import Icon from '../ui/Icon.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { MUSIC_PLACEHOLDER, type Music } from '../../lib/mocks/music';
 
 /**
  * What I am listening to and this week's top artists from Last.fm
- * (koncept.md §9). The cover keeps its full colour (§4).
- * Stacked when narrow, side by side when the tile is wide and low.
+ * (koncept.md §9). The cover fills the whole tile in full colour under a
+ * dark scrim, with the text at the bottom (§4); without a cover the tile is
+ * a plain one. A tall, narrow card: top artists, then the track at the bottom.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser, refreshing every 30 s; without it, it shows `music` as given.
@@ -27,22 +27,31 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const d = music.data ?? MUSIC_PLACEHOLDER;
 const playing = music.state === 'ok' && d.track.nowPlaying;
+const cover = music.data?.track.coverUrl;
 ---
 
-<Tile area={area} label={t('tile.music')} dense class="music-tile" data-endpoint={endpoint}>
+<Tile
+	area={area}
+	label={t('tile.music')}
+	icon="brand-lastfm"
+	dense
+	class="music-tile"
+	data-endpoint={endpoint}
+	data-cover={cover ? '' : undefined}
+>
 	<LiveDot slot="meta" state={dotState(music.state)} />
+
+	<div class="music-art" aria-hidden="true">
+		<img src={cover} alt="" />
+	</div>
 
 	<LiveBody state={music.state} errorText={t('music.unavailable')}>
 		<div class="music-frame">
 			<div class="music">
 				<div class="track">
-					<span class="track-cover" data-skeleton>
-						<img src={d.track.coverUrl} alt="" hidden={!d.track.coverUrl} />
-						<Icon name="music" size={20} />
-					</span>
 					<span class="track-text">
 						<span class="track-status" data-now={t('music.nowPlaying')} data-last={t('music.lastPlayed')}>
-							<span class="track-dot" hidden={!playing}><LiveDot state="live" /></span>
+							<span class="track-dot" hidden={!playing}><LiveDot state="up" pulse /></span>
 							<span class="track-status-text">{playing ? t('music.nowPlaying') : t('music.lastPlayed')}</span>
 						</span>
 						<span class="track-title" data-skeleton aria-live="polite">{d.track.title}</span>
@@ -83,11 +92,9 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 		watchLive<MusicData>(
 			tile,
 			({ track, topArtists }) => {
-				const cover = tile.querySelector<HTMLImageElement>('.track-cover img');
-				if (cover) {
-					if (track.coverUrl && cover.getAttribute('src') !== track.coverUrl) cover.src = track.coverUrl;
-					cover.hidden = !track.coverUrl;
-				}
+				const cover = tile.querySelector<HTMLImageElement>('.music-art img');
+				if (cover && track.coverUrl && cover.getAttribute('src') !== track.coverUrl) cover.src = track.coverUrl;
+				tile.toggleAttribute('data-cover', Boolean(track.coverUrl));
 
 				const status = tile.querySelector<HTMLElement>('.track-status');
 				tile.querySelector<HTMLElement>('.track-dot')!.hidden = !track.nowPlaying;
@@ -112,15 +119,68 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 </script>
 
 <style>
+	/* The cover sits under the header, body and footer of the whole tile. */
+	:global(.music-tile) {
+		position: relative;
+	}
+
+	:global(.music-tile) > :global(.tile-header),
+	:global(.music-tile) > :global(.tile-footer),
+	.music-art ~ :global(.live-body) {
+		position: relative;
+		z-index: 1;
+	}
+
+	.music-art {
+		display: none;
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+
+	:global(.music-tile[data-cover]) .music-art {
+		display: block;
+	}
+
+	.music-art img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* Darker at the bottom under the text, a touch at the top for the label. */
+	.music-art::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, var(--scrim) 0%, var(--scrim-soft) 65%, var(--scrim-soft) 100%);
+	}
+
+	/* Over a cover the subtle greys would drop below AA, so they step up. */
+	:global(.music-tile[data-cover]) :is(.track-status, .top-rank, .top-plays, .top-label) {
+		color: var(--text-muted);
+	}
+
+	:global(.music-tile[data-cover]) .track-artist {
+		color: var(--text);
+	}
+
 	.music-frame {
 		height: 100%;
 		container-type: inline-size;
 	}
 
+	/* A phone-narrow card keeps the artists' names and drops the play counts. */
+	@container (max-width: 220px) {
+		.top-plays {
+			display: none;
+		}
+	}
+
 	.music {
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: flex-end;
 		gap: var(--space-lg);
 		height: 100%;
 		min-width: 0;
@@ -128,36 +188,8 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 
 	.track {
 		display: flex;
-		align-items: center;
-		gap: var(--space-lg);
+		align-items: flex-end;
 		min-width: 0;
-	}
-
-	.track-cover {
-		display: grid;
-		place-items: center;
-		flex: none;
-		width: var(--size-teaser);
-		height: var(--size-teaser);
-		overflow: hidden;
-		border-radius: var(--radius-inset);
-		background: var(--surface-inset);
-		color: var(--text-subtle);
-	}
-
-	/* The icon stands in until a cover loads, and for releases without one. */
-	.track-cover img:not([hidden]) + :global(svg) {
-		display: none;
-	}
-
-	.track-cover img[hidden] {
-		display: none;
-	}
-
-	.track-cover img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
 	}
 
 	.track-text {
@@ -199,12 +231,15 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 		color: var(--text-muted);
 	}
 
+	/* Shown above the track, which closes the tile like a caption under the
+	   cover; the markup keeps the track first for screen readers. */
 	.top {
+		order: -1;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-xs);
-		padding-top: var(--space-md);
-		border-top: 1px solid var(--border);
+		padding-bottom: var(--space-md);
+		border-bottom: 1px solid var(--border);
 	}
 
 	.top-label {
@@ -229,37 +264,6 @@ const playing = music.state === 'ok' && d.track.nowPlaying;
 		grid-template-columns: auto minmax(0, 1fr) auto;
 		align-items: baseline;
 		gap: var(--space-md);
-	}
-
-	/* Wide and low (3×1 on desktop): track and top artists side by side. */
-	@container (min-width: 400px) {
-		.music {
-			flex-direction: row;
-			align-items: center;
-			gap: var(--space-2xl);
-		}
-
-		.track,
-		.top {
-			flex: 1;
-			min-width: 0;
-		}
-
-		.top {
-			padding: 0 0 0 var(--space-2xl);
-			border-top: 0;
-			border-left: 1px solid var(--border);
-		}
-
-		/* No room for the heading; screen readers still get it. */
-		.top-label {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			overflow: hidden;
-			clip-path: inset(50%);
-			white-space: nowrap;
-		}
 	}
 
 	.top-rank,

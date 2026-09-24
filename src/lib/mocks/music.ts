@@ -4,6 +4,18 @@
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
+/* A stand-in cover: a plain gradient, so no real artwork is shipped in mocks. */
+const MOCK_COVER =
+	'data:image/svg+xml,' +
+	encodeURIComponent(
+		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">' +
+			'<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+			'<stop offset="0" stop-color="#3a6ea5"/><stop offset=".55" stop-color="#8a4f7d"/>' +
+			'<stop offset="1" stop-color="#e0a458"/></linearGradient></defs>' +
+			'<rect width="300" height="300" fill="url(#g)"/>' +
+			'<circle cx="210" cy="95" r="55" fill="#f4d58d" opacity=".8"/></svg>',
+	);
+
 export type Music = Live<{
 	track: {
 		title: string;
@@ -34,6 +46,7 @@ export function mockMusic(state: LiveState = 'ok'): Music {
 				title: 'Everything In Its Right Place',
 				artist: 'Radiohead',
 				nowPlaying: state === 'ok',
+				coverUrl: MOCK_COVER,
 			},
 			topArtists: [
 				{ name: 'Radiohead', plays: 64 },

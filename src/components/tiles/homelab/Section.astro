@@ -1,0 +1,74 @@
+---
+import LiveBody from '../../ui/LiveBody.astro';
+import LiveFooter from '../../ui/LiveFooter.astro';
+import { getLangFromUrl, useTranslations } from '../../../i18n';
+import type { Live } from '../../../lib/live';
+
+/**
+ * One source inside the homelab tile (koncept.md §9): a small heading, the
+ * body in its own four states and "updated … ago" only once it is stale.
+ * With `data-endpoint` among the attributes the section loads itself
+ * (src/scripts/live.ts); the tile's dot joins the states of all sections.
+ */
+interface Props {
+	title: string;
+	live: Live<object>;
+	class?: string;
+	[key: string]: unknown;
+}
+
+const { title, live, class: className, ...rest } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+---
+
+<section class:list={['hl-section', className]} {...rest}>
+	<header class="hl-heading">
+		<span class="hl-title">{title}</span>
+		<slot name="meta" />
+		<LiveFooter live={live} staleOnly />
+	</header>
+	<LiveBody state={live.state} errorText={t('homelab.noData')}>
+		<slot />
+	</LiveBody>
+</section>
+
+<style>
+	.hl-section {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+		min-width: 0;
+	}
+
+	.hl-heading {
+		display: flex;
+		align-items: baseline;
+		gap: var(--space-sm);
+		min-width: 0;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-subtle);
+		white-space: nowrap;
+	}
+
+	.hl-title {
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	.hl-heading > :global(.live-footer) {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* The error message fits one line in a section, not the tile's centre. */
+	.hl-section > :global(.live-body) {
+		height: auto;
+		min-height: var(--size-label);
+	}
+
+	.hl-section :global(.live-error) {
+		place-items: center start;
+		font-size: var(--size-label);
+	}
+</style>

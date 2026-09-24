@@ -10,7 +10,9 @@ import { GITHUB_PLACEHOLDER, type Github } from '../../lib/mocks/github';
 
 /**
  * Contribution chart and headline numbers from the GitHub GraphQL API,
- * cached 1 h (koncept.md §9). The chart uses four accent levels.
+ * cached 1 h (koncept.md §9): the numbers, the legend and "updated … ago" in
+ * one row on top — no footer, so the year's chart under them gets the height
+ * of a low tile — and the chart across the whole width, in four accent levels.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser; without it, it shows `github` as given (mocks in /dev/tiles).
@@ -38,6 +40,7 @@ const stats = [
 <Tile
 	area={area}
 	label={t('tile.github')}
+	icon="github"
 	href={githubUrl}
 	external
 	dense
@@ -49,18 +52,27 @@ const stats = [
 
 	<LiveBody state={github.state} errorText={t('github.unavailable')}>
 		<div class="github">
-			<dl class="github-stats">
-				{
-					stats.map((stat) => (
-						<div class="github-stat">
-							<dt class="github-label">{stat.label}</dt>
-							<dd class="github-value" data-skeleton aria-live="polite">
-								{stat.value}
-							</dd>
-						</div>
-					))
-				}
-			</dl>
+			<div class="github-top">
+				<dl class="github-stats">
+					{
+						stats.map((stat) => (
+							<div class="github-stat">
+								<dt class="github-label">{stat.label}</dt>
+								<dd class="github-value" data-skeleton aria-live="polite">
+									{stat.value}
+								</dd>
+							</div>
+						))
+					}
+				</dl>
+				<LiveFooter live={github}>
+					<span class="contrib-legend">
+						{t('github.less')}
+						{[0, 1, 2, 3, 4].map((level) => <span class="contrib-day" data-level={level} />)}
+						{t('github.more')}
+					</span>
+				</LiveFooter>
+			</div>
 
 			<div class="contrib" aria-hidden="true">
 				{
@@ -75,14 +87,6 @@ const stats = [
 			</div>
 		</div>
 	</LiveBody>
-
-	<LiveFooter slot="footer" live={github}>
-		<span class="contrib-legend">
-			{t('github.less')}
-			{[0, 1, 2, 3, 4].map((level) => <span class="contrib-day" data-level={level} />)}
-			{t('github.more')}
-		</span>
-	</LiveFooter>
 </Tile>
 
 <script>
@@ -101,35 +105,44 @@ const stats = [
 </script>
 
 <style>
-	/* Stats beside the chart; the chart wraps under them when it would get
-	   narrower than --contrib-min (a tall 3×2 tile on desktop, phones). */
+	/* A wide, low tile: the numbers in one row, the chart across under them. */
 	.github {
 		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		align-content: center;
-		gap: var(--space-2xl);
+		flex-direction: column;
+		justify-content: center;
+		gap: var(--space-lg);
 		height: 100%;
 		min-width: 0;
 	}
 
-	/* The year's total on top, streak and repos side by side under it. */
+	.github-top {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2xs) var(--space-2xl);
+		flex: none;
+	}
+
+	.github-top > :global(.live-footer) {
+		flex: 1;
+	}
+
 	.github-stats {
-		display: grid;
-		grid-template-columns: repeat(2, auto);
-		gap: var(--space-md) var(--space-xl);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: var(--space-2xs) var(--space-2xl);
 		margin: 0;
 		flex: none;
 	}
 
-	.github-stat:first-child {
-		grid-column: 1 / -1;
-	}
-
-	/* Number above its label, while the markup keeps dt before dd. */
+	/* Number, then its label on the same line (the markup keeps dt before dd),
+	   so the row stays one line high and the chart gets the height. */
 	.github-stat {
 		display: flex;
-		flex-direction: column-reverse;
+		flex-direction: row-reverse;
+		align-items: baseline;
+		gap: var(--space-xs);
 	}
 
 	.github-value {
@@ -141,11 +154,9 @@ const stats = [
 		font-variant-numeric: tabular-nums;
 	}
 
-	.github-stat:first-child .github-value {
-		font-size: var(--size-hero);
-	}
 
 	.github-label {
+		white-space: nowrap;
 		font-size: var(--size-label);
 		color: var(--text-muted);
 	}
@@ -155,7 +166,6 @@ const stats = [
 		grid-auto-flow: column;
 		grid-auto-columns: minmax(0, 1fr);
 		gap: var(--size-contrib-gap);
-		flex: 1 1 var(--contrib-min);
 		min-width: 0;
 	}
 
