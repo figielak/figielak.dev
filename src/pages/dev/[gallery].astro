@@ -11,7 +11,6 @@ import WakaTile from '../../components/tiles/WakaTile.astro';
 import DnsTile from '../../components/tiles/DnsTile.astro';
 import NetTile from '../../components/tiles/NetTile.astro';
 import MusicTile from '../../components/tiles/MusicTile.astro';
-import CoffeeTile from '../../components/tiles/CoffeeTile.astro';
 import DeployTile from '../../components/tiles/DeployTile.astro';
 import SiteStatsTile from '../../components/tiles/SiteStatsTile.astro';
 import { LIVE_STATES } from '../../lib/live';
@@ -23,7 +22,6 @@ import { mockAir } from '../../lib/mocks/air';
 import { mockWaka } from '../../lib/mocks/waka';
 import { mockDns, mockTraffic } from '../../lib/mocks/network';
 import { mockMusic } from '../../lib/mocks/music';
-import { mockCoffee } from '../../lib/mocks/coffee';
 import { mockDeploy } from '../../lib/mocks/deploy';
 import { mockSite } from '../../lib/mocks/site';
 
@@ -62,7 +60,6 @@ export function getStaticPaths() {
 					</div>
 					<div class="pair">
 						<NetTile traffic={mockTraffic(state)} />
-						<CoffeeTile coffee={mockCoffee(state)} />
 					</div>
 					<div class="wide">
 						<WakaTile waka={mockWaka(state)} />

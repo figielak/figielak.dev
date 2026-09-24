@@ -12,12 +12,10 @@ import DnsTile from '../tiles/DnsTile.astro';
 import NetTile from '../tiles/NetTile.astro';
 import MusicTile from '../tiles/MusicTile.astro';
 import BooksTile from '../tiles/BooksTile.astro';
-import CoffeeTile from '../tiles/CoffeeTile.astro';
 import EventTile from '../tiles/EventTile.astro';
 import { mockWeather } from '../../lib/mocks/weather';
 import { mockAir } from '../../lib/mocks/air';
 import { mockDns, mockTraffic } from '../../lib/mocks/network';
-import { mockCoffee } from '../../lib/mocks/coffee';
 
 /*
  * Public dashboard (koncept.md §3.4): local on top, then work, homelab and
@@ -28,7 +26,7 @@ const lg = [
 	'clock   weather air     sun     progress progress',
 	'github  github  github  music   music    music',
 	'github  github  github  waka    waka     dns',
-	'books   books   coffee  net     event    event',
+	'books   books   books   net     event    event',
 ];
 
 const md = [
@@ -37,7 +35,7 @@ const md = [
 	'github   github   github   github',
 	'music    music    music    music',
 	'waka     waka     dns      net',
-	'books    books    coffee   coffee',
+	'books    books    books    books',
 ];
 
 const base = [
@@ -49,7 +47,7 @@ const base = [
 	'waka     waka',
 	'music    music',
 	'dns      net',
-	'books    coffee',
+	'books    books',
 ];
 ---
 
@@ -71,7 +69,6 @@ const base = [
 	<NetTile area="net" traffic={mockTraffic()} />
 	<MusicTile area="music" music={{ state: 'loading' }} endpoint="/api/music" />
 	<BooksTile area="books" />
-	<CoffeeTile area="coffee" coffee={mockCoffee()} />
 	<EventTile area="event" />
 </BentoLayout>
 

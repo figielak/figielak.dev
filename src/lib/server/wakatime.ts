@@ -51,6 +51,8 @@ export async function fetchWaka(): Promise<WakaData> {
 			byLanguage.set(name, (byLanguage.get(name) ?? 0) + total_seconds);
 		}
 	}
+	/* "Other" is WakaTime's bucket for files it could not recognise, not a language. */
+	byLanguage.delete('Other');
 	const languages = [...byLanguage]
 		.sort((a, b) => b[1] - a[1])
 		.slice(0, 3)

@@ -172,7 +172,7 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 "clock   weather air     sun     progress progress"
 "github  github  github  music   music    music"
 "github  github  github  waka    waka     dns"
-"books   books   coffee  net     event    event"
+"books   books   books   net     event    event"
 ```
 
 | Kafel | Grupa | Zawartość |
@@ -188,7 +188,6 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 | `net` | homelab | transfer sieciowy dziś ↓/↑ |
 | `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm) |
 | `books` | życie | aktualnie czytane książki (statycznie, `src/lib/books.ts`) |
-| `coffee` | życie | licznik kaw: dziś i w roku |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
 
 **Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale.
@@ -355,7 +354,6 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 | Wschód i zachód słońca, % dnia/miesiąca/roku | liczone lokalnie (build + przeglądarka) | — |
 | Blokada reklam (DNS), transfer sieciowy | AdGuard Home / Pi-hole i router przez push-agenta | przez push |
 | Ostatni deploy (prywatne) | Cloud Run Admin API (rewizje usługi) lub GitHub Actions API | cache 1–5 min |
-| Licznik kaw | do ustalenia (§17) | — |
 | Homelab | model **push**, opisany niżej | co 1–5 min |
 | Uptime | agent na homelabie (opcjonalnie Uptime Kuma) | przez push |
 | Rozkład zajęć | plik iCal (np. eksport z USOS, jeśli uczelnia go udostępnia) | cache 1h |
@@ -520,7 +518,7 @@ Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`).
 6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Podpięte: GitHub (`/api/github`), Last.fm (`/api/music`) i WakaTime (`/api/waka`) — cache w pamięci instancji, wyspy w czystym TS (`src/scripts/live.ts`). Zostały pozostałe endpointy (pogoda i powietrze — bez kluczy), Firestore, agent homelabu, analityka.
-7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, kawa, odliczanie). Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
+7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, odliczanie). Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
 
 ---
 
@@ -533,6 +531,5 @@ Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 - [ ] Źródło rozkładu zajęć i poziom szczegółowości publicznie
 - [ ] Narzędzie do rezerwacji korepetycji (Cal.com / własne)
 - [ ] Miasto w kaflu pogody
-- [ ] Źródło licznika kaw (ręczny endpoint, skrót w telefonie, NFC?)
 - [ ] Lista usług w launcherze i wydarzeń w odliczaniu (na razie wypełniacze)
 - [ ] Framework wysp: czysty TS w `<script>` czy Preact, gdy potrzebny stan
