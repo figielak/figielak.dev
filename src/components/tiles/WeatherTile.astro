@@ -40,7 +40,7 @@ const footer = weather.state === state ? weather : air;
 	<div class="weather">
 		<LiveBody state={weather.state} errorText={t('weather.unavailable')}>
 			<div class="weather-now">
-				<span class="weather-temp" data-skeleton aria-live="polite">{w.tempC}°</span>
+				<span class="weather-temp" data-skeleton data-count aria-live="polite">{w.tempC}°</span>
 				<span class="weather-line" data-skeleton>{t(`weather.${w.condition}`)} · {w.city}</span>
 			</div>
 		</LiveBody>
@@ -52,7 +52,9 @@ const footer = weather.state === state ? weather : air;
 					{level}
 				</span>
 				<span class="air-scale" role="img" aria-label={t('air.scale').replace('{level}', level)}>
-					{AIR_LEVELS.map((_, i) => <span class="air-step" data-current={i === current ? '' : undefined} />)}
+					{AIR_LEVELS.map((_, i) => (
+						<span class="air-step" style={`--i: ${i}`} data-current={i === current ? '' : undefined} />
+					))}
 				</span>
 				<span class="air-pm" data-skeleton>PM2.5 {a.pm25} · PM10 {a.pm10}</span>
 			</div>
@@ -140,6 +142,19 @@ const footer = weather.state === state ? weather : air;
 
 	.air-step[data-current] {
 		background: var(--text);
+	}
+
+	/* Dashboard intro: the scale fills in step by step once the tile is in. */
+	:global(.tile[data-reveal]) .air-step {
+		animation: air-step-in var(--duration-intro) var(--ease-out) both;
+		animation-delay: calc(var(--i) * var(--intro-type-step));
+	}
+
+	@keyframes air-step-in {
+		from {
+			opacity: 0;
+			transform: scaleX(0.4);
+		}
 	}
 
 	.air-pm {

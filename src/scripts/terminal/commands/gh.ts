@@ -16,7 +16,7 @@ export default {
 		const github = await getJson<GithubPayload>('/api/github');
 		if (!github) return pending.done(noData(ctx, 'github'));
 
-		/* One character per week: its average level, in the accent like the
+		/* One character per week: its average level, in green like the
 		   contribution chart (koncept.md §5). */
 		const chart = github.weeks
 			.slice(-WEEKS)
@@ -28,7 +28,7 @@ export default {
 			row(ctx.t('term.gh.streak'), plural(ctx, github.streakDays, 'day'), LABEL_WIDTH),
 			row(ctx.t('term.gh.repos'), String(github.repos), LABEL_WIDTH),
 			'',
-			[{ text: chart, role: 'accent' }],
+			[{ text: chart, role: 'ok' }],
 			[{ text: ctx.t('term.gh.weeks', { n: WEEKS }), role: 'muted' }],
 		);
 	},

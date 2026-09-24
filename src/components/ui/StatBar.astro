@@ -79,6 +79,18 @@ const percent = Math.round(Math.min(100, Math.max(0, value)));
 		background: var(--text-muted);
 	}
 
+	/* Dashboard intro: the bar grows from zero once its tile is in. */
+	:global(.tile[data-reveal]) .stat-fill {
+		transform-origin: left;
+		animation: stat-grow var(--duration-grow) var(--ease-out) both;
+	}
+
+	@keyframes stat-grow {
+		from {
+			transform: scaleX(0);
+		}
+	}
+
 	.stat[data-alert] .stat-fill {
 		background: var(--status-down);
 	}

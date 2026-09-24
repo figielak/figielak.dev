@@ -135,8 +135,37 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 	   `:where` keeps the specificity of the plain rules, so the accent tile
 	   below and the brand colours of the social tiles still win. */
 	:global(:where([data-alive])) .tile {
+		position: relative;
 		background: var(--surface-glass);
 		backdrop-filter: blur(var(--glass-blur));
+	}
+
+	/* Light on the edge around the cursor (src/scripts/spotlight.ts sets the
+	   position per tile, so neighbours in reach light up too). A 1px ring just
+	   inside the border — `overflow: hidden` clips anything on the border
+	   itself. Not on the accent tile, where red would not show. */
+	:global(:where([data-alive])) .tile:not([data-accent])::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		padding: 1px;
+		border-radius: inherit;
+		background: radial-gradient(
+			var(--spotlight-size) circle at var(--spot-x, -100vmax) var(--spot-y, -100vmax),
+			var(--spotlight),
+			transparent
+		);
+		-webkit-mask:
+			linear-gradient(var(--bg) 0 0) content-box,
+			linear-gradient(var(--bg) 0 0);
+		-webkit-mask-composite: xor;
+		mask:
+			linear-gradient(var(--bg) 0 0) content-box exclude,
+			linear-gradient(var(--bg) 0 0);
+		opacity: var(--spot-on, 0);
+		pointer-events: none;
+		transition: opacity var(--duration-hover) var(--ease-out);
 	}
 
 	:global(:where([data-alive])) .tile[data-interactive]:hover {
@@ -152,6 +181,61 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 	:global(:where([data-alive])) .tile:not([data-interactive]):hover {
 		border-color: var(--border-hover);
 		transform: translateY(var(--lift-subtle));
+	}
+
+	/* Dashboard intro (src/scripts/intro.ts): hidden until it plays, then in
+	   one by one along the diagonal — a little from below, and on desktop out
+	   of a blur. */
+	:global(:where([data-intro='pending']) :where([data-alive])) .tile {
+		opacity: 0;
+	}
+
+	:global(:where([data-intro='run']) :where([data-alive])) .tile {
+		animation: intro-tile var(--duration-intro) var(--ease-out) var(--intro-delay, 0ms) both;
+	}
+
+	@keyframes intro-tile {
+		from {
+			opacity: 0;
+			transform: translateY(var(--intro-rise)) scale(0.98);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		:global(:where([data-intro='run']) :where([data-alive])) .tile {
+			animation-name: intro-tile-blur;
+		}
+	}
+
+	@keyframes intro-tile-blur {
+		from {
+			opacity: 0;
+			transform: translateY(var(--intro-rise)) scale(0.98);
+			filter: blur(var(--intro-blur));
+		}
+	}
+
+	/* A tile waiting for its data: a sheen sweeps over its skeleton. Only
+	   transform moves; ::before is the cursor light. */
+	.tile:has(:global(.live-body[data-live='loading'])) {
+		position: relative;
+	}
+
+	.tile:has(:global(.live-body[data-live='loading']))::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: linear-gradient(100deg, transparent 30%, var(--shimmer) 50%, transparent 70%);
+		transform: translateX(-100%);
+		animation: tile-shimmer var(--duration-shimmer) ease-in-out infinite;
+		pointer-events: none;
+	}
+
+	@keyframes tile-shimmer {
+		to {
+			transform: translateX(100%);
+		}
 	}
 
 	/* Full accent: the text tokens switch to the graphite that reads on it, so

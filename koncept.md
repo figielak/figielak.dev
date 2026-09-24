@@ -35,7 +35,7 @@ Wizytówka i korepetycje są spokojniejsze i mniej gęste. Dashboard jest pełn�
 Subdomeny `maths.figielak.dev` i `dashboard.figielak.dev` działają jako **przekierowania 301** na ścieżki (reguły przekierowań w Cloudflare), co daje krótkie adresy do wysyłania ludziom.
 
 Nawigacja: górny pasek w formie pigułki, wspólny dla wszystkich widoków.
-- Po lewej: logo lub inicjał
+- Po lewej: logo `figielak_` — nazwa i migający czerwony kursor `_` jak w terminalu (bez migania przy reduced motion)
 - Na środku: Wizytówka · Projekty · Dashboard · Korepetycje
 - Po prawej: PL/EN i przełącznik motywu
 
@@ -242,12 +242,11 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i
   - głównych CTA;
   - potwierdzeń i bieżących wpisów (np. „Skopiowano ✓”, „obecnie” w edukacji);
   - pojedynczych wyróżnień w tekście;
-  - jednego wykresu marki: kontrybucji GitHuba;
   - małych ikon przy etykietach kart (np. logo GitHuba, Last.fm, książka);
   - sygnalizowania prawdziwych problemów (§5);
   - stonowanej, mocno rozmytej poświaty w tle dashboardu — tło, nie element interfejsu.
 
-  Aktywna zakładka w nawigacji, paski postępu i zajętości oraz skala jakości powietrza są neutralne.
+  Paski postępu i zajętości oraz skala jakości powietrza są neutralne. Aktywna zakładka w nawigacji ma półprzezroczyste tło akcentu (`--nav-active`), bez animacji.
 
   Maksymalnie 1–2 kafle na widok mogą mieć pełne akcentowe tło (np. CV, kontakt; na dashboardzie Wakatime). W takim kaflu tekst, ikony i kropki są grafitowe (`--accent-foreground`), a `Tile` sam podmienia tokeny tekstu.
 - **Ikony interfejsu** (strzałki, akcje): jedna rodzina outline (Tabler), w kolorze tekstu. Wyjątek: ikona przy etykiecie karty (`Tile icon`) jest w kolorze akcentu.
@@ -279,7 +278,9 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--accent` | `#E5484D` | akcent: stonowana czerwień, kontrast AA na tle |
 | `--accent-hover` | `#EC5D5E` | akcent po najechaniu |
 | `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
+| `--nav-active` | `rgb(229 72 77 / 0.22)` | tło aktywnej zakładki w nawigacji |
 | `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
+| `--spotlight` | `rgb(229 72 77 / 0.6)` | światło na ramkach kafli wokół kursora (dashboard) |
 | `--glow` | `rgb(229 72 77 / 0.35)` | rozmyta poświata pod kaflami dashboardu (tekst `--text-muted` na szkle zostaje ≥ 4,6:1) |
 
 Zasady:
@@ -289,14 +290,14 @@ Zasady:
   - Pulsują tylko rzeczy dziejące się teraz: „Dostępny do pracy”, „teraz gra”, trwający build.
 - **Paski** (postęp, CPU/RAM/dysk) mają neutralne wypełnienie `--text-muted`. Paski homelaba robią się czerwone (`--status-down`) od progu zajętości (85%). Bieżący stopień skali powietrza ma kolor `--text`.
 - Inne kolory semantyczne (np. skala jakości powietrza) są dozwolone, jeśli poprawiają czytelność — wtedy dodaję je jako tokeny.
-- Wykres kontrybucji GitHuba rysuję w odcieniach akcentu (4 poziomy przezroczystości) — to jedyny wykres w akcencie.
+- Wykres kontrybucji GitHuba rysuję w oryginalnych zieleniach GitHuba (4 poziomy z ciemnego motywu, tokeny `--github-level-*`) — czyta się jak prawdziwy wykres z profilu.
 - Kolor treści (loga, okładki, zdjęcia, grafiki) opisuje §4 „Kolor w treści”.
 
 ---
 
 ## 6. Typografia
 
-- **Główny font:** Satoshi w grubościach 400, 500 i 700. Najlepiej w wersji variable.
+- **Główny font:** Satoshi w grubościach 400, 500 i 700, logo w nawigacji 900. Wersja variable (jeden plik, oś 300–900).
   Satoshi pochodzi z Fontshare i prawdopodobnie nie ma go w Fontsource, więc hostuję go lokalnie (woff2, `font-display: swap`, preload).
 - **Mono:** JetBrains Mono przez Fontsource. Używam go do etykiet, liczb, statystyk, dat i terminala.
 - **Liczby** zawsze z `font-variant-numeric: tabular-nums`, żeby nie „skakały” przy aktualizacji.
@@ -350,7 +351,14 @@ Na start:
   - pojawia się delikatny cień;
   - przejście trwa 150–200ms z `ease-out`.
 - **Hover na nieklikalnym kaflu (tylko dashboard):** mniejszy niż klikalny — obramowanie `--border-hover` i uniesienie o 1px (`--lift-subtle`), bez cienia i zmiany tła.
+- **Intro dashboardu** (`src/scripts/intro.ts`, ok. 1,5 s; przy pierwszym wejściu w sesji i przy każdym kliknięciu „Dashboard” w nawigacji; bez intro przy reduced motion):
+  - kafle wjeżdżają kolejno po przekątnej od lewego górnego rogu, lekko z dołu; rozmycie tylko od 1024 px (na telefonach mogłoby przycinać);
+  - zaraz po pojawieniu się kafla ruszają animacje w środku: kratki GitHuba zapalają się falą od lewej, paski rosną od zera, liczby odliczają od 0 (1,2 s), okładka Muzyki się wyostrza;
+  - kafel czekający na dane odgrywa swoje animacje, gdy dane przyjdą;
+  - logo `figielak` wpisuje się litera po literze, potem zaczyna migać kursor;
+  - animowane jest tylko `opacity` i `transform`.
 - **Poświata dashboardu:** plamy dryfują w cyklach ok. 48 i 62 s.
+- **Światło przy kursorze (dashboard, tylko mysz):** ramki kafli w zasięgu kursora (`--spotlight-size`) lekko czerwienieją, także sąsiednich; światło płynie za kursorem z lekkim opóźnieniem jak fala (`src/scripts/spotlight.ts`). Bez kafla akcentowego; przy reduced motion bez opóźnienia.
 - **Pulsowanie kropki** (tylko rzeczy dziejące się teraz, patrz §5): łagodne, skala i przezroczystość, około 2s.
 - **Focus:** widoczny ring w kolorze akcentu (`:focus-visible`).
 - **`prefers-reduced-motion`:** wyłącza unoszenie, pulsowanie, dryf poświaty i animacje wejścia.
@@ -363,9 +371,6 @@ Na start:
 - output i historia zostają w `sessionStorage` na czas sesji; podpowiedź `` ` TERMINAL `` w stopce dashboardu (ukryta na dotyku).
 
 Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
-- poświata podążająca za kursorem;
-- kafle pojawiające się kolejno przy wejściu;
-- liczniki odliczające do wartości;
 - efekt tilt.
 
 ---
@@ -410,7 +415,7 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 
 | Stan | Wygląd |
 |---|---|
-| Ładowanie | szkielet w kształcie docelowej treści |
+| Ładowanie | szkielet w kształcie docelowej treści, z połyskiem przesuwającym się po kaflu; gdy przyjdą dane, treść płynnie się w niego wkleja |
 | OK | dane i szara kropka |
 | Nieaktualne (dane starsze niż próg, np. 10 min) | dane, czerwona kropka, „aktualizacja X min temu” |
 | Błąd lub brak danych | czerwona kropka i spokojny tekst zastępczy (np. „Homelab offline”) |

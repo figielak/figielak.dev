@@ -58,7 +58,7 @@ const stats = [
 						stats.map((stat) => (
 							<div class="github-stat">
 								<dt class="github-label">{stat.label}</dt>
-								<dd class="github-value" data-skeleton aria-live="polite">
+								<dd class="github-value" data-skeleton data-count aria-live="polite">
 									{stat.value}
 								</dd>
 							</div>
@@ -76,8 +76,8 @@ const stats = [
 
 			<div class="contrib" aria-hidden="true">
 				{
-					d.weeks.map((week) => (
-						<span class="contrib-week">
+					d.weeks.map((week, col) => (
+						<span class="contrib-week" style={`--col: ${col}`}>
 							{week.map((level) => (
 								<span class="contrib-day" data-level={github.state === 'loading' ? 0 : level} />
 							))}
@@ -183,16 +183,16 @@ const stats = [
 	}
 
 	.contrib-day[data-level='1'] {
-		background: var(--accent-level-1);
+		background: var(--github-level-1);
 	}
 	.contrib-day[data-level='2'] {
-		background: var(--accent-level-2);
+		background: var(--github-level-2);
 	}
 	.contrib-day[data-level='3'] {
-		background: var(--accent-level-3);
+		background: var(--github-level-3);
 	}
 	.contrib-day[data-level='4'] {
-		background: var(--accent-level-4);
+		background: var(--github-level-4);
 	}
 
 	.contrib-legend {
@@ -209,6 +209,20 @@ const stats = [
 	@media (max-width: 639px) {
 		.contrib-week:nth-child(-n + 26) {
 			display: none;
+		}
+	}
+
+	/* Dashboard intro: the chart lights up in a wave from the left, one
+	   column (week) after another. */
+	:global(.tile[data-reveal]) .contrib .contrib-day {
+		animation: contrib-in var(--duration-grow) var(--ease-out) both;
+		animation-delay: calc(var(--col) * var(--intro-cell-step));
+	}
+
+	@keyframes contrib-in {
+		from {
+			opacity: 0;
+			transform: scale(0.4);
 		}
 	}
 </style>

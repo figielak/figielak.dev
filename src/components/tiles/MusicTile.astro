@@ -67,7 +67,7 @@ const cover = music.data?.track.coverUrl;
 								<li class="top-artist">
 									<span class="top-rank">{i + 1}</span>
 									<span class="top-name" data-skeleton>{artist.name}</span>
-									<span class="top-plays" data-skeleton>
+									<span class="top-plays" data-skeleton data-count>
 										{t('music.plays').replace('{n}', String(artist.plays))}
 									</span>
 								</li>
@@ -146,6 +146,33 @@ const cover = music.data?.track.coverUrl;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	/* Dashboard intro: the cover settles in, slightly larger at first, and on
+	   desktop sharpens out of a blur. */
+	:global(.tile[data-reveal]) .music-art img {
+		animation: music-art-in var(--duration-intro) var(--ease-out) both;
+	}
+
+	@keyframes music-art-in {
+		from {
+			opacity: 0.6;
+			transform: scale(1.08);
+		}
+	}
+
+	@media (min-width: 1024px) {
+		:global(.tile[data-reveal]) .music-art img {
+			animation-name: music-art-in-blur;
+		}
+	}
+
+	@keyframes music-art-in-blur {
+		from {
+			opacity: 0.6;
+			transform: scale(1.08);
+			filter: blur(var(--intro-blur));
+		}
 	}
 
 	/* Darker at the bottom under the text, a touch at the top for the label. */

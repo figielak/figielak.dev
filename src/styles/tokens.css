@@ -39,6 +39,8 @@
 	--accent: #e5484d;
 	--accent-hover: #ec5d5e;
 	--accent-soft: rgb(229 72 77 / 0.12);
+	/* Current page in the navigation: the accent, see-through. */
+	--nav-active: rgb(229 72 77 / 0.22);
 	/* Text on a full accent background. White on --accent is only 3.9:1, so
 	   the graphite reads on it instead (4.8:1, AA at body size). */
 	--accent-foreground: #0e0e10;
@@ -46,17 +48,21 @@
 	   (skeletons, empty bars). The subtle one is for non-essential detail. */
 	--accent-foreground-subtle: rgb(14 14 16 / 0.7);
 	--accent-inset: rgb(14 14 16 / 0.14);
-	/* GitHub contribution levels 1–4 in the accent, never green (koncept.md §5).
-	   Level 0 is --surface-inset. */
-	--accent-level-1: rgb(229 72 77 / 0.25);
-	--accent-level-2: rgb(229 72 77 / 0.45);
-	--accent-level-3: rgb(229 72 77 / 0.7);
-	--accent-level-4: var(--accent);
+	/* GitHub contribution levels 1–4 in GitHub's own dark-theme greens, so the
+	   chart reads as the real one (koncept.md §5). Level 0 is --surface-inset. */
+	--github-level-1: #0e4429;
+	--github-level-2: #006d32;
+	--github-level-3: #26a641;
+	--github-level-4: #39d353;
 
 	/* Blurred accent glow behind the dashboard tiles (koncept.md §4). At its
 	   peak under --surface-glass, --text-muted keeps 4.6:1; the accent there is
 	   only icons, charts and dots, which need 3:1. */
 	--glow: rgb(229 72 77 / 0.35);
+	/* Light on the tile edges around the cursor (dashboard). */
+	--spotlight: rgb(229 72 77 / 0.6);
+	/* Sheen sweeping over a tile that waits for its data. */
+	--shimmer: rgb(255 255 255 / 0.05);
 
 	/* Scrim over photos and covers, so text on them keeps AA contrast (§4). */
 	--scrim: rgb(0 0 0 / 0.85);
@@ -154,6 +160,8 @@
 	--glow-blur: 120px;
 	/* Frosts what shows through a dashboard tile. */
 	--glass-blur: 16px;
+	/* Reach of the light around the cursor on the tile edges. */
+	--spotlight-size: 260px;
 
 	/* Motion */
 	--ease-out: cubic-bezier(0.2, 0.8, 0.4, 1);
@@ -163,6 +171,21 @@
 	--duration-terminal-close: 150ms;
 	--duration-blink: 1s;
 	--duration-glow: 48s;
+	--duration-shimmer: 1.4s;
+
+	/* Dashboard intro (src/scripts/intro.ts), about 1.5 s in all: tiles come
+	   in along the diagonal over `spread`, each for `intro`; their insides
+	   start `inner` after the tile. On the first visit in a session and on
+	   every click on Dashboard in the navigation. */
+	--intro-spread: 550ms;
+	--duration-intro: 700ms;
+	--intro-inner: 250ms;
+	--duration-grow: 800ms;
+	--intro-cell-step: 10ms;
+	--intro-type-step: 90ms;
+	--intro-rise: 12px;
+	/* Desktop only: blur on many large tiles can stutter on phones. */
+	--intro-blur: 8px;
 	/* How far a clickable tile rises on hover. */
 	--lift: -2px;
 	/* The smaller rise of a tile that is not clickable (dashboard only). */

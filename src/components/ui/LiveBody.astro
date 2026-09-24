@@ -71,6 +71,19 @@ const hidden = state === 'loading' || state === 'error';
 		border-radius: var(--radius-inset);
 		background: var(--surface-inset);
 		color: transparent;
-		animation: skeleton-pulse var(--duration-pulse) var(--ease-out) infinite;
+	}
+
+	/* When the data comes in, it settles into the skeleton's place instead of
+	   popping in (the tile's sheen marks the wait, see Tile). */
+	.live-body:not([data-live='loading']) > .live-content,
+	.live-body[data-live='error'] > .live-error {
+		animation: live-in var(--duration-intro) var(--ease-out);
+	}
+
+	@keyframes live-in {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
 	}
 </style>

@@ -2,14 +2,13 @@
 @import './tokens.css';
 
 /*
- * Satoshi is not on Fontsource, so it is self-hosted (koncept.md §6).
- * Drop the variable woff2 into public/fonts/ — until then the stack falls
- * through to the system sans and nothing else breaks.
+ * Satoshi is not on Fontsource, so it is self-hosted (koncept.md §6): one
+ * variable file with the whole 300–900 weight axis.
  */
 @font-face {
 	font-family: 'Satoshi';
 	src: url('/fonts/Satoshi-Variable.woff2') format('woff2-variations');
-	font-weight: 400 700;
+	font-weight: 300 900;
 	font-style: normal;
 	font-display: swap;
 }

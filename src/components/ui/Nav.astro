@@ -35,7 +35,10 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 ---
 
 <nav class="nav" aria-label={t('nav.label')}>
-	<a class="nav-brand" href={localizePath('/', lang)}>figielak</a>
+	{/* A prompt-like wordmark: the name and a blinking cursor in the accent. */}
+	<a class="nav-brand" href={localizePath('/', lang)} aria-label="figielak">
+		figielak<span class="nav-brand-cursor" aria-hidden="true">_</span>
+	</a>
 
 	<ul class="nav-items">
 		{
@@ -44,6 +47,7 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 					<a
 						href={hrefFor(item.path)}
 						class="nav-link"
+						data-intro-replay={item.path === '/dashboard' ? '' : undefined}
 						data-active={isActive(item.path) ? '' : undefined}
 						aria-current={isActive(item.path) ? 'page' : undefined}
 					>
@@ -116,6 +120,18 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 	</div>
 </nav>
 
+<script>
+	/* A click on Dashboard plays its intro again (src/scripts/intro.ts),
+	   which otherwise runs once per session. */
+	for (const link of document.querySelectorAll<HTMLAnchorElement>('.nav-link[data-intro-replay]')) {
+		link.addEventListener('click', () => {
+			try {
+				sessionStorage.removeItem(`intro:${new URL(link.href).pathname.replace(/\/$/, '')}`);
+			} catch {}
+		});
+	}
+</script>
+
 <style>
 	/*
 	 * Three separate pieces on the page background: wordmark left, link pill
@@ -139,7 +155,7 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 		justify-self: start;
 		font-family: var(--font-sans);
 		font-size: var(--size-title);
-		font-weight: 700;
+		font-weight: 900;
 		letter-spacing: -0.015em;
 		color: var(--text);
 		text-decoration: none;
@@ -148,6 +164,28 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 
 	.nav-brand:hover {
 		color: var(--accent);
+	}
+
+	.nav-brand-cursor {
+		color: var(--accent);
+		animation: brand-blink var(--duration-blink) steps(1) infinite;
+	}
+
+	/* While the intro types the name, the cursor holds still. */
+	.nav-brand[data-typing] .nav-brand-cursor {
+		animation: none;
+	}
+
+	@keyframes brand-blink {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nav-brand-cursor {
+			animation: none;
+		}
 	}
 
 	/* The two bordered groups share one shape. */
@@ -189,9 +227,6 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 		color: var(--text-muted);
 		text-decoration: none;
 		white-space: nowrap;
-		transition:
-			color var(--duration-hover) var(--ease-out),
-			background-color var(--duration-hover) var(--ease-out);
 	}
 
 	.nav-link:hover {
@@ -199,9 +234,10 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 		background: var(--surface-hover);
 	}
 
+	/* The current page: the accent, see-through, so it sits with the glow. */
 	.nav-link[data-active] {
 		color: var(--text);
-		background: var(--surface-hover);
+		background: var(--nav-active);
 	}
 
 	.nav-control {
@@ -240,6 +276,10 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 	/* Phones cannot fit three groups side by side: the wordmark and the controls
 	   share the top row, the link pill takes the one below. */
 	@media (max-width: 639px) {
+		.nav-items {
+			justify-self: stretch;
+		}
+
 		.nav {
 			grid-template-columns: auto auto;
 			grid-template-areas:
@@ -247,10 +287,6 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 				'items items';
 			justify-content: space-between;
 			row-gap: var(--space-sm);
-		}
-
-		.nav-items {
-			justify-self: stretch;
 		}
 	}
 </style>

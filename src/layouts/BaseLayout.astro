@@ -65,6 +65,28 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 				} catch {}
 			})();
 		</script>
+
+		{/* Dashboard intro, first visit in a session or a click on Dashboard in
+		    the navigation (Nav clears the mark): tiles stay hidden
+		    until src/scripts/intro.ts plays them in. If that script never
+		    starts, the timeout shows them anyway. */}
+		{
+			glow && (
+				<script is:inline>
+					(() => {
+						try {
+							if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+							if (sessionStorage.getItem('intro:' + location.pathname.replace(/\/$/, ''))) return;
+							const html = document.documentElement;
+							html.dataset.intro = 'pending';
+							setTimeout(() => {
+								if (html.dataset.intro === 'pending') delete html.dataset.intro;
+							}, 2000);
+						} catch {}
+					})();
+				</script>
+			)
+		}
 	</head>
 
 	<body class:list={[glow && 'has-glow']}>

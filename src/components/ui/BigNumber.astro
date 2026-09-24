@@ -15,7 +15,7 @@ const { value, caption, class: className } = Astro.props;
 ---
 
 <p class:list={['big', className]}>
-	<span class="big-value" data-skeleton aria-live="polite">{value}</span>
+	<span class="big-value" data-skeleton data-count aria-live="polite">{value}</span>
 	{caption && <span class="big-caption" data-skeleton>{caption}</span>}
 </p>
 

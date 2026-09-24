@@ -229,6 +229,18 @@ const missing = rows.filter((row) => row.hidden).map((row) => t(`service.${row.k
 		background: var(--text-muted);
 	}
 
+	/* Dashboard intro: the bar grows from zero once its tile is in. */
+	:global(.tile[data-reveal]) .service-fill {
+		transform-origin: left;
+		animation: service-grow var(--duration-grow) var(--ease-out) both;
+	}
+
+	@keyframes service-grow {
+		from {
+			transform: scaleX(0);
+		}
+	}
+
 	.service[data-status='down'] .service-fill {
 		background: var(--status-down);
 	}
