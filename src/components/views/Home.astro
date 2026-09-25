@@ -71,19 +71,16 @@ const education = [
 /* En dash with no spaces, the typographic form for a range: 2020–2025. */
 const formatPeriod = (start: number, end?: number) => `${start}–${end ?? t('edu.present')}`;
 
-/* Grouped by theme: data, backend, tooling, AI. */
+/* One row per category, the most important first; names stay as the
+   tools spell them, only the categories are translated. */
 const skills = [
-	'Python',
-	'Pandas',
-	'SQL',
-	'FastAPI',
-	'Flask',
-	'Docker',
-	'Linux',
-	'Git',
-	'Claude',
-	'Copilot',
-];
+	{ category: 'skills.backend', items: ['Python', 'FastAPI', 'Flask', 'Pandas'] },
+	{ category: 'skills.automation', items: ['GitHub Actions'] },
+	{ category: 'skills.database', items: ['SQL', 'Firestore'] },
+	{ category: 'skills.devops', items: ['Docker', 'Linux', 'Google Cloud Run', 'Cloudflare'] },
+	{ category: 'skills.ai', items: ['Claude', 'Copilot'] },
+	{ category: 'skills.tools', items: ['Git'] },
+] as const;
 ---
 
 <Dossier>
@@ -132,15 +129,24 @@ const skills = [
 	</DossierSection>
 
 	<DossierSection label={t('tile.skills')}>
-		<ul class="pills">
+		<dl class="skills">
 			{
-				skills.map((skill) => (
-					<li>
-						<Pill>{skill}</Pill>
-					</li>
+				skills.map((group) => (
+					<div class="skill-group">
+						<dt class="skill-category">{t(group.category)}</dt>
+						<dd class="skill-items">
+							<ul class="pills">
+								{group.items.map((skill) => (
+									<li>
+										<Pill>{skill}</Pill>
+									</li>
+								))}
+							</ul>
+						</dd>
+					</div>
 				))
 			}
-		</ul>
+		</dl>
 	</DossierSection>
 
 	<DossierSection label={t('tile.languages')}>
@@ -173,6 +179,36 @@ const skills = [
 
 <style>
 	.languages {
+		margin: 0;
+	}
+
+	/* Category on the left in the column of the experience periods, so both
+	   sections share one edge; the pills wrap beside it. */
+	.skills {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+		margin: 0;
+	}
+
+	.skill-group {
+		display: grid;
+		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr);
+		gap: var(--space-xl);
+		align-items: baseline;
+	}
+
+	/* Muted, not subtle: a label people read, so it keeps AA. */
+	.skill-category {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-weight: 500;
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.skill-items {
 		margin: 0;
 	}
 </style>
