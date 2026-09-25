@@ -9,7 +9,8 @@ import {
 	type TranslationKey,
 } from '../../i18n';
 import { discordUrl, githubUrl, instagramUrl, linkedinUrl } from '../../lib/contact';
-import { featuredProjects } from '../../lib/featured';
+import { getProjects, projectHref } from '../../lib/projects';
+import { tutoringOpen } from '../../lib/tutoring';
 import type { TerminalData } from '../../scripts/terminal/types';
 
 /**
@@ -35,7 +36,8 @@ const pages = [
 	{ name: 'wizytowka', aliases: ['wizytówka', 'home'], path: '/' },
 	{ name: 'projekty', aliases: ['projects'], path: '/projects' },
 	{ name: 'dashboard', aliases: [], path: '/dashboard' },
-	{ name: 'korepetycje', aliases: ['maths'], path: '/maths' },
+	/* No directory to go to while tutoring is closed (src/lib/tutoring.ts). */
+	...(tutoringOpen ? [{ name: 'korepetycje', aliases: ['maths'], path: '/maths' }] : []),
 ];
 const dirs = pages.map(({ path, ...dir }) => ({
 	...dir,
@@ -59,10 +61,10 @@ const data: TerminalData = {
 		{ name: 'github', label: 'GitHub', url: githubUrl },
 		{ name: 'linkedin', label: 'LinkedIn', url: linkedinUrl },
 	],
-	projects: featuredProjects.map((project) => ({
-		name: project.title.toLowerCase().replace(/[^a-z0-9.]+/g, '-'),
-		title: project.title,
-		href: localizePath(project.href, lang),
+	projects: (await getProjects()).map((project) => ({
+		name: project.data.title.toLowerCase().replace(/[^a-z0-9.]+/g, '-'),
+		title: project.data.title,
+		href: projectHref(project, lang),
 	})),
 };
 

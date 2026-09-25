@@ -3,8 +3,8 @@ import { Image } from 'astro:assets';
 import Tile from './Tile.astro';
 import Pill from './Pill.astro';
 import Icon from './Icon.astro';
-import type { FeaturedProject } from '../../lib/featured';
-import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
+import type { FeaturedProject } from '../../lib/projects';
+import { getLangFromUrl, useTranslations } from '../../i18n';
 
 /**
  * Featured projects on the home page (koncept.md §3.1) as a sideways strip:
@@ -31,7 +31,7 @@ const t = useTranslations(lang);
 	<div class="track" tabindex="0" aria-label={t('home.featured')}>
 		{
 			projects.map((project, i) => (
-				<Tile href={localizePath(project.href, lang)} arrow={false} class="slide">
+				<Tile href={project.href} arrow={false} class="slide">
 					<article class="card">
 						<div class="shot">
 							{project.image ? (

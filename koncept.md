@@ -10,7 +10,8 @@
 Osobista strona w stylu **bento grid**: ciemne, grafitowe tło, zaokrąglone kafle, jeden czerwony akcent w interfejsie. **Treść może być kolorowa** — prawdziwe loga, okładki, zdjęcia i grafiki dodają stronie życia (patrz §4 „Kolor w treści”).
 Strona składa się z kilku **widoków** dla różnych odbiorców. Wszystkie dzielą ten sam **system wizualny** (tokeny, kafle, typografia, akcent), ale nie ten sam układ.
 
-- **Bento grid** to układ domyślny: projekty i dashboard.
+- **Bento grid** to układ dashboardu.
+- **Projekty to lista** — jeden wyróżniony projekt i wiersze pod nim (3.2). Druga siatka kafli zlewałaby się z dashboardem, a projekt potrzebuje więcej tekstu, niż mieści kafel.
 - **Wizytówka i korepetycje są świadomym wyjątkiem** — dwukolumnowe „dossier” opisane w 3.1 (korepetycje: 3.3). Powód: bento dobrze pokazuje *wiele równorzędnych* rzeczy naraz, a wizytówka ma jedną rzecz najważniejszą (kto to jest i jak się skontaktować) i resztę jako uzupełnienie. Siatka równych kafli spłaszczała tę hierarchię.
 
 System wizualny obowiązuje w obu układach: te same tokeny, ten sam `Tile`, te same etykiety mono i ten sam akcent.
@@ -36,7 +37,7 @@ Subdomeny `maths.figielak.dev` i `dashboard.figielak.dev` działają jako **prze
 
 Nawigacja: górny pasek w formie pigułki, wspólny dla wszystkich widoków.
 - Po lewej: logo `figielak_` — nazwa i migający czerwony kursor `_` jak w terminalu (bez migania przy reduced motion)
-- Na środku: Wizytówka · Projekty · Dashboard · Korepetycje
+- Na środku: Wizytówka · Projekty · Dashboard · Korepetycje (dopóki korepetycje są zamknięte — wyszarzone, nie są linkiem, z dopiskiem „wkrótce” od 640 px; §3.3)
 - Po prawej: PL/EN, przycisk terminala `>_` (§8) i przełącznik motywu (nieaktywny, dopóki jest jeden motyw — §12); na `/maths` przełącznik języka jest wyłączony, bo widok jest tylko po polsku
 - Na telefonie (<640px) logo i przyciski dzielą górny rząd, a pigułka z linkami zajmuje rząd pod nimi
 - Na telefonie (<640px) pasek jest przyklejony do góry ekranu na prawie kryjącym tle (`--nav-glass`, rozmycie `--glass-blur`): chowa się przy przewijaniu w dół i wraca przy pierwszym ruchu w górę (próg 8 px, żeby nie migał), a przy samej górze strony jest zawsze widoczny. Schowany jest `inert`, a fokus w nim go pokazuje. Na desktopie pasek przewija się razem ze stroną.
@@ -101,12 +102,19 @@ Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama lin
 
 ### 3.2 Projekty (`/projects`)
 
-- Lista projektów jako bento grid kart. Siatka ma 4 kolumny, a wyróżnione projekty mogą zajmować 2×2.
-- Każdy projekt to plik MDX w content collection. Wpis zawiera: tytuł, opis, tagi, rok, linki (repo, demo), okładkę i flagę `featured`.
-- Strona projektu (`/projects/[slug]`) to długa forma MDX. Może zawierać wzory (KaTeX) i diagramy (Mermaid).
-- Wpisy z `featured: true` zasilają karuzelę na wizytówce.
+- **Układ: jeden wyróżniony + lista**, na całą szerokość, bez karty profilu. Nie bento: dashboard jest jedyną siatką kafli, a lista wygląda dobrze zarówno z dwoma, jak i z dziesięcioma projektami (w siatce przy kilku projektach widać dziury).
+- Nad wszystkim etykieta mono „Projekty · N”.
+- **Wyróżniony projekt** (pierwszy wpis z `featured: true` wg `order`): jeden `Tile` — zrzut ekranu po lewej od krawędzi do krawędzi, po prawej etykieta „Wyróżniony · rok” w akcencie (jedyny akcent w widoku), nazwa jak nagłówek hero, jedno zdanie, tagi i przyciski linków (Case study / Kod / Na żywo ↗). Poniżej 768px składa się w pionie: zrzut nad tekstem.
+- **Lista** pozostałych w sekcji dossier („Pozostałe projekty”): te same wiersze co Doświadczenie na wizytówce — rok w mono w kolumnie okresów (`2025–obecnie` dla trwających), tytuł, jedno zdanie, tagi, a po prawej ikony linków. Na telefonie rok przechodzi nad tytuł, a wiersze zostają wierszami.
+- **Każda pozycja:** jedno zdanie w schemacie problem → rozwiązanie → efekt, najlepiej z konkretem („używany codziennie”, „3. miejsce na hackathonie”); 2–4 tagi stacku, nie cały stack; linki: kod, demo, opcjonalnie case study.
+- Bez kart „W przygotowaniu” — lepiej mniej, dobrze opisanych projektów. Filtry (Backend, Data / ML…) dopiero od ok. 6 projektów.
+- Każdy projekt to plik MDX w content collection (`src/content/projects/`, schemat w `src/content.config.ts`): tytuł, rok (+ `ongoing`), zdanie PL/EN, tagi, linki (repo, demo — ścieżka na stronie lub URL), okładka, `featured`, `order` i opcjonalne `features` (ikona + krótki tekst, dla karuzeli). Dane dla widoków daje `src/lib/projects.ts`.
+- **Case study** (`/projects/[slug]`) to treść pliku MDX: kontekst, architektura, decyzje, czego się nauczyłem; może zawierać wzory (KaTeX, CSS ładowany tylko tam) i diagramy (Mermaid). Strona powstaje tylko dla wpisu z niepustą treścią. Case study są po polsku — wersja EN listy linkuje do polskiej strony.
+- Wpisy z `featured: true` zasilają karuzelę na wizytówce, kafel `featured` na dashboardzie, a wszystkie wpisy — komendę `open` w terminalu.
 
 ### 3.3 Korepetycje (`/maths`)
+
+> **Stan (2026-09-25): w przygotowaniu.** Przełącznik `tutoringOpen` w `src/lib/tutoring.ts` jest wyłączony: `/maths` pokazuje tylko kafel „W przygotowaniu” z powrotem na wizytówkę (`noindex`, poza sitemapą), nawigacja wyszarza pozycję, a terminal nie ma katalogu `korepetycje` i komenda odpowiada „w przygotowaniu”. Widok opisany niżej jest gotowy w kodzie (`Maths.astro`) i wraca po ustawieniu `true`.
 
 - **Ton:** ciepły, prosty, budzący zaufanie. Odbiorcą są także rodzice, więc piszę bez żargonu IT.
 - **Układ:** to samo **dossier** co wizytówka (3.1): te same komponenty (`Dossier`, `ProfileCard`, `DossierSection`), te same proporcje i zachowanie. Zmienia się treść — mniej zawodowo, bardziej osobiście.
@@ -203,7 +211,7 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 | `day` | lokalne | czas Europe/Warsaw co sekundę i data; wschód i zachód słońca, długość dnia; paski % dnia, miesiąca i roku — wszystko liczone lokalnie, bez API i bez kropki |
 | `weather` | lokalne | dwie sekcje z własnymi stanami: pogoda w Rzeszowie (`/api/weather`, Open-Meteo: temperatura, opis, miasto) i jakość powietrza (`/api/air`, GIOŚ, stacja Al. Piłsudskiego: poziom słownie, skala 6 stopni; PM2.5/PM10 tylko na telefonie i tablecie); jedna stopka pokazuje gorszą z sekcji. Ta sama pogoda jest w zajawce na wizytówce i w komendzie `weather` terminala |
 | `github` | praca | liczba kontrybucji, streak, repozytoria, legenda i „X min temu” w jednym rzędzie; pod nimi wykres roku na całą szerokość |
-| `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz ↗”; kilka projektów w karuzeli (`src/lib/featured.ts` — dane testowe do czasu kolekcji projektów, §3.2) |
+| `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz ↗”; kilka projektów w karuzeli (wpisy z `featured: true` z kolekcji projektów, §3.2) |
 | `dc` `ig` `gh` `li` | kontakt | linki do profili: kafel w kolorach marki, białe logo i nazwa |
 | `waka` | praca | WakaTime, ciemny jak inne kafle, w kolejności ważności: czas dziś (duża liczba) i porównanie ze średnią dni tygodnia; 7 słupków pon–ndz z dzisiejszym w akcencie; pasek języków w kolorach GitHub Linguist (`--lang-*`) z 3 nazwami; suma tygodnia w stopce. W wąskim kaflu najpierw znika porównanie, potem nazwy języków |
 | `lab` | homelab | cztery sekcje: **maszyna** (CPU, RAM, każdy dysk osobnym paskiem i GPU, jeśli jest — w %, czerwone od 85% — kontenery, temperatura CPU), **usługi** (uptime hosta; usługi pod ogólnymi nazwami: Media, Pliki, DNS, Kopie — up/down, dostępność z 30 dni jako liczba i pasek od 90%, średni czas odpowiedzi; usługi bez danych zebrane w jedną linię „Brak danych: …”), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
@@ -345,15 +353,13 @@ Zasady:
 
 ## 7. Siatka i responsywność
 
-Reguły poniżej dotyczą **widoków w bento**: projektów i dashboardu.
-**Wizytówka i korepetycje rządzą się własnymi zasadami** — patrz 3.1, 3.3 i podsumowanie na końcu tej sekcji.
+Reguły poniżej dotyczą **widoku w bento**: dashboardu.
+**Wizytówka i korepetycje rządzą się własnymi zasadami** — patrz 3.1, 3.3 i podsumowanie na końcu tej sekcji. Projekty to lista (3.2): wiersze dossier na całą szerokość.
 
-- **Kolumny:**
-  - projekty mają 4 kolumny;
-  - dashboard ma 6 kolumn (publiczny mieści się na jednym ekranie od 1440×900 dzięki `xl` i `tall` w `BentoLayout`, które dzielą wysokość ekranu na rzędy).
-- **Odstęp między kaflami:** 12px (dashboard: 10px).
+- **Kolumny:** dashboard ma 6 kolumn (publiczny mieści się na jednym ekranie od 1440×900 dzięki `xl` i `tall` w `BentoLayout`, które dzielą wysokość ekranu na rzędy).
+- **Odstęp między kaflami:** 10px (poza dashboardem 12px).
 - **„Mieści się na jednym ekranie”** dotyczy desktopu. Publiczny dashboard mieści się bez scrolla od 1440×900 (docelowy widok), prywatny od 1280×720. Poniżej tego scroll jest dozwolony.
-- **Tablet (640–1024px):** 4 kolumny; dashboard przechodzi z 6 na 4.
+- **Tablet (640–1024px):** dashboard przechodzi z 6 na 4 kolumny.
 - **Telefon (<640px):**
   - siatka ma **2 kolumny** i kafle układają się od lewej do prawej, **nigdy jedna kolumna jeden pod drugim**;
   - kafle szersze niż 2 kolumny zwężam do 2;
@@ -364,7 +370,7 @@ Reguły poniżej dotyczą **widoków w bento**: projektów i dashboardu.
 
 | Reguła bento | Dossier |
 |---|---|
-| siatka 4 kolumn z `grid-template-areas` | dwie kolumny: 320px + reszta |
+| siatka kolumn z `grid-template-areas` | dwie kolumny: 320px + reszta |
 | mieści się na jednym ekranie | scrolluje celowo, lewa kolumna jest przyklejona |
 | telefon zawsze 2 kolumny | poniżej 1024px jedna kolumna — strumień tekstu w dwóch kolumnach na telefonie byłby nieczytelny |
 
@@ -493,16 +499,16 @@ src/
     tiles/       # każdy kafel jako osobny komponent (homelab/ — jego sekcje)
     views/       # treść widoków, wspólna dla PL i EN
   layouts/       # BaseLayout
-  lib/           # dane statyczne (featured, books, events, services, contact)
+  lib/           # dane statyczne (projects, books, events, services, contact)
     mocks/       # dane testowe i typy kafli na żywo
     server/      # klienci API, cache, Firestore, kontrakt homelaba
   pages/
     index.astro  maths.astro  dashboard.astro  dashboard/private.astro
-    projects/    # index.astro, [slug].astro ✱
+    projects/    # index.astro, [slug].astro (case study, tylko PL)
     en/          # te same widoki po angielsku (bez /maths)
     dev/         # galeria stanów kafli /dev/tiles (tylko w dev)
     api/         # endpointy danych na żywo
-  content/projects/*.mdx ✱
+  content/projects/*.mdx   # schemat w src/content.config.ts
   plugins/       # katex.js
   scripts/       # live.ts, intro.ts, spotlight.ts, terminal/
   i18n/          # pl.json, en.json
@@ -599,12 +605,12 @@ Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
 Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 
 1. ✅ **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
-2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie (prawdziwe pozycje), edukacja, umiejętności, języki, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z `src/lib/featured.ts`, ta sama lista co na dashboardzie), zajawka dashboardu (pogoda i muzyka na żywo) — gotowe. Zostało:
+2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie (prawdziwe pozycje), edukacja, umiejętności, języki, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z kolekcji projektów, ta sama lista co na dashboardzie), zajawka dashboardu (pogoda i muzyka na żywo) — gotowe. Zostało:
    - CV z Typst jest gotowe (`cv/` → `public/cv/`, PL i EN); zostało dopisać do niego więcej konkretów (punkty z liczbami, projekty), gdy przybędzie treści.
-3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX (plugin gotowy, CSS jeszcze nigdzie nieładowany), Mermaid, karuzela featured z kolekcji. Jest tylko szkielet `/projects` z pustymi kartami.
-4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`).
+3. 🟡 **Projekty:** content collection, układ „wyróżniony + lista”, karuzela i kafel featured z kolekcji, trasa case study z CSS KaTeX — gotowe. Na liście: figielak.dev i Homelab. Zostało: treści case study, Mermaid, kolejne projekty (filtry od ok. 6).
+4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`). Na razie ukryte za planszą „W przygotowaniu” (`src/lib/tutoring.ts`, §3.3).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music` i książki z Hardcover (`/api/books`). Tryb prywatny przebudowany na panel (§3.4): usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu — w kodzie; na żywo po deployu i dodaniu kluczy: deploye (GitHub), wygasa (RDAP, TLS); czekają na konfigurację: Cloudflare Web Analytics, iCal korepetycji, a po stronie agenta sekcje `monitors`, `containers` i `backup` (restic jeszcze nie działa).
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music` i książki z Hardcover (`/api/books`). Tryb prywatny przebudowany na panel (§3.4): usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu — w kodzie; na żywo po deployu i dodaniu kluczy: deploye (GitHub), wygasa (RDAP, TLS); czekają na konfigurację: Cloudflare Web Analytics, iCal korepetycji. Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, cel z edycją w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---
@@ -613,7 +619,6 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 
 - [ ] Źródło rozkładu zajęć i poziom szczegółowości publicznie
 - [ ] Narzędzie do rezerwacji korepetycji (Cal.com / własne)
-- [ ] Lista wydarzeń w odliczaniu, książek w „Czytam” i kroków celu (na razie wypełniacze)
 - [ ] Framework wysp: na razie czysty TS w `<script>` wystarcza; Preact dopiero, gdy potrzebny stan
 
 Podjęte (2026-09-25):
@@ -625,3 +630,4 @@ Podjęte (2026-09-25):
 - [x] Źródło deployów: GitHub Actions API
 - [x] Korepetycje: Google Calendar (iCal) + znacznik płatności w kaflu
 - [x] Cel edytowany w trybie prywatnym (zamiast kafla „Teraz”, który usunięto)
+- [x] Treść kafli bez wypełniaczy: wydarzenia w `src/lib/events.ts`, książki z Hardcover, kroki celu ustawiane w trybie prywatnym (`src/lib/goal.ts` to tylko wartość sprzed pierwszego zapisu)

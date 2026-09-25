@@ -1,0 +1,134 @@
+---
+import 'katex/dist/katex.min.css';
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Pill from '../../components/ui/Pill.astro';
+import TileLabel from '../../components/ui/TileLabel.astro';
+import { getProjects, hasCaseStudy, localizeLink, type ProjectEntry } from '../../lib/projects';
+import { useTranslations } from '../../i18n';
+
+/*
+ * Case study of one project (koncept.md §3.2): the MDX body of its entry.
+ * Written in Polish only, so there is no /en/ twin — the English list links
+ * here. Only projects with a body get a page.
+ */
+export async function getStaticPaths() {
+	const projects = await getProjects();
+	return projects.filter(hasCaseStudy).map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props as { project: ProjectEntry };
+const { Content } = await render(project);
+const t = useTranslations('pl');
+const { data } = project;
+---
+
+<BaseLayout title={`${data.title} — Krystian Figiela`} description={data.summary.pl}>
+	<article class="case">
+		<a class="back" href="/projects">‹ {t('projects.back')}</a>
+		<header class="case-head">
+			<TileLabel>{data.ongoing ? `${data.year}–${t('edu.present')}` : data.year}</TileLabel>
+			<h1 class="case-title">{data.title}</h1>
+			<p class="case-summary">{data.summary.pl}</p>
+			<ul class="case-tags">
+				{
+					data.tags.map((tag) => (
+						<li>
+							<Pill>{tag}</Pill>
+						</li>
+					))
+				}
+			</ul>
+			<p class="case-links">
+				{
+					data.links.repo && (
+						<a class="button" href={data.links.repo} target="_blank" rel="noopener noreferrer">
+							{t('projects.code')} ↗
+						</a>
+					)
+				}
+				{data.links.demo && <a class="button" href={localizeLink(data.links.demo, 'pl')}>{t('projects.live')} ↗</a>}
+			</p>
+		</header>
+		<div class="case-body">
+			<Content />
+		</div>
+	</article>
+</BaseLayout>
+
+<style>
+	.case {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3xl);
+		max-width: 68ch;
+		margin: 0 auto;
+	}
+
+	.back {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+		text-decoration: none;
+	}
+
+	.back:hover {
+		color: var(--accent);
+	}
+
+	.case-head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		padding-bottom: var(--space-3xl);
+		border-bottom: 1px solid var(--border-divider);
+	}
+
+	.case-title {
+		margin: 0;
+		font-size: var(--size-hero);
+		line-height: 1.15;
+	}
+
+	.case-summary {
+		margin: 0;
+		line-height: 1.55;
+		color: var(--text-muted);
+	}
+
+	.case-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.case-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: 0;
+	}
+
+	.case-body {
+		line-height: 1.65;
+	}
+
+	.case-body :global(h2) {
+		margin: var(--space-3xl) 0 var(--space-md);
+		font-size: var(--size-title);
+	}
+
+	.case-body :global(p),
+	.case-body :global(li) {
+		color: var(--text-muted);
+	}
+
+	.case-body :global(a) {
+		color: var(--text);
+	}
+</style>

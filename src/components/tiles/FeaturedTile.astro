@@ -3,8 +3,8 @@ import { Image } from 'astro:assets';
 import Tile from '../ui/Tile.astro';
 import Pill from '../ui/Pill.astro';
 import Icon from '../ui/Icon.astro';
-import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
-import { featuredProjects } from '../../lib/featured';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { getFeaturedProjects } from '../../lib/projects';
 
 /**
  * The featured project (koncept.md §3.4) — the one card that sells something,
@@ -22,7 +22,7 @@ const SHOT_WIDTHS = [480, 720, 960, 1440];
 const { area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const projects = featuredProjects;
+const projects = await getFeaturedProjects(lang);
 ---
 
 <Tile area={area} label={t('home.featured')} icon="star" dense class="featured-tile">
@@ -73,7 +73,7 @@ const projects = featuredProjects;
 								</li>
 							))}
 						</ul>
-						<a class="button featured-link" href={localizePath(project.href, lang)}>
+						<a class="button featured-link" href={project.href}>
 							{t('featured.open')} ↗
 						</a>
 					</div>

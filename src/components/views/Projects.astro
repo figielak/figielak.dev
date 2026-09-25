@@ -1,55 +1,317 @@
 ---
+import { Image } from 'astro:assets';
 import Tile from '../ui/Tile.astro';
+import TileLabel from '../ui/TileLabel.astro';
+import Pill from '../ui/Pill.astro';
+import Icon, { type IconName } from '../ui/Icon.astro';
+import DossierSection from '../ui/DossierSection.astro';
+import { getProjects, hasCaseStudy, localizeLink, projectHref, type ProjectEntry } from '../../lib/projects';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 /*
- * The project list is dynamic, so it does not use named grid areas like the
- * other views — cards flow, and `featured` ones take a 2x2 cell (koncept.md
- * §3.2). Real entries arrive with the content collection in step 3.
+ * One featured project on top, the rest as rows like Experience on the home
+ * page: year in mono on the left, title, one sentence, a few tags, links
+ * (koncept.md §3.2). Not a bento grid — the dashboard is the one grid of
+ * tiles, and a list reads well with two projects as with ten.
  */
-const placeholders = [
-	{ featured: true },
-	{ featured: false },
-	{ featured: false },
-	{ featured: false },
-	{ featured: false },
-] as const;
+const projects = await getProjects();
+const lead = projects.find((project) => project.data.featured);
+const rest = projects.filter((project) => project !== lead);
+
+const SHOT_WIDTHS = [480, 720, 960, 1440];
+
+const year = (project: ProjectEntry) =>
+	project.data.ongoing ? `${project.data.year}–${t('edu.present')}` : String(project.data.year);
+
+/* Case study, code, live — whichever the project has. */
+const links = (project: ProjectEntry) => {
+	const list: { label: string; icon: IconName; href: string; external: boolean }[] = [];
+	if (hasCaseStudy(project)) {
+		list.push({ label: t('projects.caseStudy'), icon: 'notebook', href: projectHref(project, lang), external: false });
+	}
+	if (project.data.links.repo) {
+		list.push({ label: t('projects.code'), icon: 'github', href: project.data.links.repo, external: true });
+	}
+	if (project.data.links.demo) {
+		const href = localizeLink(project.data.links.demo, lang);
+		list.push({ label: t('projects.live'), icon: 'world', href, external: !href.startsWith('/') });
+	}
+	return list;
+};
+
+const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel: 'noopener noreferrer' } : {});
 ---
 
 <div class="projects">
+	<h1 class="projects-title">
+		<TileLabel>{t('projects.count').replace('{n}', String(projects.length))}</TileLabel>
+	</h1>
+
 	{
-		placeholders.map((project) => (
-			<Tile class="project-card" data-featured={project.featured ? '' : undefined} label={t('tile.projects')}>
-				<p class="placeholder">{t('state.placeholder')}</p>
+		lead && (
+			<Tile class="lead" id={lead.id}>
+				<article class="lead-card">
+					<div class="lead-shot">
+						{lead.data.cover ? (
+							<Image
+								src={lead.data.cover}
+								alt={t('featured.shot').replace('{name}', lead.data.title)}
+								widths={SHOT_WIDTHS}
+								sizes="(min-width: 768px) 55vw, 100vw"
+								loading="eager"
+							/>
+						) : (
+							<span class="lead-empty">
+								<Icon name="photo" size={24} />
+							</span>
+						)}
+					</div>
+					<div class="lead-text">
+						<p class="lead-label">
+							{t('projects.featured')} · {year(lead)}
+						</p>
+						<h2 class="lead-name">{lead.data.title}</h2>
+						<p class="lead-summary">{lead.data.summary[lang]}</p>
+						<ul class="pills">
+							{lead.data.tags.map((tag) => (
+								<li>
+									<Pill>{tag}</Pill>
+								</li>
+							))}
+						</ul>
+						<div class="lead-links">
+							{links(lead).map((link) => (
+								<a class="button" href={link.href} {...externalAttrs(link.external)}>
+									<Icon name={link.icon} size={16} />
+									{link.label} ↗
+								</a>
+							))}
+						</div>
+					</div>
+				</article>
 			</Tile>
-		))
+		)
+	}
+
+	{
+		rest.length > 0 && (
+			<DossierSection label={t(lead ? 'projects.others' : 'nav.projects')}>
+				<ul class="rows">
+					{rest.map((project) => (
+						<li class="row project-row" id={project.id}>
+							<span class="row-period">{year(project)}</span>
+							<span class="row-main">
+								<span class="row-title">
+									{hasCaseStudy(project) ? (
+										<a class="row-link" href={projectHref(project, lang)}>
+											{project.data.title}
+										</a>
+									) : (
+										project.data.title
+									)}
+								</span>
+								<span class="row-note">{project.data.summary[lang]}</span>
+								<ul class="pills row-tags">
+									{project.data.tags.map((tag) => (
+										<li>
+											<Pill>{tag}</Pill>
+										</li>
+									))}
+								</ul>
+							</span>
+							<span class="row-links">
+								{links(project).map((link) => (
+									<a
+										class="icon-link"
+										href={link.href}
+										aria-label={`${link.label}: ${project.data.title}`}
+										title={link.label}
+										{...externalAttrs(link.external)}
+									>
+										<Icon name={link.icon} size={18} />
+									</a>
+								))}
+							</span>
+						</li>
+					))}
+				</ul>
+			</DossierSection>
+		)
 	}
 </div>
 
 <style>
 	.projects {
-		display: grid;
-		gap: var(--grid-gap);
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		grid-auto-rows: minmax(var(--project-card-min), auto);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3xl);
 	}
 
-	@media (min-width: 640px) {
-		.projects {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+	.projects-title {
+		margin: 0;
+		line-height: 1;
+	}
+
+	/* The screenshot fills the left part edge to edge, so the tile drops its padding. */
+	.projects :global(.lead) {
+		padding: 0;
+		scroll-margin-top: var(--grid-gap);
+	}
+
+	.lead-card {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		margin: 0;
+	}
+
+	.lead-shot {
+		aspect-ratio: 16 / 10;
+		min-width: 0;
+		overflow: hidden;
+		border-bottom: 1px solid var(--border);
+		background: var(--surface-inset);
+	}
+
+	.lead-shot :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top left;
+	}
+
+	.lead-empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		color: var(--text-subtle);
+	}
+
+	.lead-text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		min-width: 0;
+		padding: var(--tile-padding);
+	}
+
+	/* The one accent of the view: what makes this project the featured one. */
+	.lead-label {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-weight: 500;
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+
+	.lead-name {
+		margin: 0;
+		font-size: var(--size-hero);
+		font-weight: 700;
+		line-height: 1.15;
+	}
+
+	.lead-summary {
+		max-width: 58ch;
+		margin: 0;
+		line-height: 1.55;
+		color: var(--text-muted);
+	}
+
+	.lead-text .pills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.lead-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin-top: auto;
+		padding-top: var(--space-md);
+	}
+
+	.lead-links .button {
+		gap: var(--space-xs);
+	}
+
+	/* Side by side once the text column has room: screenshot left, text right. */
+	@media (min-width: 768px) {
+		.lead-card {
+			grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+		}
+
+		.lead-shot {
+			aspect-ratio: auto;
+			min-height: var(--project-lead-min);
+			border-bottom: 0;
+			border-right: 1px solid var(--border);
 		}
 	}
 
-	.projects :global(.project-card[data-featured]) {
-		grid-column: span 2;
-		grid-row: span 2;
+	/* Rows share the Experience grid (DossierSection), plus a column of link icons. */
+	.projects :global(.project-row) {
+		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr) auto;
+		scroll-margin-top: var(--grid-gap);
 	}
 
-	.placeholder {
-		margin: 0;
-		color: var(--text-subtle);
+	/* On phones the year goes above the title, so the sentence gets the full width. */
+	@media (max-width: 639px) {
+		.projects :global(.project-row) {
+			grid-template-columns: minmax(0, 1fr) auto;
+			row-gap: var(--space-xs);
+			align-items: center;
+		}
+
+		.projects :global(.project-row .row-main) {
+			grid-column: 1 / -1;
+			grid-row: 2;
+		}
+	}
+
+	.row-link {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.row-link:hover {
+		color: var(--accent);
+	}
+
+	.row-tags {
+		margin-top: var(--space-sm);
+	}
+
+	.row-links {
+		display: inline-flex;
+		gap: var(--space-2xs);
+	}
+
+	.icon-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--size-nav-control);
+		height: var(--size-nav-control);
+		border-radius: var(--radius-pill);
+		color: var(--text-muted);
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.icon-link:hover {
+		color: var(--text);
+		background: var(--surface-hover);
 	}
 </style>

@@ -7,12 +7,13 @@ import ProfileCard from '../ui/ProfileCard.astro';
 import type { Social } from '../ui/ProfileCard.astro';
 import DashboardTeaserTile from '../tiles/DashboardTeaserTile.astro';
 import FeaturedCarousel from '../ui/FeaturedCarousel.astro';
-import { featuredProjects } from '../../lib/featured';
+import { getFeaturedProjects } from '../../lib/projects';
 import { emailEncoded, githubUrl, linkedinUrl } from '../../lib/contact';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const featuredProjects = await getFeaturedProjects(lang);
 
 /*
  * Two-column dossier: a pinned identity card on the left, a stream of sections
