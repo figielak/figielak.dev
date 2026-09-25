@@ -39,7 +39,6 @@ export interface TerminalData {
 	themes: string[];
 	socials: { name: string; label: string; url: string }[];
 	projects: { name: string; title: string; href: string }[];
-	books: { title: string; author: string }[];
 }
 
 /** A `loading…` line, replaced once the data arrives or fails. */

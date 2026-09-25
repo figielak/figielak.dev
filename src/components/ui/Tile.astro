@@ -275,6 +275,11 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 		color: var(--tile-icon, var(--accent));
 	}
 
+	/* A long label must not squeeze the icon out of a narrow tile. */
+	.tile-title > :global(svg) {
+		flex: none;
+	}
+
 	.tile-header-end {
 		display: inline-flex;
 		align-items: center;

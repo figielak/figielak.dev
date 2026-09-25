@@ -11,6 +11,7 @@ import FeaturedTile from '../../components/tiles/FeaturedTile.astro';
 import SocialTile from '../../components/tiles/SocialTile.astro';
 import GoalTile from '../../components/tiles/GoalTile.astro';
 import MusicTile from '../../components/tiles/MusicTile.astro';
+import BooksTile from '../../components/tiles/BooksTile.astro';
 import DeployTile from '../../components/tiles/DeployTile.astro';
 import SiteStatsTile from '../../components/tiles/SiteStatsTile.astro';
 import { LIVE_STATES } from '../../lib/live';
@@ -22,6 +23,7 @@ import { mockAir } from '../../lib/mocks/air';
 import { mockWaka } from '../../lib/mocks/waka';
 import { mockDns, mockTraffic } from '../../lib/mocks/network';
 import { mockMusic } from '../../lib/mocks/music';
+import { mockBooks } from '../../lib/mocks/books';
 import { mockDeploy } from '../../lib/mocks/deploy';
 import { mockSite } from '../../lib/mocks/site';
 
@@ -63,6 +65,7 @@ export function getStaticPaths() {
 					</div>
 					<div class="pair tall">
 						<MusicTile music={mockMusic(state)} />
+						<BooksTile books={mockBooks(state)} />
 					</div>
 					<div class="pair">
 						<DeployTile deploy={mockDeploy(state)} />

@@ -59,9 +59,12 @@ Cloud Run, więc **muszą istnieć przed deployem**, inaczej krok *Deploy* się 
   potrzebny jest tylko *API key* (bez *shared secret*).
 - **WakaTime:** [wakatime.com/settings/api-key](https://wakatime.com/settings/api-key) — ten sam
   klucz co w edytorze (`waka_…`).
+- **Hardcover:** [hardcover.app/account/api](https://hardcover.app/account/api) — nowy klucz tylko z
+  zakresem `read:library`, z datą ważności zapisaną w kalendarzu. Prefiks `Bearer ` można wkleić
+  razem z tokenem albo pominąć.
 
 ```bash
-for secret in github-token lastfm-api-key wakatime-api-key; do
+for secret in github-token lastfm-api-key wakatime-api-key hardcover-token; do
   read -rsp "$secret: " value; echo
   printf '%s' "$value" | gcloud secrets create "$secret" --data-file=-
   gcloud secrets add-iam-policy-binding "$secret" \
@@ -223,7 +226,7 @@ Problemy, które wystąpiły przy pierwszym wdrożeniu (2026-09-24).
 | Na stronie `+48 000 000 000`, `kontakt@example.com`, `home.example` | brak GitHub Secrets przy buildzie (albo dodane po deployu) | dodaj Secrets (nie Variables) i uruchom deploy ponownie |
 | `/dashboard/private` zwraca **503** | Cloud Run nie dostał `DASHBOARD_PASSWORD` | sprawdź sekret i flagę `--set-secrets` w workflow |
 | **429** przy logowaniu do trybu prywatnego | limit żądań w Cloudflare (liczą się też próby bez hasła) | odczekaj kilka sekund |
-| `/api/github`, `/api/music` lub `/api/waka` zwraca **503**, kafel „chwilowo niedostępny” | brak klucza, zła nazwa `LASTFM_USER` albo wygasły token GitHuba | przyczyna jest w logach Cloud Run (`[api] …`); nowy token jako nowa wersja sekretu |
+| `/api/github`, `/api/music`, `/api/waka` lub `/api/books` zwraca **503**, kafel „chwilowo niedostępny” | brak klucza, zła nazwa `LASTFM_USER` albo wygasły token GitHuba | przyczyna jest w logach Cloud Run (`[api] …`); nowy token jako nowa wersja sekretu |
 | Deploy pada na *Creating Revision*: `Secret …/versions/latest was not found` | sekret nie istnieje albo nie ma wersji (pusta wartość przy `read`) | `gcloud secrets versions list <nazwa>`; brakującą wartość dodaj przez `gcloud secrets versions add` |
 | `/api/stats` zwraca **503** `storage unavailable` | Firestore nie jest włączony, baza nie istnieje albo konto Compute nie ma `roles/datastore.user` | szczegóły w logach (`[api/stats]`); krok „Homelab: Firestore i token agenta” |
 | Agent dostaje **403** z Cloudflare (strona HTML) | Bot Fight Mode albo reguła WAF | agent wysyła na adres `*.run.app` |

@@ -9,7 +9,6 @@ import {
 	type TranslationKey,
 } from '../../i18n';
 import { discordUrl, githubUrl, instagramUrl, linkedinUrl } from '../../lib/contact';
-import { books } from '../../lib/books';
 import { featuredProjects } from '../../lib/featured';
 import type { TerminalData } from '../../scripts/terminal/types';
 
@@ -17,7 +16,7 @@ import type { TerminalData } from '../../scripts/terminal/types';
  * Site-wide terminal (koncept.md §8): a panel that slides down from the top on
  * ` or the >_ button in the navigation. The markup and styles live here; the
  * prompt and the commands in src/scripts/terminal/. What the commands need
- * from the build — strings, pages, links, books — goes to the browser as JSON.
+ * from the build — strings, pages, links — goes to the browser as JSON.
  */
 
 const lang = getLangFromUrl(Astro.url);
@@ -65,7 +64,6 @@ const data: TerminalData = {
 		title: project.title,
 		href: localizePath(project.href, lang),
 	})),
-	books: books.map(({ title, author }) => ({ title, author })),
 };
 
 /* `<` escaped, so no string in the data can close the script tag. */

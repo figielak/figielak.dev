@@ -208,7 +208,7 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 | `waka` | praca | WakaTime, ciemny jak inne kafle, w kolejności ważności: czas dziś (duża liczba) i porównanie ze średnią dni tygodnia; 7 słupków pon–ndz z dzisiejszym w akcencie; pasek języków w kolorach GitHub Linguist (`--lang-*`) z 3 nazwami; suma tygodnia w stopce. W wąskim kaflu najpierw znika porównanie, potem nazwy języków |
 | `lab` | homelab | cztery sekcje: **maszyna** (CPU, RAM, każdy dysk osobnym paskiem i GPU, jeśli jest — w %, czerwone od 85% — kontenery, temperatura CPU), **usługi** (uptime hosta; usługi pod ogólnymi nazwami: Media, Pliki, DNS, Kopie — up/down, dostępność z 30 dni jako liczba i pasek od 90%, średni czas odpowiedzi; usługi bez danych zebrane w jedną linię „Brak danych: …”), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
 | `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole. Obok utworu okrągły przycisk ▶/❚❚ puszcza 30-sekundowy podgląd (iTunes Search API, bez klucza — Last.fm nie ma audio); serwer szuka po wykonawcy i tytule i bierze tylko wyraźne dopasowanie, a bez podglądu przycisku nie ma. Dźwięk ładuje się z CDN Apple dopiero po kliknięciu |
-| `books` | życie | aktualnie czytane książki z okładkami (statycznie, `src/lib/books.ts`, okładki w `src/assets/books/`); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast ↗; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
+| `books` | życie | aktualnie czytane książki z okładkami, na żywo z Hardcover (`/api/books`, półka „Currently Reading”, 4 stany; tytuł i okładka z wybranego wydania); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast ↗; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
 | `goal` | życie | aktualny cel (`src/lib/goal.ts`, statycznie): nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i następny krok; w niskim kaflu nazwa i pasek dzielą linię, a następny krok znika pierwszy |
 
@@ -421,6 +421,7 @@ Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło prz
 | Teraz słucham / top artyści | Last.fm API | cache 30 s / 1h |
 | Podgląd utworu (30 s) | iTunes Search API (bez klucza), razem z utworem z Last.fm | ostatnie wyszukiwanie do zmiany utworu |
 | WakaTime | WakaTime API | cache 1h |
+| Czytam | Hardcover GraphQL API (token z zakresem `read:library` po stronie serwera; Hardcover nie pozwala używać go w przeglądarce); nieaktualne po 3 h | cache 1h |
 
 ### Homelab: model push
 
@@ -439,7 +440,7 @@ Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło prz
 |---|---|
 | Ładowanie | szkielet w kształcie docelowej treści, z połyskiem przesuwającym się po kaflu; gdy przyjdą dane, treść płynnie się w niego wkleja |
 | OK | dane i szara kropka |
-| Nieaktualne (dane starsze niż próg, np. 10 min; GitHub i WakaTime odświeżane co godzinę — 3 h) | dane, czerwona kropka, „aktualizacja X min temu” |
+| Nieaktualne (dane starsze niż próg, np. 10 min; GitHub, WakaTime i Hardcover odświeżane co godzinę — 3 h) | dane, czerwona kropka, „aktualizacja X min temu” |
 | Błąd lub brak danych | czerwona kropka i spokojny tekst zastępczy (np. „Homelab offline”) |
 
 Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na danych testowych (mock), potem podpinam prawdziwe źródła.**
@@ -581,7 +582,7 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX (plugin gotowy, CSS jeszcze nigdzie nieładowany), Mermaid, karuzela featured z kolekcji. Jest tylko szkielet `/projects` z pustymi kartami.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music`. Zostały w trybie prywatnym ostatni deploy i statystyki strony (analityka) — oba na danych testowych.
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music` i książki z Hardcover (`/api/books`). Zostały w trybie prywatnym ostatni deploy i statystyki strony (analityka) — oba na danych testowych.
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, now page w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---
