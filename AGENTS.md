@@ -14,7 +14,7 @@ rehype-mermaid, Typst (CV). Hosting: Google Cloud Run za Cloudflare
 - Kolorowa treść (prawdziwe loga, okładki, zdjęcia, grafiki) jest dozwolona, nie wymagana — kolor niesie sam asset (koncept.md §4).
 - Każdy kafel to osobny komponent w src/components/tiles/, zbudowany na `<Tile>`.
 - Kafle z danymi na żywo: najpierw mock, zawsze 4 stany (ładowanie, OK, nieaktualne, błąd), stały rozmiar.
-- **Repo jest publiczne.** Żadnych danych osobowych (telefon, e-mail kontaktowy), nazw hostów/domen homelabu, IP ani sekretów w kodzie, dokumentacji, commitach i ich wiadomościach. Wartości do builda idą przez `.env` / GitHub Secrets (`.env.example`), sekrety serwera przez Secret Manager. Przed każdym commitem sprawdź diff (koncept.md §14).
+- **Repo jest publiczne.** Żadnych danych osobowych (poza e-mailem i telefonem w źródłach CV w `cv/` — decyzja właściciela), nazw hostów/domen homelabu, IP ani sekretów w kodzie, dokumentacji, commitach i ich wiadomościach. Wartości do builda idą przez `.env` / GitHub Secrets (`.env.example`), sekrety serwera przez Secret Manager. Przed każdym commitem sprawdź diff (koncept.md §14).
 - Mobile: w widokach bento siatka 2 kolumny, nigdy jedna kolumna. Wizytówka i korepetycje są wyjątkiem (układ dossier, patrz koncept.md 3.1 i 3.3).
 - Kod i nazwy po angielsku, teksty UI przez i18n (PL/EN).
 - Szanuj prefers-reduced-motion i kontrast AA.
@@ -22,6 +22,7 @@ rehype-mermaid, Typst (CV). Hosting: Google Cloud Run za Cloudflare
 
 ## Praca w repo
 
+- CV: źródła Typst w `cv/`, PDF-y w `public/cv/` (commitowane) — po zmianie `npm run cv` (wymaga `typst`).
 - Podgląd: `npm run dev -- --host` (też w LAN). Galeria stanów kafli: `/dev/tiles` (tylko w dev).
 - Weryfikacja zmian: `npm run build` (typy nie są sprawdzane — `@astrojs/check` nie jest zainstalowany). Wygląd sprawdzaj na buildzie (`npm run preview` lub `node dist/server/entry.mjs`), bo dev potrafi serwować nieaktualne style; widoki bento w 1280×720, 1440×900, 800 px i 390 px.
 - Formatowanie: projekt nie ma konfiguracji Prettiera — nie uruchamiaj `prettier --write` (domyślny styl przepisze pliki). Styl: taby, apostrofy, średniki, linie do ok. 100–120 znaków.

@@ -473,7 +473,7 @@ Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na 
 - **Fontsource** dla Geist Mono; Satoshi hostowany lokalnie.
 - **Sätteri (`@astrojs/markdown-satteri`) + KaTeX:** wzory w projektach i na `/maths`. Sätteri parsuje matematykę (`features: { math: true }`), a własny plugin `src/plugins/katex.js` renderuje ją KaTeX-em przy buildzie. CSS KaTeX ładuję tylko na stronach, które go używają.
 - **rehype-mermaid** (jeszcze niezainstalowany, przyjdzie z krokiem 3 w §16): diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright. Build idzie w GitHub Actions (obraz Dockera dostaje gotowy `dist/`), więc wystarczy doinstalować tam przeglądarkę; w razie problemów przechodzę na renderowanie po stronie klienta.
-- **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`), kompilowane do PDF w `public/cv/`. Kompilacja lokalnie lub w CI. Katalogów `cv/` i `public/cv/` jeszcze nie ma.
+- **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`, wspólny układ w `cv/template.typ`), kompilowane lokalnie (`npm run cv`) do PDF w `public/cv/`; PDF-y są w repo, więc CI nie potrzebuje Typsta. Jedna strona A4, jasne tło (druk, ATS), Satoshi i Geist Mono (statyczne OTF w `cv/fonts/`, bo Typst nie czyta woff2), jeden czerwony akcent, klauzula RODO w stopce. Treść to kopia wizytówki — zmieniając doświadczenie lub umiejętności, poprawiam oba miejsca.
 - **Hosting:** **Google Cloud Run** (`europe-west1`, skalowanie do zera) za **Cloudflare**.
   - Cloud Run uruchamia kontener z `Dockerfile`: prerenderowane strony + serwer Node dla `/api/*`.
   - Cloudflare zostaje z przodu jako DNS z proxy: SSL Full (strict), przekierowania 301 subdomen, cache `/_astro/*`, limit żądań do trybu prywatnego.
@@ -508,8 +508,8 @@ src/
   i18n/          # pl.json, en.json
   styles/        # tokens.css, global.css
 public/
-  fonts/  cv/ ✱
-cv/ ✱            # źródła Typst
+  fonts/  cv/     # PDF-y CV
+cv/              # źródła Typst i fonty CV
 docs/            # deploy.md — konfiguracja Cloud Run i Cloudflare
 Dockerfile       # obraz dla Cloud Run
 ```
@@ -562,6 +562,7 @@ Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
 
 - **Repozytorium jest publiczne** (`github.com/figielak/figielak.dev`). Wszystko, co trafia do commita — także do historii — jest jawne. Dlatego:
   - dane osobowe (telefon, e-mail kontaktowy, adres), nazwy hostów i domeny homelabu, nazwa tailnetu, adresy IP, tokeny i klucze **nigdy** nie trafiają do kodu, dokumentacji ani wiadomości commitów;
+  - **wyjątek (decyzja 2026-09-25):** e-mail i telefon są wpisane w źródła CV (`cv/*.typ`) i w PDF-y w `public/cv/` — PDF i tak pokazuje je otwartym tekstem, więc ukrywanie ich w repo nic nie daje. Na stronach nadal idą przez `.env` i base64;
   - wartości potrzebne przy buildzie czytam ze zmiennych środowiskowych: lokalnie z `.env` (poza gitem), w CI z GitHub Secrets; lista kluczy jest w `.env.example`, a kod ma neutralne wypełniacze, żeby build działał bez nich;
   - sekrety serwera (`/api/*`) są w Secret Manager, nie w repo i nie w GitHub Variables;
   - zanim zrobię commit, sprawdzam diff pod kątem powyższych danych; jeśli coś wycieknie, przepisuję historię i od razu zmieniam ujawniony sekret.
@@ -599,7 +600,7 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 
 1. ✅ **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
 2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie (prawdziwe pozycje), edukacja, umiejętności, języki, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z `src/lib/featured.ts`, ta sama lista co na dashboardzie), zajawka dashboardu (pogoda i muzyka na żywo) — gotowe. Zostało:
-   - CV z Typst (`cv/` → `public/cv/`) — linki „Pobierz CV” i „Pełne CV” dają 404.
+   - CV z Typst jest gotowe (`cv/` → `public/cv/`, PL i EN); zostało dopisać do niego więcej konkretów (punkty z liczbami, projekty), gdy przybędzie treści.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX (plugin gotowy, CSS jeszcze nigdzie nieładowany), Mermaid, karuzela featured z kolekcji. Jest tylko szkielet `/projects` z pustymi kartami.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
