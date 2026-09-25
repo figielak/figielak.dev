@@ -3,7 +3,8 @@ import '@fontsource-variable/geist-mono';
 import '../styles/global.css';
 import Nav from '../components/ui/Nav.astro';
 import Terminal from '../components/ui/Terminal.astro';
-import { getLangFromUrl, useTranslations } from '../i18n';
+import { getLangFromUrl, localizePath, stripLang, useTranslations } from '../i18n';
+import { githubUrl, linkedinUrl } from '../lib/contact';
 
 interface Props {
 	title: string;
@@ -15,13 +16,58 @@ interface Props {
 	noindex?: boolean;
 	/** Blurred accent glow drifting behind the page — the dashboards. */
 	glow?: boolean;
+	/** Has an /en/ twin; off for Polish-only pages (tutoring, case studies). */
+	translated?: boolean;
 }
 
-const { title, description, wide = false, noindex = false, glow = false } = Astro.props;
+const { title, description, wide = false, noindex = false, glow = false, translated = true } = Astro.props;
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const canonical = new URL(Astro.url.pathname, Astro.site);
+
+/* Both language versions for search engines, so English searches get /en/
+   instead of "Translate this page"; Polish is the default (x-default). */
+const path = stripLang(Astro.url.pathname);
+/* With a trailing slash, like the canonical URL and the sitemap. */
+const pageUrl = (target: 'pl' | 'en') => new URL(localizePath(path, target).replace(/\/?$/, '/'), Astro.site);
+const alternates =
+	translated && !noindex
+		? [
+				{ hreflang: 'pl', href: pageUrl('pl') },
+				{ hreflang: 'en', href: pageUrl('en') },
+				{ hreflang: 'x-default', href: pageUrl('pl') },
+			]
+		: [];
+
+/* On the home page only: the site's name in search results (instead of the
+   bare domain) and who it is about. Public facts only — no e-mail or phone. */
+const structuredData =
+	path === '/' && !noindex
+		? JSON.stringify({
+				'@context': 'https://schema.org',
+				'@graph': [
+					{
+						'@type': 'WebSite',
+						'@id': `${Astro.site}#website`,
+						url: Astro.site,
+						name: 'Krystian Figiela',
+						alternateName: 'figielak.dev',
+						inLanguage: ['pl', 'en'],
+					},
+					{
+						'@type': 'Person',
+						'@id': `${Astro.site}#person`,
+						name: 'Krystian Figiela',
+						url: Astro.site,
+						jobTitle: 'Data & Software Developer',
+						address: { '@type': 'PostalAddress', addressLocality: 'Rzeszów', addressCountry: 'PL' },
+						affiliation: { '@type': 'CollegeOrUniversity', name: 'Politechnika Rzeszowska' },
+						sameAs: [githubUrl, linkedinUrl],
+					},
+				],
+			}).replace(/</g, '\\u003c')
+		: undefined;
 ---
 
 <!doctype html>
@@ -36,6 +82,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<link rel="canonical" href={canonical} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
+		{alternates.map((alternate) => <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />)}
 
 		<link
 			rel="preload"
@@ -53,7 +100,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical} />
+		<meta property="og:site_name" content="Krystian Figiela" />
+		<meta property="og:locale" content={lang === 'pl' ? 'pl_PL' : 'en_US'} />
 		<meta name="twitter:card" content="summary_large_image" />
+		{structuredData && <script type="application/ld+json" set:html={structuredData} />}
 
 		{/* Applies the stored theme before first paint, so it never flashes. */}
 		<script is:inline>

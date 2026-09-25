@@ -10,7 +10,7 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 
 {
 	tutoringOpen ? (
-		<BaseLayout title={t('meta.maths.title')} description={t('meta.maths.description')}>
+		<BaseLayout title={t('meta.maths.title')} description={t('meta.maths.description')} translated={false}>
 			<Maths />
 		</BaseLayout>
 	) : (
