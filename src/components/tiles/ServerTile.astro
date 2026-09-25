@@ -44,7 +44,7 @@ const states = [stats.state, history.state, containers.state];
 		<div class="server">
 			<HistorySection history={history} endpoint={endpoints?.history} />
 			<div class="server-side">
-				<MachineSection stats={stats} endpoint={endpoints?.lab} />
+				<MachineSection stats={stats} endpoint={endpoints?.lab} showContainers={false} />
 				<ContainersSection containers={containers} endpoint={endpoints?.containers} />
 			</div>
 		</div>

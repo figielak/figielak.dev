@@ -39,11 +39,10 @@ export function mockUptime(state: LiveState = 'ok'): Uptime {
 	return {
 		state,
 		data: {
-			uptimeDays: 3.4,
+			uptimeDays: 1.38,
 			services: [
-				{ kind: 'media', up: true, uptime30d: 99.2, avgMs: 38 },
-				{ kind: 'dns', up: true, uptime30d: 99.97, avgMs: 4 },
-				{ kind: 'backup', up: false, uptime30d: 96.1, avgMs: 120 },
+				{ kind: 'dns', up: true, uptime30d: 99.98, avgMs: 3 },
+				{ kind: 'media', up: false, uptime30d: 99.9, avgMs: 45 },
 			],
 			updatedAt: mockUpdatedAt(state),
 		},

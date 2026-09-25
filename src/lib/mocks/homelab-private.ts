@@ -61,10 +61,13 @@ export function mockMonitors(state: LiveState = 'ok'): Monitors {
 		state,
 		data: {
 			monitors: [
-				{ name: 'Mealie', up: true, avgMs: 42, uptime30d: 99.9 },
-				{ name: 'AdGuard', up: true, avgMs: 4, uptime30d: 99.97 },
-				{ name: 'Uptime Kuma', up: true, avgMs: 18, uptime30d: 100 },
-				{ name: 'Beszel', up: false, avgMs: 31, uptime30d: 96.1 },
+				{ name: 'Mealie', up: true, avgMs: 38, uptime30d: 99.95 },
+				{ name: 'AdGuard', up: true, avgMs: 12, uptime30d: 99.98 },
+				{ name: 'Uptime Kuma', up: true, avgMs: 21, uptime30d: 100 },
+				{ name: 'Beszel', up: false, avgMs: 17, uptime30d: 99.97 },
+				{ name: 'Calibre-Web', up: true, avgMs: 45, uptime30d: 99.9 },
+				{ name: 'MeTube', up: true, avgMs: 29, uptime30d: 99.92 },
+				{ name: 'Opengist', up: true, avgMs: 24, uptime30d: 100 },
 			],
 			updatedAt: mockUpdatedAt(state),
 		},
@@ -77,19 +80,19 @@ export function mockContainers(state: LiveState = 'ok'): Containers {
 		state,
 		data: {
 			containers: [
-				{ name: 'caddy', state: 'running', health: 'healthy' },
 				{ name: 'adguard', state: 'running' },
-				{ name: 'mealie', state: 'running', updateAvailable: true },
+				{ name: 'caddy', state: 'running' },
+				{ name: 'mealie', state: 'running', health: 'healthy', updateAvailable: true },
 				{ name: 'uptime-kuma', state: 'running', health: 'healthy' },
-				{ name: 'beszel', state: 'restarting' },
-				{ name: 'dashboard-agent', state: 'running' },
+				{ name: 'dashboard-agent', state: 'running', health: 'healthy' },
+				{ name: 'opengist', state: 'restarting' },
 			],
 			updatedAt: mockUpdatedAt(state),
 		},
 	};
 }
 
-/** `missing` shows the tile before the first backup: the honest state today. */
+/** `missing` shows the tile before the first backup was reported. */
 export function mockBackup(state: LiveState = 'ok', missing = false): Backup {
 	if (state === 'loading' || state === 'error') return { state };
 	return {

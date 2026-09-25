@@ -23,4 +23,8 @@ export const services: Service[] = [
 	{ name: 'AdGuard', url: host('adguard'), icon: 'shield' },
 	{ name: 'Uptime Kuma', url: host('uptime-kuma'), icon: 'activity' },
 	{ name: 'Beszel', url: host('beszel'), icon: 'chart-bar' },
+	{ name: 'Calibre-Web', url: host('calibre'), icon: 'book' },
+	{ name: 'MeTube', url: host('metube'), icon: 'download' },
+	{ name: 'Opengist', url: host('opengist'), icon: 'code' },
+	{ name: 'Quartz', url: host('quartz'), icon: 'notebook' },
 ];

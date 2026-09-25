@@ -43,12 +43,12 @@ export function mockLab(state: LiveState = 'ok'): MachineStats {
 	return {
 		state,
 		data: {
-			cpu: 6.4,
-			cpuTempC: 57.9,
-			ramUsedGb: 0.84,
+			cpu: 7.2,
+			cpuTempC: 54.3,
+			ramUsedGb: 1.42,
 			ramTotalGb: 3.71,
-			disks: [{ kind: 'system', usedGb: 9.6, totalGb: 116.9 }],
-			containers: 8,
+			disks: [{ kind: 'system', usedGb: 14.8, totalGb: 116.9 }],
+			containers: 11,
 			updatedAt: mockUpdatedAt(state),
 		},
 	};

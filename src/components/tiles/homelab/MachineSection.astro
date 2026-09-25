@@ -10,21 +10,26 @@ import { MACHINE_PLACEHOLDER, type MachineStats } from '../../../lib/mocks/stats
  * per disk side by side, GPU only when the machine has one; containers and
  * CPU temperature under them. A bar turns red from ALERT_AT, so a nearly full
  * disk or a busy CPU stands out.
+ *
+ * `showContainers={false}` leaves out the container count where a list of
+ * the containers sits beside it: the agent counts all of them, the list
+ * names only some, and two numbers on one tile would disagree.
  */
 interface Props {
 	stats: MachineStats;
 	endpoint?: string;
+	showContainers?: boolean;
 }
 
 const ALERT_AT = 85;
 
-const { stats, endpoint } = Astro.props;
+const { stats, endpoint, showContainers = true } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
 const d = stats.data ?? MACHINE_PLACEHOLDER;
 
 const details = (containers: number | undefined, tempC: number) =>
 	[
-		containers === undefined ? undefined : t('stats.containers').replace('{n}', String(containers)),
+		containers === undefined || !showContainers ? undefined : t('stats.containers').replace('{n}', String(containers)),
 		t('stats.cpuTemp').replace('{n}', String(Math.round(tempC))),
 	]
 		.filter(Boolean)
@@ -36,7 +41,7 @@ const details = (containers: number | undefined, tempC: number) =>
 	live={stats}
 	class="machine-section"
 	data-endpoint={endpoint}
-	data-containers={t('stats.containers')}
+	data-containers={showContainers ? t('stats.containers') : undefined}
 	data-temp={t('stats.cpuTemp')}
 >
 	<div class="machine">
@@ -75,7 +80,7 @@ const details = (containers: number | undefined, tempC: number) =>
 	}
 
 	for (const section of document.querySelectorAll<HTMLElement>('.machine-section[data-endpoint]')) {
-		const { containers = '{n}', temp = '{n}' } = section.dataset;
+		const { containers, temp = '{n}' } = section.dataset;
 
 		watchLive<LabSection>(section, (data) => {
 			const [cpu, ram, ...disks] = section.querySelectorAll<HTMLElement>('.stat');
@@ -84,7 +89,7 @@ const details = (containers: number | undefined, tempC: number) =>
 			data.disks.forEach((disk, i) => setBar(disks[i], percent(disk.usedGb, disk.totalGb)));
 
 			const details = [
-				data.containers === undefined ? undefined : containers.replace('{n}', String(data.containers)),
+				data.containers === undefined || containers === undefined ? undefined : containers.replace('{n}', String(data.containers)),
 				temp.replace('{n}', String(Math.round(data.cpuTempC))),
 			].filter(Boolean);
 			setText(section.querySelector('.machine-details'), details.join(' · '));

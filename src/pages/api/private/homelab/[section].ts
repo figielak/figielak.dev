@@ -22,7 +22,7 @@ const TTL_MS = import.meta.env.DEV ? 0 : 30_000;
 const MOCKS: Record<PrivateSectionName, () => { data?: object }> = {
 	monitors: mockMonitors,
 	containers: mockContainers,
-	backup: () => mockBackup('ok', true),
+	backup: mockBackup,
 };
 
 export const GET: APIRoute = async ({ params, request }) => {
