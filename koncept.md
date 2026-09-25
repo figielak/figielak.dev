@@ -229,8 +229,8 @@ Każdy kafel czyta własny `/api/private/*` za tym samym strażnikiem co strona 
 
 | Kafel | Zawartość |
 |---|---|
-| `svc` | pasek usług w jednej linii: pigułki-linki z `src/lib/services.ts` (domena z `HOMELAB_DOMAIN`, działają tylko przez Tailscale) z kropką up/down i średnim czasem odpowiedzi z Uptime Kumy, dostępność 30 dni w dymku; łączenie po nazwie monitora. Linki zostają przy błędzie danych (szare kropki) |
-| `server` | zużycie maszyny (jak publiczne) i kontenery po nazwie: kropka stanu (działa i zdrowy / restart, niezdrowy, zatrzymany / pauza), strzałka przy nowszym obrazie (Diun) |
+| `svc` | pasek usług w jednej linii: pigułki-linki z `src/lib/services.ts` (domena z `HOMELAB_DOMAIN`, działają tylko przez Tailscale) z kropką up/down i średnim czasem odpowiedzi z Uptime Kumy, dostępność 30 dni w dymku; łączenie po nazwie monitora; `up` to status Kumy inny niż „down” (oczekujący i przerwa techniczna liczą się jako działające, jak w sekcji publicznej). „AdGuard” łączy trzy monitory (panel, DNS, rewrite), więc jego czas jest orientacyjny. Linki zostają przy błędzie. Przy błędzie lub nieaktualnych danych kropki są szare, a nieaktualny pasek pokazuje wiek danych — tak widać też awarię samej Kumy, która nie zgłosi się sama |
+| `server` | CPU i RAM z ostatnich 24 h jako dwa osobne wykresy (co 5 min, neutralna linia z tłem, skala do okrągłej wartości nad maksimum podpisana u góry, przerwa w linii = agent offline; wspólna linia pod kursorem i dymek z godziną i obiema wartościami, opis tekstowy dla czytników ekranu); obok dyski, temperatura i kontenery po nazwie (lista przewija się w kaflu, gdy się nie mieści): kropka stanu (działa i zdrowy / restart, niezdrowy, zatrzymany / pauza), strzałka przy nowszym obrazie (Diun) |
 | `backup` | ostatni backup: kiedy, udany czy nie, rozmiar, snapshoty, narzędzie; nieudany, starszy niż 26 h albo brak kopii — na czerwono |
 | `deploy` | 3 ostatnie przebiegi workflow deployu z GitHub Actions: kropka statusu (trwający pulsuje, nieudany czerwony), commit, kiedy; wiersz prowadzi do runu |
 | `site` | Cloudflare Web Analytics: wizyty z 7 dni jako liczba i słupki (dziś w `--text`), odsłony, top 3 strony i top 3 źródła („bezpośrednio” dla wejść bez referera, własna domena pominięta) |
@@ -430,6 +430,7 @@ Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło prz
 | Korepetycje (prywatne) | prywatny adres iCal kalendarza Google (`TUTORING_ICAL_URL`), rozwijany przez `ical.js`; płatności w Firestore | cache 10 min |
 | Wygasa (prywatne) | RDAP domeny, certyfikat z TLS, nagłówek tokenu GitHuba, verify tokenu Cloudflare, ręczne daty | cache 6 h |
 | Cel | Firestore (`site/goal`), zapis z trybu prywatnego | cache 60 s |
+| Historia CPU i RAM (prywatne) | zbierana przez stronę z pushy agenta: każdy odczyt `lab` wpada do 5-minutowego kubełka jako średnia, 24 h w dokumencie `homelab/history` (jeden odczyt i zapis Firestore na push) | cache 60 s |
 | Homelab | model **push**, opisany niżej | co 1–5 min |
 | Uptime usług | Uptime Kuma (`/metrics`: status, dostępność i czas odpowiedzi z 30 dni) przez push-agenta | przez push |
 | Rozkład zajęć | plik iCal (np. eksport z USOS, jeśli uczelnia go udostępnia) | cache 1h |
@@ -573,6 +574,7 @@ Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
   - Odpowiedzi mają `Cache-Control: private, no-store`. Strony mają `noindex` i nie trafiają do sitemapy.
   - Ten sam strażnik chroni prywatne endpointy (`/api/private/*`), a ich odpowiedzi też mają `private, no-store`. Zapisy (`POST`) przyjmują tylko `application/json`, więc obca strona nie wyśle ich ani formularzem, ani `fetch` bez preflightu CORS.
   - Imiona uczniów z kalendarza pojawiają się tylko w tych odpowiedziach.
+  - Historia CPU i RAM jest tylko prywatna: z jej rytmu widać, kiedy ktoś korzysta z serwera w domu — z tego samego powodu co brak godzinowego wykresu DNS.
 - **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym pokazuję ogólne etykiety.
 - **Tokeny i klucze** trzymam wyłącznie w zmiennych środowiskowych po stronie serwera. Endpoint `/api/stats`:
   - wymaga tokenu (`STATS_PUSH_TOKEN`, porównanie w stałym czasie);

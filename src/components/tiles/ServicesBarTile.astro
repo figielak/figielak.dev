@@ -3,6 +3,7 @@ import Tile from '../ui/Tile.astro';
 import Icon from '../ui/Icon.astro';
 import LiveDot from '../ui/LiveDot.astro';
 import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { services } from '../../lib/services';
@@ -14,8 +15,13 @@ import type { Monitors } from '../../lib/mocks/homelab-private';
  * only: the host names are real and resolve only over Tailscale (§14).
  *
  * The links work without the monitors, so they stay on screen in every
- * state; only the dots and times wait for the data, and on an error the
- * tile's dot turns red while the service dots stay grey.
+ * state; only the dots and times wait for the data. On an error, or once the
+ * data is stale — which is also how a dead Uptime Kuma shows, since it
+ * cannot report itself — the service dots turn grey (status unknown), the
+ * tile's dot red, and a stale bar says how old its data is.
+ *
+ * `up` is Kuma's status other than down (pending and maintenance count as
+ * up), as in the public services section and Kuma's own alerts.
  */
 interface Props {
 	monitors: Monitors;
@@ -52,7 +58,10 @@ const title = (name: string) => {
 	data-no-data={t('services.noData')}
 	data-uptime={t('services.uptime')}
 >
-	<LiveDot slot="meta" state={dotState(monitors.state)} />
+	<span slot="meta" class="services-meta">
+		<LiveDot state={dotState(monitors.state)} />
+		<LiveFooter live={monitors} staleOnly />
+	</span>
 
 	<LiveBody state={monitors.state} errorText={t('services.unavailable')}>
 		<ul class="services">
@@ -143,8 +152,20 @@ const title = (name: string) => {
 		display: none;
 	}
 
-	.services-tile :global(.live-body[data-live='error'] .service .live-dot) {
+	/* On an error or stale data the last status may no longer hold: grey. */
+	.services-tile :global(.live-body:is([data-live='error'], [data-live='stale']) .service .live-dot) {
 		background: var(--text-subtle);
+	}
+
+	.services-meta {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	/* The age shows only when it matters; otherwise it takes no room. */
+	.services-meta :global(.live-footer:not([data-state='stale'])) {
+		display: none;
 	}
 
 	.services {

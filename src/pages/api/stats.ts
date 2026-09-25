@@ -12,6 +12,7 @@
 import type { APIRoute } from 'astro';
 import { isInvalid, parsePush, type Parsed, type Rejected } from '../../lib/server/homelab';
 import { writePrivateSections, writeSections } from '../../lib/server/firestore';
+import { appendHistory } from '../../lib/server/history';
 import { sameSecret } from '../../lib/server/secret';
 
 export const prerender = false;
@@ -60,6 +61,11 @@ export const POST: APIRoute = async ({ request }) => {
 	} catch (error) {
 		console.error('[api/stats]', error);
 		return reply(503, { error: 'storage unavailable' });
+	}
+
+	/* The history is a nicety: a failure is logged and the push still counts. */
+	if (parsed.sections.lab) {
+		await appendHistory(parsed.sections.lab).catch((error) => console.error('[api/stats] history', error));
 	}
 
 	return rejected.length > 0 ? reply(200, { saved, rejected }) : reply(204);

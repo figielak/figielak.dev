@@ -35,6 +35,7 @@ import { mockSite } from '../../lib/mocks/site';
 import { mockBackup, mockContainers, mockMonitors } from '../../lib/mocks/homelab-private';
 import { mockExpiring } from '../../lib/mocks/expiring';
 import { mockLessons } from '../../lib/mocks/lessons';
+import { mockHistory } from '../../lib/mocks/history';
 
 /**
  * Dev-only gallery: every live tile in all four states side by side
@@ -80,7 +81,7 @@ export function getStaticPaths() {
 						<ServicesBarTile monitors={mockMonitors(state)} />
 					</div>
 					<div class="wide">
-						<ServerTile stats={mockLab(state)} containers={mockContainers(state)} />
+						<ServerTile stats={mockLab(state)} history={mockHistory(state)} containers={mockContainers(state)} />
 					</div>
 					<div class="pair">
 						<BackupTile backup={mockBackup(state)} />
@@ -116,7 +117,7 @@ export function getStaticPaths() {
 			</div>
 			<div class="pair">
 				<BackupTile backup={mockBackup('ok', true)} />
-				<ServerTile stats={mockLab('ok')} containers={mockContainers('error')} />
+				<ServerTile stats={mockLab('ok')} history={mockHistory('error')} containers={mockContainers('error')} />
 			</div>
 			<TileLabel>static</TileLabel>
 			<div class="wide">

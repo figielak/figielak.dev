@@ -3,26 +3,31 @@ import Tile from '../ui/Tile.astro';
 import LiveDot from '../ui/LiveDot.astro';
 import MachineSection from './homelab/MachineSection.astro';
 import ContainersSection from './homelab/ContainersSection.astro';
+import HistorySection from './homelab/HistorySection.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState, worstState } from '../../lib/live';
 import type { MachineStats } from '../../lib/mocks/stats';
 import type { Containers } from '../../lib/mocks/homelab-private';
+import type { History } from '../../lib/mocks/history';
 
 /**
- * The homelab server in detail (koncept.md §3.4), for the owner: usage from
- * the public machine section, then the containers by name, each section with
- * its own source and states (§9). Private dashboard only.
+ * The homelab server in detail (koncept.md §3.4), for the owner: CPU and RAM
+ * of the last 24 hours as charts, the disks and details from the public
+ * machine section, and the containers by name — each section with its own
+ * source and states (§9). The charts carry the current CPU and RAM, so the
+ * machine section's two bars for them are left out here. Private only.
  */
 interface Props {
 	stats: MachineStats;
+	history: History;
 	containers: Containers;
-	endpoints?: { lab: string; containers: string };
+	endpoints?: { lab: string; history: string; containers: string };
 	area?: string;
 }
 
-const { stats, containers, endpoints, area } = Astro.props;
+const { stats, history, containers, endpoints, area } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
-const states = [stats.state, containers.state];
+const states = [stats.state, history.state, containers.state];
 ---
 
 <Tile
@@ -37,8 +42,11 @@ const states = [stats.state, containers.state];
 
 	<div class="server-box">
 		<div class="server">
-			<MachineSection stats={stats} endpoint={endpoints?.lab} />
-			<ContainersSection containers={containers} endpoint={endpoints?.containers} />
+			<HistorySection history={history} endpoint={endpoints?.history} />
+			<div class="server-side">
+				<MachineSection stats={stats} endpoint={endpoints?.lab} />
+				<ContainersSection containers={containers} endpoint={endpoints?.containers} />
+			</div>
 		</div>
 	</div>
 </Tile>
@@ -49,7 +57,7 @@ const states = [stats.state, containers.state];
 		height: 100%;
 	}
 
-	/* Usage over the containers in a narrow tile, beside them in a wide one. */
+	/* The charts over the rest in a narrow tile, beside it in a wide one. */
 	.server {
 		display: flex;
 		flex-direction: column;
@@ -58,21 +66,71 @@ const states = [stats.state, containers.state];
 		min-height: 0;
 	}
 
-	.server > :global(.containers-section) {
-		padding-top: var(--space-md);
+	.server > :global(.history-section) {
+		flex: 1;
+		min-height: calc(var(--space-2xl) * 4);
+	}
+
+	.server :global(.history-section > .live-body) {
+		flex: 1;
+	}
+
+	.server-side {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+		min-width: 0;
+		min-height: 0;
+	}
+
+	.server-side > :global(.containers-section) {
+		padding-top: var(--space-sm);
 		border-top: 1px solid var(--border);
+	}
+
+	/* The disk bar names itself: the "Machine" heading shows only when it has
+	   something to say — how old stale data is. */
+	.server-side :global(.machine-section .hl-heading:has(.live-footer:not([data-state='stale']))) {
+		display: none;
+	}
+
+	/* The containers take what is left and scroll inside the tile when more
+	   than fit (1280×720), instead of being cut mid-row. */
+	.server-side > :global(.containers-section) {
+		flex: 1;
+		min-height: 0;
+	}
+
+	.server-side :global(.containers-section > .live-body) {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--border-hover) transparent;
+	}
+
+	.server-side :global(.containers) {
+		gap: var(--space-2xs) var(--space-md);
+	}
+
+	/* CPU and RAM are on the charts; the bars keep the disks. */
+	.server-side :global(.machine-bars > .stat:nth-child(-n + 2)) {
+		display: none;
 	}
 
 	@container (min-width: 520px) {
 		.server {
 			display: grid;
-			grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+			grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
 			gap: var(--space-xl);
 		}
 
-		.server > :global(.containers-section) {
-			padding: 0 0 0 var(--space-xl);
-			border-top: 0;
+		.server > :global(.history-section) {
+			min-height: 0;
+		}
+
+		.server-side {
+			padding-left: var(--space-xl);
 			border-left: 1px solid var(--border);
 		}
 	}

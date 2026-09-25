@@ -63,8 +63,13 @@ const base = [
 	<ServerTile
 		area="server"
 		stats={{ state: 'loading' }}
+		history={{ state: 'loading' }}
 		containers={{ state: 'loading' }}
-		endpoints={{ lab: '/api/homelab/lab', containers: '/api/private/homelab/containers' }}
+		endpoints={{
+			lab: '/api/homelab/lab',
+			history: '/api/private/homelab/history',
+			containers: '/api/private/homelab/containers',
+		}}
 	/>
 	<BackupTile area="backup" backup={{ state: 'loading' }} endpoint="/api/private/homelab/backup" />
 	<DeployTile area="deploy" deploy={{ state: 'loading' }} endpoint="/api/private/deploys" />
