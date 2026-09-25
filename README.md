@@ -20,7 +20,7 @@ Zasady pracy z kodem: **[AGENTS.md](AGENTS.md)**. Wdrożenie: **[docs/deploy.md]
 - [Astro](https://astro.build) 7 + MDX, strony prerenderowane; serwer Node
   (`@astrojs/node`) tylko dla `/api/*` i trybu prywatnego
 - Tailwind v4 + własne tokeny (`src/styles/tokens.css`)
-- Satoshi (lokalnie) i JetBrains Mono (Fontsource)
+- Satoshi (lokalnie) i Geist Mono (Fontsource)
 - Sätteri + KaTeX dla wzorów
 - i18n PL/EN bez bibliotek (`src/i18n/`)
 - Hosting: Google Cloud Run za Cloudflare, deploy z GitHub Actions

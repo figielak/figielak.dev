@@ -11,8 +11,7 @@ import BooksTile from '../tiles/BooksTile.astro';
 import EventTile from '../tiles/EventTile.astro';
 import FeaturedTile from '../tiles/FeaturedTile.astro';
 import SocialTile from '../tiles/SocialTile.astro';
-import { mockWeather } from '../../lib/mocks/weather';
-import { mockAir } from '../../lib/mocks/air';
+import GoalTile from '../tiles/GoalTile.astro';
 
 /*
  * Public dashboard (koncept.md §3.4): cards in different shapes — the bento
@@ -21,6 +20,7 @@ import { mockAir } from '../../lib/mocks/air';
  * most; the featured project is the biggest, as the one card that sells
  * something. WakaTime is two columns wide for its week chart and language bar.
  * The countdown is one number, so it gets a half-height tile like the socials.
+ * The goal is one line and a bar, so it is wide and low, under the project.
  * Homelab numbers are public: it is a server, so they do not tell when I am at
  * the computer (§14).
  *
@@ -35,7 +35,7 @@ const lg = [
 	'featured featured featured dc       ig       books',
 	'featured featured featured gh       li       books',
 	'featured featured featured waka     waka     books',
-	'featured featured featured waka     waka     event',
+	'goal     goal     goal     waka     waka     event',
 ];
 
 const md = [
@@ -43,6 +43,7 @@ const md = [
 	'github   github   github   music',
 	'featured featured featured featured',
 	'featured featured featured featured',
+	'goal     goal     goal     goal',
 	'dc       ig       gh       li',
 	'lab      lab      lab      lab',
 	'lab      lab      lab      lab',
@@ -56,6 +57,7 @@ const base = [
 	'weather  music',
 	'github   github',
 	'featured featured',
+	'goal     goal',
 	'dc       ig',
 	'gh       li',
 	'lab      lab',
@@ -75,7 +77,12 @@ const base = [
 	xl={{ areas: lg, columns: 6, rowSize: 'minmax(auto, 1fr)' }}
 >
 	<DayTile area="day" />
-	<WeatherTile area="weather" weather={mockWeather()} air={mockAir()} />
+	<WeatherTile
+		area="weather"
+		weather={{ state: 'loading' }}
+		air={{ state: 'loading' }}
+		endpoints={{ weather: '/api/weather', air: '/api/air' }}
+	/>
 	<GithubTile area="github" github={{ state: 'loading' }} endpoint="/api/github" />
 	<MusicTile area="music" music={{ state: 'loading' }} endpoint="/api/music" />
 	<HomelabTile
@@ -99,6 +106,7 @@ const base = [
 	<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
 	<BooksTile area="books" />
 	<EventTile area="event" />
+	<GoalTile area="goal" />
 </BentoLayout>
 
 <DashboardSwitch to="private" />

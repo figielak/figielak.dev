@@ -5,8 +5,13 @@ import LiveBody from '../ui/LiveBody.astro';
 import LiveFooter from '../ui/LiveFooter.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState, worstState } from '../../lib/live';
-import { WEATHER_PLACEHOLDER, type Weather } from '../../lib/mocks/weather';
-import { AIR_LEVELS, AIR_PLACEHOLDER, type Air } from '../../lib/mocks/air';
+import {
+	WEATHER_CONDITIONS,
+	WEATHER_PLACEHOLDER,
+	WEATHER_STALE_AFTER_MIN,
+	type Weather,
+} from '../../lib/mocks/weather';
+import { AIR_LEVELS, AIR_PLACEHOLDER, AIR_STALE_AFTER_MIN, type Air } from '../../lib/mocks/air';
 
 /**
  * Weather from Open-Meteo, cached 15 min, and air quality in Rzeszów from
@@ -15,14 +20,18 @@ import { AIR_LEVELS, AIR_PLACEHOLDER, type Air } from '../../lib/mocks/air';
  *
  * The six air index levels are a quiet scale with the current one in the
  * text colour — red would read as a warning even for "good".
+ *
+ * With `endpoints` both sections render as loading and fill themselves in
+ * the browser; without them they show the data given (mocks in /dev/tiles).
  */
 interface Props {
 	weather: Weather;
 	air: Air;
+	endpoints?: { weather: string; air: string };
 	area?: string;
 }
 
-const { weather, air, area } = Astro.props;
+const { weather, air, endpoints, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const w = weather.data ?? WEATHER_PLACEHOLDER;
@@ -32,37 +41,131 @@ const current = air.data ? AIR_LEVELS.indexOf(a.level) : -1;
 const level = t(`air.${a.level}`);
 const state = worstState([weather.state, air.state]);
 const footer = weather.state === state ? weather : air;
+
+/* Words the browser needs once the data comes in. */
+const conditions = JSON.stringify(Object.fromEntries(WEATHER_CONDITIONS.map((c) => [c, t(`weather.${c}`)])));
+const levels = JSON.stringify(Object.fromEntries(AIR_LEVELS.map((l) => [l, t(`air.${l}`)])));
 ---
 
-<Tile area={area} label={t('tile.weather')} icon="cloud" dense>
+<Tile area={area} label={t('tile.weather')} icon="cloud" dense class="weather-tile">
 	<LiveDot slot="meta" state={dotState(state)} />
 
 	<div class="weather">
-		<LiveBody state={weather.state} errorText={t('weather.unavailable')}>
-			<div class="weather-now">
-				<span class="weather-temp" data-skeleton data-count aria-live="polite">{w.tempC}°</span>
-				<span class="weather-line" data-skeleton>{t(`weather.${w.condition}`)} · {w.city}</span>
-			</div>
-		</LiveBody>
+		<div
+			class="weather-section weather-now-section"
+			data-endpoint={endpoints?.weather}
+			data-stale-after={WEATHER_STALE_AFTER_MIN}
+			data-conditions={conditions}
+		>
+			<LiveBody state={weather.state} errorText={t('weather.unavailable')}>
+				<div class="weather-now">
+					<span class="weather-temp" data-skeleton data-count aria-live="polite">{w.tempC}°</span>
+					<span class="weather-line" data-skeleton>{t(`weather.${w.condition}`)} · {w.city}</span>
+				</div>
+			</LiveBody>
+		</div>
 
-		<LiveBody state={air.state} errorText={t('air.unavailable')}>
-			<div class="air">
-				<span class="air-level" data-skeleton aria-live="polite">
-					<span class="air-label">{t('tile.air')}</span>
-					{level}
-				</span>
-				<span class="air-scale" role="img" aria-label={t('air.scale').replace('{level}', level)}>
-					{AIR_LEVELS.map((_, i) => (
-						<span class="air-step" style={`--i: ${i}`} data-current={i === current ? '' : undefined} />
-					))}
-				</span>
-				<span class="air-pm" data-skeleton>PM2.5 {a.pm25} · PM10 {a.pm10}</span>
-			</div>
-		</LiveBody>
+		<div
+			class="weather-section air-section"
+			data-endpoint={endpoints?.air}
+			data-stale-after={AIR_STALE_AFTER_MIN}
+			data-levels={levels}
+		>
+			<LiveBody state={air.state} errorText={t('air.unavailable')}>
+				<div class="air">
+					<span class="air-level" data-skeleton aria-live="polite">
+						<span class="air-label">{t('tile.air')}</span>
+						<span class="air-level-text">{level}</span>
+					</span>
+					<span
+						class="air-scale"
+						role="img"
+						aria-label={t('air.scale').replace('{level}', level)}
+						data-template={t('air.scale')}
+					>
+						{AIR_LEVELS.map((_, i) => (
+							<span class="air-step" style={`--i: ${i}`} data-current={i === current ? '' : undefined} />
+						))}
+					</span>
+					<span class="air-pm" data-skeleton>PM2.5 {a.pm25} · PM10 {a.pm10}</span>
+				</div>
+			</LiveBody>
+		</div>
 	</div>
 
 	<LiveFooter slot="footer" live={footer} />
 </Tile>
+
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import { minutesSince, worstState, type LiveState } from '../../lib/live';
+	import { AIR_LEVELS, type Air } from '../../lib/mocks/air';
+	import type { Weather } from '../../lib/mocks/weather';
+
+	type Data<T extends { data?: unknown }> = Omit<NonNullable<T['data']>, 'updatedAt'> & { updatedAt: Date };
+
+	/* The tile has one footer for two sources: it follows the worse section,
+	   as the dot does (src/scripts/live.ts only updates a footer inside the
+	   section it loads). */
+	function syncFooter(tile: HTMLElement) {
+		const sections = [...tile.querySelectorAll<HTMLElement>('.weather-section')];
+		const stateOf = (section: HTMLElement) =>
+			section.querySelector<HTMLElement>('.live-body')?.dataset.live as LiveState;
+		const worst = worstState(sections.map(stateOf));
+		const source = sections.find((section) => stateOf(section) === worst);
+
+		const footer = tile.querySelector<HTMLElement>('.live-footer');
+		if (!footer) return;
+		footer.dataset.state = worst;
+		const updated = footer.querySelector<HTMLElement>('.live-footer-updated');
+		if (updated && source?.dataset.updatedAt) {
+			const minutes = minutesSince(new Date(source.dataset.updatedAt));
+			setText(updated, (updated.dataset.template ?? '{n}').replace('{n}', String(minutes)));
+		}
+	}
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.weather-tile')) {
+		const now = tile.querySelector<HTMLElement>('.weather-now-section[data-endpoint]');
+		const air = tile.querySelector<HTMLElement>('.air-section[data-endpoint]');
+		if (!now || !air) continue;
+
+		const conditions: Record<string, string> = JSON.parse(now.dataset.conditions ?? '{}');
+		const levels: Record<string, string> = JSON.parse(air.dataset.levels ?? '{}');
+
+		new MutationObserver(() => syncFooter(tile)).observe(tile, {
+			subtree: true,
+			attributes: true,
+			attributeFilter: ['data-live'],
+		});
+		setInterval(() => syncFooter(tile), 60_000);
+
+		watchLive<Data<Weather>>(
+			now,
+			(data) => {
+				now.dataset.updatedAt = data.updatedAt.toISOString();
+				setText(now.querySelector('.weather-temp'), `${data.tempC}°`);
+				setText(now.querySelector('.weather-line'), `${conditions[data.condition] ?? ''} · ${data.city}`);
+			},
+			15 * 60_000,
+		);
+
+		watchLive<Data<Air>>(
+			air,
+			(data) => {
+				air.dataset.updatedAt = data.updatedAt.toISOString();
+				const level = levels[data.level] ?? '';
+				setText(air.querySelector('.air-level-text'), level);
+				const scale = air.querySelector<HTMLElement>('.air-scale');
+				scale?.setAttribute('aria-label', (scale.dataset.template ?? '{level}').replace('{level}', level));
+				air.querySelectorAll('.air-step').forEach((step, i) => {
+					step.toggleAttribute('data-current', i === AIR_LEVELS.indexOf(data.level));
+				});
+				setText(air.querySelector('.air-pm'), `PM2.5 ${data.pm25} · PM10 ${data.pm10}`);
+			},
+			30 * 60_000,
+		);
+	}
+</script>
 
 <style>
 	/* Weather takes the room it needs; air quality sits at the bottom. */
@@ -75,7 +178,13 @@ const footer = weather.state === state ? weather : air;
 		min-width: 0;
 	}
 
-	.weather > :global(.live-body) {
+	.weather-section {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.weather-section > :global(.live-body) {
 		height: auto;
 	}
 

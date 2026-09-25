@@ -1,6 +1,6 @@
 /**
- * Mock air quality until the GIOŚ endpoint exists (koncept.md §9). GIOŚ
- * needs no key; the index has six levels, from very good to very bad.
+ * Air quality in the shape /api/air returns (GIOŚ, koncept.md §9), and mocks
+ * of it for /dev/tiles. The index has six levels, from very good to very bad.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
@@ -14,6 +14,10 @@ export const AIR_LEVELS: AirLevel[] = [
 	'bad',
 	'veryBad',
 ];
+
+/* Hourly measurements, published some twenty minutes late and cached for
+   30 min: past this the station has missed a few hours. */
+export const AIR_STALE_AFTER_MIN = 180;
 
 export type Air = Live<{
 	level: AirLevel;

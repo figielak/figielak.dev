@@ -19,7 +19,7 @@
  */
 @theme inline {
 	--font-sans: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
-	--font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+	--font-mono: 'Geist Mono Variable', ui-monospace, monospace;
 
 	--color-bg: var(--bg);
 	--color-surface: var(--surface);

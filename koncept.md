@@ -37,7 +37,8 @@ Subdomeny `maths.figielak.dev` i `dashboard.figielak.dev` działają jako **prze
 Nawigacja: górny pasek w formie pigułki, wspólny dla wszystkich widoków.
 - Po lewej: logo `figielak_` — nazwa i migający czerwony kursor `_` jak w terminalu (bez migania przy reduced motion)
 - Na środku: Wizytówka · Projekty · Dashboard · Korepetycje
-- Po prawej: PL/EN i przełącznik motywu
+- Po prawej: PL/EN, przycisk terminala `>_` (§8) i przełącznik motywu (nieaktywny, dopóki jest jeden motyw — §12); na `/maths` przełącznik języka jest wyłączony, bo widok jest tylko po polsku
+- Na telefonie (<640px) logo i przyciski dzielą górny rząd, a pigułka z linkami zajmuje rząd pod nimi
 - Na telefonie (<640px) pasek jest przyklejony do góry ekranu na prawie kryjącym tle (`--nav-glass`, rozmycie `--glass-blur`): chowa się przy przewijaniu w dół i wraca przy pierwszym ruchu w górę (próg 8 px, żeby nie migał), a przy samej górze strony jest zawsze widoczny. Schowany jest `inert`, a fokus w nim go pokazuje. Na desktopie pasek przewija się razem ze stroną.
 
 ---
@@ -170,10 +171,11 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 **Tryb publiczny** — karty w różnych kształtach, żeby siatka miała bentowy rytm, a nie równe rzędy:
 - to, co opisuje jedną rzecz, jest jedną kartą: czas, słońce i postęp to „Dzień”, pogoda i powietrze to „Pogoda”, a maszyna, usługi, transfer i blokada reklam to jeden „Homelab”;
 - kształt wynika z treści: GitHub jest szeroki i niski, bo wykres kontrybucji to długi pasek; muzyka jest wysoka i wąska jak okładka; homelab jest duży, bo ma najwięcej danych;
-- wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, połowa wysokości), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
+- wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, 3 z 4 dolnych półrzędów), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
 - sociale (Discord, Instagram, GitHub, LinkedIn) to cztery małe kafle 2×2: cały kafel jest przyciskiem w kolorach marki (gradient z tokenów `--brand-*`, biały tekst z kontrastem AA), z białym logo (Simple Icons) nad nazwą wersalikami, bez ↗;
 - Muzyka, Czytam i projekt przełamują ścianę tekstu obrazem; WakaTime ma dwie kolumny na wykres tygodnia i pasek języków;
-- pojedyncza liczba (odliczanie) dostaje mały kafel — na desktopie o wysokości półrzędu, jak sociale.
+- pojedyncza liczba (odliczanie) dostaje mały kafel — na desktopie o wysokości półrzędu, jak sociale;
+- cel to jedna linia i pasek, więc jest szeroki i niski — półrząd na trzy kolumny pod projektem.
 
 Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od reszty.
 
@@ -184,30 +186,31 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 "featured featured featured dc       ig       books"
 "featured featured featured gh       li       books"
 "featured featured featured waka     waka     books"
-"featured featured featured waka     waka     event"
+"goal     goal     goal     waka     waka     event"
 
 640–1023px (4 kolumny)
 "day day weather music" / "github github github music" /
-"featured ×4" ×2 / "dc ig gh li" / "lab ×4" ×2 /
+"featured ×4" ×2 / "goal ×4" / "dc ig gh li" / "lab ×4" ×2 /
 "event event books books" / "waka waka books books"
 
 < 640px (2 kolumny: szerokie karty na cały rząd, małe parami)
 "day day" / "weather music" / "github github" / "featured featured" /
-"dc ig" / "gh li" / "lab lab" / "waka waka" / "event books"
+"goal goal" / "dc ig" / "gh li" / "lab lab" / "waka waka" / "event books"
 ```
 
 | Kafel | Grupa | Zawartość |
 |---|---|---|
 | `day` | lokalne | czas Europe/Warsaw co sekundę i data; wschód i zachód słońca, długość dnia; paski % dnia, miesiąca i roku — wszystko liczone lokalnie, bez API i bez kropki |
-| `weather` | lokalne | dwie sekcje: pogoda (temperatura, opis, miasto) i jakość powietrza w Rzeszowie (GIOŚ: poziom słownie, skala 6 stopni; PM2.5/PM10 tylko na telefonie i tablecie) |
+| `weather` | lokalne | dwie sekcje z własnymi stanami: pogoda w Rzeszowie (`/api/weather`, Open-Meteo: temperatura, opis, miasto) i jakość powietrza (`/api/air`, GIOŚ, stacja Al. Piłsudskiego: poziom słownie, skala 6 stopni; PM2.5/PM10 tylko na telefonie i tablecie); jedna stopka pokazuje gorszą z sekcji. Ta sama pogoda jest w zajawce na wizytówce i w komendzie `weather` terminala |
 | `github` | praca | liczba kontrybucji, streak, repozytoria, legenda i „X min temu” w jednym rzędzie; pod nimi wykres roku na całą szerokość |
 | `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz ↗”; kilka projektów w karuzeli (`src/lib/featured.ts` — dane testowe do czasu kolekcji projektów, §3.2) |
 | `dc` `ig` `gh` `li` | kontakt | linki do profili: kafel w kolorach marki, białe logo i nazwa |
 | `waka` | praca | WakaTime, ciemny jak inne kafle, w kolejności ważności: czas dziś (duża liczba) i porównanie ze średnią dni tygodnia; 7 słupków pon–ndz z dzisiejszym w akcencie; pasek języków w kolorach GitHub Linguist (`--lang-*`) z 3 nazwami; suma tygodnia w stopce. W wąskim kaflu najpierw znika porównanie, potem nazwy języków |
-| `lab` | homelab | cztery sekcje: **maszyna** (CPU, RAM, dysk w % — czerwone od 85% — kontenery, temperatura CPU), **usługi** (uptime hosta; usługi pod ogólnymi nazwami: Media, Pliki, DNS, Kopie — up/down, dostępność z 30 dni jako liczba i pasek od 90%, średni czas odpowiedzi; usługi bez danych zebrane w jedną linię „Brak danych: …”), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
-| `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole |
+| `lab` | homelab | cztery sekcje: **maszyna** (CPU, RAM, każdy dysk osobnym paskiem i GPU, jeśli jest — w %, czerwone od 85% — kontenery, temperatura CPU), **usługi** (uptime hosta; usługi pod ogólnymi nazwami: Media, Pliki, DNS, Kopie — up/down, dostępność z 30 dni jako liczba i pasek od 90%, średni czas odpowiedzi; usługi bez danych zebrane w jedną linię „Brak danych: …”), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
+| `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole. Obok utworu okrągły przycisk ▶/❚❚ puszcza 30-sekundowy podgląd (iTunes Search API, bez klucza — Last.fm nie ma audio); serwer szuka po wykonawcy i tytule i bierze tylko wyraźne dopasowanie, a bez podglądu przycisku nie ma. Dźwięk ładuje się z CDN Apple dopiero po kliknięciu |
 | `books` | życie | aktualnie czytane książki z okładkami (statycznie, `src/lib/books.ts`, okładki w `src/assets/books/`); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast ↗; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
+| `goal` | życie | aktualny cel (`src/lib/goal.ts`, statycznie): nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i następny krok; w półrzędzie (desktop) następny krok znika |
 
 **Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne.
 
@@ -223,7 +226,7 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 | `deploy` | ostatni deploy strony: kiedy, commit, status |
 | `site` | statystyki strony: odwiedziny dziś / 7 dni, online, top strona |
 
-Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i inne z sekcji 13.
+Na później: `sched` (rozkład zajęć, patrz §14), `visits` i inne z sekcji 13.
 
 ---
 
@@ -278,18 +281,24 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--surface-inset` | `#111113` | elementy wewnątrz kafla (pigułki, paski) |
 | `--border` | `rgb(255 255 255 / 0.08)` | obramowanie kafla |
 | `--border-hover` | `rgb(255 255 255 / 0.16)` | obramowanie po najechaniu |
+| `--border-divider` | `rgb(255 255 255 / 0.15)` | włosowa linia między sekcjami dossier |
 | `--text` | `#EDEDEF` | tekst główny |
 | `--text-muted` | `#8B8B92` | opisy, etykiety |
 | `--text-subtle` | `#5C5C63` | najmniej ważne detale |
 | `--accent` | `#E5484D` | akcent: stonowana czerwień, kontrast AA na tle |
 | `--accent-hover` | `#EC5D5E` | akcent po najechaniu |
 | `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
+| `--accent-foreground` | `#0E0E10` | tekst i ikony na pełnym tle akcentu (biały miałby tylko 3,9:1) |
+| `--status-ok` / `--status-down` | `#46A758` / `--accent` | kropki stanu: działa / problem |
 | `--status-ok-soft` / `--status-ok-border` | `--status-ok` z przezroczystością 0.1 / 0.3 | plakietka statusu w karcie profilu |
+| `--github-level-1…4` | zielenie GitHuba (ciemny motyw) | wykres kontrybucji; poziom 0 to `--surface-inset` |
+| `--brand-*` | gradienty w kolorach marek | kafle sociali (Discord, Instagram, GitHub, LinkedIn), biały tekst `--brand-foreground` z AA |
 | `--lang-*` | kolory GitHub Linguist | języki w kaflu WakaTime — kolor treści jak loga (§4); najciemniejsze rozjaśnione |
 | `--nav-active` | `rgb(229 72 77 / 0.22)` | tło aktywnej zakładki w nawigacji |
 | `--nav-glass` | `rgb(14 14 16 / 0.9)` | tło przyklejonej nawigacji na telefonie (§2) |
 | `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
 | `--spotlight` | `rgb(229 72 77 / 0.6)` | światło na ramkach kafli wokół kursora (dashboard) |
+| `--scrim` / `--scrim-soft` | `rgb(0 0 0 / 0.85)` / `rgb(0 0 0 / 0.5)` | gradient pod tekstem na okładkach (np. muzyka) |
 | `--featured-scrim-soft` / `--featured-scrim-solid` | `rgb(15 15 17 / 0.85)` / `rgb(15 15 17)` | gradient pod tekstem na zrzutach projektów; gotowe gradienty `--featured-scrim-side` (z boku) i `--featured-scrim-down` (w dół), §4 |
 | `--glow` | `rgb(229 72 77 / 0.35)` | rozmyta poświata pod kaflami dashboardu (tekst `--text-muted` na szkle zostaje ≥ 4,6:1) |
 
@@ -309,7 +318,7 @@ Zasady:
 
 - **Główny font:** Satoshi w grubościach 400, 500 i 700, logo w nawigacji 900. Wersja variable (jeden plik, oś 300–900).
   Satoshi pochodzi z Fontshare i prawdopodobnie nie ma go w Fontsource, więc hostuję go lokalnie (woff2, `font-display: swap`, preload).
-- **Mono:** JetBrains Mono przez Fontsource. Używam go do etykiet, liczb, statystyk, dat i terminala.
+- **Mono:** Geist Mono (variable) przez Fontsource. Używam go do etykiet, liczb, statystyk, dat i terminala.
 - **Liczby** zawsze z `font-variant-numeric: tabular-nums`, żeby nie „skakały” przy aktualizacji.
 
 | Rola | Font | Rozmiar | Grubość | Uwagi |
@@ -382,8 +391,7 @@ Na start:
 - komendy z danymi czytają te same `/api/*` co kafle i przy błędzie piszą spokojne „<źródło>: brak danych”;
 - output i historia zostają w `sessionStorage` na czas sesji; podpowiedź `` ` TERMINAL `` w stopce dashboardu (ukryta na dotyku).
 
-Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
-- efekt tilt.
+Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło przy kursorze i uniesienie, a obrót 3D ze szklanym tłem rozjaśnia poświatę w Chromium.
 
 ---
 
@@ -391,17 +399,18 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 
 ### Architektura
 
-- Strona jest **statyczna domyślnie** (Astro). Kafle z danymi na żywo to małe wyspy (`client:visible`).
+- Strona jest **statyczna domyślnie** (Astro). Kafle z danymi na żywo to małe wyspy w czystym TS (`<script>` + `src/scripts/live.ts`, bez frameworka): kafel z propem `endpoint` renderuje się w stanie ładowania i sam dociąga dane w przeglądarce.
 - Dane pobieram przez własne endpointy `/api/*` na serwerze Node w Cloud Run (Astro + `@astrojs/node`, trasy z `prerender = false`; wzór: `src/pages/api/health.ts`). Z przeglądarki **nigdy** nie odpytuję zewnętrznych API z kluczem.
 - Tokeny i klucze trzymam w **Secret Manager** i przekazuję do Cloud Run jako zmienne środowiskowe.
+- Cache odpowiedzi jest w pamięci instancji (`src/lib/server/cache.ts`); po zimnym starcie pierwsze żądanie pobiera dane od nowa.
 
 | Dane | Źródło | Odświeżanie / cache |
 |---|---|---|
-| Pogoda | Open-Meteo (bez klucza) | cache 15 min |
+| Pogoda | Open-Meteo (bez klucza), centrum Rzeszowa; nieaktualne po 45 min | cache 15 min |
 | GitHub | GitHub GraphQL API (token po stronie serwera) | cache 1h |
 | Czas | lokalnie w przeglądarce | co sekundę |
 | Wizyty i statystyki strony (prywatne) | API Umami lub Plausible | cache 1–5 min |
-| Jakość powietrza | GIOŚ (bez klucza), stacja w Rzeszowie | cache 1h |
+| Jakość powietrza | GIOŚ API v1 (bez klucza; stare `/pjp-api/rest` zwraca 410), stacja Rzeszów, Al. Piłsudskiego; `updatedAt` to czas pomiaru, nieaktualne po 3 h | cache 30 min |
 | Wschód i zachód słońca, % dnia/miesiąca/roku | liczone lokalnie (build + przeglądarka) | — |
 | Blokada reklam (DNS) | AdGuard Home (`/control/stats`, retencja 7 dni) przez push-agenta | przez push |
 | Transfer sieciowy | `/proc/net/dev` na Pi przez push-agenta (ruch homelaba, nie domu) | przez push |
@@ -410,6 +419,7 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 | Uptime usług | Uptime Kuma (`/metrics`: status, dostępność i czas odpowiedzi z 30 dni) przez push-agenta | przez push |
 | Rozkład zajęć | plik iCal (np. eksport z USOS, jeśli uczelnia go udostępnia) | cache 1h |
 | Teraz słucham / top artyści | Last.fm API | cache 30 s / 1h |
+| Podgląd utworu (30 s) | iTunes Search API (bez klucza), razem z utworem z Last.fm | ostatnie wyszukiwanie do zmiany utworu |
 | WakaTime | WakaTime API | cache 1h |
 
 ### Homelab: model push
@@ -429,7 +439,7 @@ Do eksperymentów później (każde jako opcja łatwa do wyłączenia):
 |---|---|
 | Ładowanie | szkielet w kształcie docelowej treści, z połyskiem przesuwającym się po kaflu; gdy przyjdą dane, treść płynnie się w niego wkleja |
 | OK | dane i szara kropka |
-| Nieaktualne (dane starsze niż próg, np. 10 min) | dane, czerwona kropka, „aktualizacja X min temu” |
+| Nieaktualne (dane starsze niż próg, np. 10 min; GitHub i WakaTime odświeżane co godzinę — 3 h) | dane, czerwona kropka, „aktualizacja X min temu” |
 | Błąd lub brak danych | czerwona kropka i spokojny tekst zastępczy (np. „Homelab offline”) |
 
 Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na danych testowych (mock), potem podpinam prawdziwe źródła.**
@@ -442,10 +452,10 @@ Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na 
 
 - **Astro + MDX** z content collections dla projektów.
 - **Tailwind v4:** tokeny w `@theme`, zgodnie z sekcją 5.
-- **Fontsource** dla JetBrains Mono; Satoshi hostowany lokalnie.
+- **Fontsource** dla Geist Mono; Satoshi hostowany lokalnie.
 - **Sätteri (`@astrojs/markdown-satteri`) + KaTeX:** wzory w projektach i na `/maths`. Sätteri parsuje matematykę (`features: { math: true }`), a własny plugin `src/plugins/katex.js` renderuje ją KaTeX-em przy buildzie. CSS KaTeX ładuję tylko na stronach, które go używają.
-- **rehype-mermaid:** diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright. Build idzie w GitHub Actions (obraz Dockera dostaje gotowy `dist/`), więc wystarczy doinstalować tam przeglądarkę; w razie problemów przechodzę na renderowanie po stronie klienta.
-- **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`), kompilowane do PDF w `public/cv/`. Kompilacja lokalnie lub w CI.
+- **rehype-mermaid** (jeszcze niezainstalowany, przyjdzie z krokiem 3 w §16): diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright. Build idzie w GitHub Actions (obraz Dockera dostaje gotowy `dist/`), więc wystarczy doinstalować tam przeglądarkę; w razie problemów przechodzę na renderowanie po stronie klienta.
+- **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`), kompilowane do PDF w `public/cv/`. Kompilacja lokalnie lub w CI. Katalogów `cv/` i `public/cv/` jeszcze nie ma.
 - **Hosting:** **Google Cloud Run** (`europe-west1`, skalowanie do zera) za **Cloudflare**.
   - Cloud Run uruchamia kontener z `Dockerfile`: prerenderowane strony + serwer Node dla `/api/*`.
   - Cloudflare zostaje z przodu jako DNS z proxy: SSL Full (strict), przekierowania 301 subdomen, cache `/_astro/*`, limit żądań do trybu prywatnego.
@@ -454,26 +464,34 @@ Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na 
 - **Analityka:** Umami lub Plausible. Wybór zależy od tego, które API wygodniej zasila licznik wizyt.
 - **Homelab:** Homepage lub Homarr, dostępne tylko przez Tailscale.
 
-Proponowana struktura:
+Struktura (✱ — jeszcze nie istnieje):
 
 ```
 src/
+  assets/        # avatar, okładki książek, loga marek, zrzuty projektów
   components/
-    ui/          # Tile, TileLabel, LiveDot, Pill, IconLink, Nav
-    tiles/       # każdy kafel jako osobny komponent
-  layouts/       # BaseLayout, BentoLayout
+    ui/          # Tile, TileLabel, LiveDot, Pill, IconLink, Nav, BentoLayout,
+                 # Dossier, ProfileCard, FeaturedCarousel, Terminal…
+    tiles/       # każdy kafel jako osobny komponent (homelab/ — jego sekcje)
+    views/       # treść widoków, wspólna dla PL i EN
+  layouts/       # BaseLayout
+  lib/           # dane statyczne (featured, books, events, services, contact)
+    mocks/       # dane testowe i typy kafli na żywo
+    server/      # klienci API, cache, Firestore, kontrakt homelaba
   pages/
-    index.astro
-    projects/    # index.astro, [slug].astro
-    maths.astro
-    dashboard.astro
+    index.astro  maths.astro  dashboard.astro  dashboard/private.astro
+    projects/    # index.astro, [slug].astro ✱
+    en/          # te same widoki po angielsku (bez /maths)
+    dev/         # galeria stanów kafli /dev/tiles (tylko w dev)
     api/         # endpointy danych na żywo
-  content/projects/*.mdx
+  content/projects/*.mdx ✱
+  plugins/       # katex.js
+  scripts/       # live.ts, intro.ts, spotlight.ts, terminal/
   i18n/          # pl.json, en.json
   styles/        # tokens.css, global.css
 public/
-  fonts/  cv/
-cv/              # źródła Typst
+  fonts/  cv/ ✱
+cv/ ✱            # źródła Typst
 docs/            # deploy.md — konfiguracja Cloud Run i Cloudflare
 Dockerfile       # obraz dla Cloud Run
 ```
@@ -509,21 +527,14 @@ Dockerfile       # obraz dla Cloud Run
 
 ## 13. Kafle fun-to-have (po must-have)
 
-- Top artyści / utwory
-- Teraz słucham (Last.fm)
-- WakaTime
+Zrobione: top artyści, teraz słucham (Last.fm), WakaTime, now page, książki, aktualny cel (`goal`), terminal na całej stronie (§8) i podgląd utworu w kaflu Muzyki (zamiast osobnego odtwarzacza, §3.4).
+
+Na później:
 - Zdjęcia (fotografia)
-- Mapa podróży
-- Losowy fun fact
-- Licznik kaw
-- Aktualny cel
-- Now page
-- Książki
-- ~~Mini terminal~~ — zrobiony jako terminal na całej stronie (§8)
 - Mini gra (Snake)
 - Konami code / ukryty kafel
-- Odtwarzacz muzyki
-- Licznik kliknięć
+
+Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
 
 ---
 
@@ -565,24 +576,27 @@ Dockerfile       # obraz dla Cloud Run
 Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 
 1. ✅ **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
-2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie, edukacja, umiejętności, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z `src/lib/featured.ts`, ta sama lista co na dashboardzie), zajawka dashboardu — gotowe. Zostało:
-   - CV z Typst (`cv/` → `public/cv/`) — linki „Pobierz CV” dają 404.
-3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured. Jest tylko szkielet `/projects`.
-4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
+2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie (prawdziwe pozycje), edukacja, umiejętności, języki, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z `src/lib/featured.ts`, ta sama lista co na dashboardzie), zajawka dashboardu (pogoda i muzyka na żywo) — gotowe. Zostało:
+   - CV z Typst (`cv/` → `public/cv/`) — linki „Pobierz CV” i „Pełne CV” dają 404.
+3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX (plugin gotowy, CSS jeszcze nigdzie nieładowany), Mermaid, karuzela featured z kolekcji. Jest tylko szkielet `/projects` z pustymi kartami.
+4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Podpięte: GitHub (`/api/github`), Last.fm (`/api/music`) i WakaTime (`/api/waka`) — cache w pamięci instancji, wyspy w czystym TS (`src/scripts/live.ts`). Homelab: `POST /api/stats` → Firestore → `/api/homelab/*`, agent w repo homelaba — kod gotowy, zostaje konfiguracja GCP (docs/deploy.md) i wdrożenie. Zostały pogoda i powietrze (bez kluczy) oraz analityka.
-7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka, książki, odliczanie). Terminal na całej stronie (§8) gotowy; `weather` czeka na endpoint pogody. Reszta — animacje, jasny motyw, motyw „crazy”, rezerwacja na `/maths` — nie zaczęta.
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`) i podgląd utworu w `/api/music`. Zostały w trybie prywatnym ostatni deploy i statystyki strony (analityka) — oba na danych testowych.
+7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, now page w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---
 
 ## 17. Otwarte decyzje
 
-- [ ] Domyślny język wizytówki: PL czy EN (rekruterzy zagraniczni?)
-- [ ] Ostateczny odcień akcentu (start: `#E5484D`)
-- [ ] Mono: JetBrains Mono czy Geist Mono
 - [ ] Umami czy Plausible
 - [ ] Źródło rozkładu zajęć i poziom szczegółowości publicznie
 - [ ] Narzędzie do rezerwacji korepetycji (Cal.com / własne)
-- [ ] Miasto w kaflu pogody
-- [ ] Lista usług w launcherze i wydarzeń w odliczaniu (na razie wypełniacze)
-- [ ] Framework wysp: czysty TS w `<script>` czy Preact, gdy potrzebny stan
+- [ ] Lista usług w launcherze (poza Mealie), wydarzeń w odliczaniu, książek w „Czytam” i kroków celu (na razie wypełniacze)
+- [ ] Źródło kafla ostatniego deployu: Cloud Run Admin API czy GitHub Actions API
+- [ ] Framework wysp: na razie czysty TS w `<script>` wystarcza; Preact dopiero, gdy potrzebny stan
+
+Podjęte (2026-09-25):
+- [x] Domyślny język wizytówki: polski (`/`), angielski pod `/en/`
+- [x] Akcent zostaje `#E5484D`
+- [x] Mono: Geist Mono
+- [x] Miasto w kaflu pogody: Rzeszów

@@ -3,6 +3,7 @@ import Tile from '../ui/Tile.astro';
 import LiveDot from '../ui/LiveDot.astro';
 import LiveBody from '../ui/LiveBody.astro';
 import LiveFooter from '../ui/LiveFooter.astro';
+import Icon from '../ui/Icon.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { MUSIC_PLACEHOLDER, type Music } from '../../lib/mocks/music';
@@ -12,6 +13,8 @@ import { MUSIC_PLACEHOLDER, type Music } from '../../lib/mocks/music';
  * (koncept.md §9). The cover fills the whole tile in full colour under a
  * dark scrim, with the text at the bottom (§4); without a cover the tile is
  * a plain one. A tall, narrow card: top artists, then the track at the bottom.
+ * Beside the track a play button plays a 30-second preview when the server
+ * found one (src/lib/server/preview.ts); without one there is no button.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser, refreshing every 30 s; without it, it shows `music` as given.
@@ -57,6 +60,19 @@ const cover = music.data?.track.coverUrl;
 						<span class="track-title" data-skeleton aria-live="polite">{d.track.title}</span>
 						<span class="track-artist" data-skeleton>{d.track.artist}</span>
 					</span>
+					<button
+						type="button"
+						class="track-play"
+						data-preview={d.track.previewUrl}
+						data-play={t('music.play')}
+						data-pause={t('music.pause')}
+						aria-label={t('music.play')}
+						title={t('music.play')}
+						hidden={!d.track.previewUrl}
+					>
+						<span class="track-play-icon" data-icon="play"><Icon name="player-play" size={16} /></span>
+						<span class="track-play-icon" data-icon="pause"><Icon name="player-pause" size={16} /></span>
+					</button>
 				</div>
 
 				<div class="top">
@@ -88,6 +104,33 @@ const cover = music.data?.track.coverUrl;
 
 	type MusicData = Omit<NonNullable<Music['data']>, 'updatedAt'>;
 
+	/* The preview plays from Apple's CDN only after a click. A track that
+	   changes mid-preview lets it finish; the next click plays the new one. */
+	for (const button of document.querySelectorAll<HTMLButtonElement>('.music-tile .track-play')) {
+		const audio = new Audio();
+		audio.preload = 'none';
+		audio.volume = 0.6;
+
+		const setPlaying = (playing: boolean) => {
+			button.toggleAttribute('data-playing', playing);
+			const label = (playing ? button.dataset.pause : button.dataset.play) ?? '';
+			button.setAttribute('aria-label', label);
+			button.title = label;
+			if (!playing && !button.dataset.preview) button.hidden = true;
+		};
+
+		button.addEventListener('click', () => {
+			if (!audio.paused) return audio.pause();
+			const url = button.dataset.preview;
+			if (!url) return;
+			if (audio.src !== url) audio.src = url;
+			audio.play().catch(() => setPlaying(false));
+		});
+		audio.addEventListener('play', () => setPlaying(true));
+		audio.addEventListener('pause', () => setPlaying(false));
+		audio.addEventListener('ended', () => setPlaying(false));
+	}
+
 	for (const tile of document.querySelectorAll<HTMLElement>('.music-tile[data-endpoint]')) {
 		watchLive<MusicData>(
 			tile,
@@ -102,6 +145,13 @@ const cover = music.data?.track.coverUrl;
 				setText(tile.querySelector('.track-status-text'), statusText ?? '');
 				setText(tile.querySelector('.track-title'), track.title);
 				setText(tile.querySelector('.track-artist'), track.artist);
+
+				const play = tile.querySelector<HTMLButtonElement>('.track-play');
+				if (play) {
+					play.dataset.preview = track.previewUrl ?? '';
+					if (track.previewUrl) play.hidden = false;
+					else if (!play.hasAttribute('data-playing')) play.hidden = true;
+				}
 
 				const list = tile.querySelector<HTMLElement>('.top-list');
 				tile.querySelectorAll('.top-artist').forEach((row, i) => {
@@ -216,7 +266,40 @@ const cover = music.data?.track.coverUrl;
 	.track {
 		display: flex;
 		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-md);
 		min-width: 0;
+	}
+
+	.track-play {
+		flex: none;
+		display: inline-grid;
+		place-items: center;
+		width: var(--size-carousel-control);
+		height: var(--size-carousel-control);
+		padding: 0;
+		border: 1px solid var(--border-hover);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		color: var(--text);
+		cursor: pointer;
+		transition:
+			background-color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out);
+	}
+
+	.track-play:hover {
+		background: var(--surface-hover);
+	}
+
+	.track-play[hidden],
+	.track-play:not([data-playing]) [data-icon='pause'],
+	.track-play[data-playing] [data-icon='play'] {
+		display: none;
+	}
+
+	.track-play-icon {
+		display: inline-flex;
 	}
 
 	.track-text {

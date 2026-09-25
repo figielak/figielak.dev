@@ -22,6 +22,8 @@ export type Music = Live<{
 		artist: string;
 		nowPlaying: boolean;
 		coverUrl?: string;
+		/** 30-second preview for the play button (iTunes Search). */
+		previewUrl?: string;
 	};
 	topArtists: { name: string; plays: number }[];
 }>;

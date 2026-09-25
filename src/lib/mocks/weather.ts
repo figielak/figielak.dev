@@ -1,13 +1,14 @@
 /**
- * Mock weather until the Open-Meteo endpoint exists (koncept.md §9).
- * The shape is what /api/weather will return, so tiles do not change when
- * the real source is plugged in.
+ * Weather in the shape /api/weather returns (Open-Meteo, koncept.md §9), and
+ * mocks of it for /dev/tiles.
  */
-import { mockUpdatedAt, STALE_AFTER_MIN, type Live, type LiveState } from '../live';
+import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
 export type { LiveState };
 
-export type WeatherCondition = 'clear' | 'partlyCloudy' | 'cloudy' | 'fog' | 'rain' | 'snow' | 'storm';
+export const WEATHER_CONDITIONS = ['clear', 'partlyCloudy', 'cloudy', 'fog', 'rain', 'snow', 'storm'] as const;
+
+export type WeatherCondition = (typeof WEATHER_CONDITIONS)[number];
 
 export type Weather = Live<{
 	tempC: number;
@@ -17,7 +18,9 @@ export type Weather = Live<{
 	city: string;
 }>;
 
-export const WEATHER_STALE_AFTER_MIN = STALE_AFTER_MIN;
+/* The server keeps a reading 15 min and the tile asks every 15 min, so up to
+   half an hour is normal; past this the tile turns stale. */
+export const WEATHER_STALE_AFTER_MIN = 45;
 
 /** Fills the layout while loading or on error, so the tile keeps its size. */
 export const WEATHER_PLACEHOLDER: NonNullable<Weather['data']> = {

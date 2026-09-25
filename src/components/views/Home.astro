@@ -7,7 +7,6 @@ import ProfileCard from '../ui/ProfileCard.astro';
 import type { Social } from '../ui/ProfileCard.astro';
 import DashboardTeaserTile from '../tiles/DashboardTeaserTile.astro';
 import FeaturedCarousel from '../ui/FeaturedCarousel.astro';
-import { mockWeather } from '../../lib/mocks/weather';
 import { featuredProjects } from '../../lib/featured';
 import { emailEncoded, githubUrl, linkedinUrl } from '../../lib/contact';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
@@ -71,9 +70,6 @@ const education = [
 
 /* En dash with no spaces, the typographic form for a range: 2020–2025. */
 const formatPeriod = (start: number, end?: number) => `${start}–${end ?? t('edu.present')}`;
-
-/* Mock until /api/weather exists; /dev/tiles previews the other states. */
-const weather = mockWeather('ok');
 
 /* Grouped by theme: data, backend, tooling, AI. */
 const skills = [
@@ -167,7 +163,12 @@ const skills = [
 		</ul>
 	</DossierSection>
 
-	<DashboardTeaserTile weather={weather} music={{ state: 'loading' }} musicEndpoint="/api/music" />
+	<DashboardTeaserTile
+		weather={{ state: 'loading' }}
+		music={{ state: 'loading' }}
+		weatherEndpoint="/api/weather"
+		musicEndpoint="/api/music"
+	/>
 </Dossier>
 
 <style>

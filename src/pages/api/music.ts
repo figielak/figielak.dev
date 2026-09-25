@@ -1,11 +1,14 @@
 /**
  * Last.fm for the music tile (koncept.md §9): the current track cached 30 s,
- * the week's top artists 1 h. Without LASTFM_API_KEY and LASTFM_USER
- * `astro dev` serves the mock, production answers 503.
+ * the week's top artists 1 h. The track carries a 30-second preview when
+ * iTunes has a clear match (src/lib/server/preview.ts). Without
+ * LASTFM_API_KEY and LASTFM_USER `astro dev` serves the mock — with a real
+ * preview lookup — and production answers 503.
  */
 import type { APIRoute } from 'astro';
 import { cached } from '../../lib/server/cache';
 import { fetchTopArtists, fetchTrack, lastfmConfig } from '../../lib/server/lastfm';
+import { findPreview } from '../../lib/server/preview';
 import { mockMusic } from '../../lib/mocks/music';
 import { liveJson, unavailable } from '../../lib/server/respond';
 
@@ -14,14 +17,17 @@ export const prerender = false;
 export const GET: APIRoute = async () => {
 	const { apiKey, user } = lastfmConfig();
 	if (!apiKey || !user) {
-		return import.meta.env.DEV
-			? liveJson(mockMusic().data!, 30)
-			: unavailable('LASTFM_API_KEY or LASTFM_USER is not set');
+		if (!import.meta.env.DEV) return unavailable('LASTFM_API_KEY or LASTFM_USER is not set');
+		const mock = mockMusic().data!;
+		return liveJson({ ...mock, track: { ...mock.track, previewUrl: await findPreview(mock.track) } }, 30);
 	}
 
 	try {
 		const [track, top] = await Promise.all([
-			cached('lastfm:track', 30_000, fetchTrack),
+			cached('lastfm:track', 30_000, async () => {
+				const track = await fetchTrack();
+				return { ...track, previewUrl: await findPreview(track) };
+			}),
 			cached('lastfm:top', 60 * 60_000, fetchTopArtists),
 		]);
 		/* The footer's "updated … ago" follows the track, which changes most often. */

@@ -1,0 +1,161 @@
+---
+import Tile from '../ui/Tile.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { goal } from '../../lib/goal';
+
+/**
+ * The goal I am working towards now, from src/lib/goal.ts (koncept.md §3.4):
+ * its name, a neutral bar of the steps done (§5) and the next step. Wide and
+ * low like its content — one line of text and a bar; in a half-height tile
+ * (the desktop dashboard) the next step gives way first.
+ */
+interface Props {
+	area?: string;
+}
+
+const { area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const total = goal.steps.length;
+const done = goal.steps.filter((step) => step.done).length;
+const percent = total ? Math.round((done / total) * 100) : 0;
+const next = goal.steps.find((step) => !step.done);
+
+/* MM.YYYY, like the periods on the home page. */
+const by = goal.by ? t('goal.by').replace('{date}', `${goal.by.slice(5, 7)}.${goal.by.slice(0, 4)}`) : '';
+const progress = t('goal.progress').replace('{done}', String(done)).replace('{total}', String(total));
+---
+
+<Tile area={area} label={t('tile.goal')} icon="target" dense>
+	{by && <span slot="meta" class="goal-by">{by}</span>}
+
+	<div class="goal-box">
+		<div class="goal">
+			<span class="goal-title">{goal.title[lang]}</span>
+			<span
+				class="goal-progress"
+				role="meter"
+				aria-label={t('tile.goal')}
+				aria-valuemin="0"
+				aria-valuemax={total}
+				aria-valuenow={done}
+				aria-valuetext={progress}
+			>
+				<span class="goal-track"><span class="goal-fill" style={`width: ${percent}%`}></span></span>
+				<span class="goal-count" aria-hidden="true">{done}/{total}</span>
+			</span>
+			<span class="goal-next">
+				{next ? `${t('goal.next')}: ${next.title[lang]}` : t('goal.done')}
+			</span>
+		</div>
+	</div>
+</Tile>
+
+<style>
+	.goal-by {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+	}
+
+	/* Height queries only on the desktop dashboard, where the grid rows set the
+	   tile's height (a size container has none of its own). */
+	.goal-box {
+		height: 100%;
+	}
+
+	@media (min-width: 1024px) {
+		.goal-box {
+			container-type: size;
+		}
+	}
+
+	.goal {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-content: space-between;
+		gap: var(--space-md);
+		height: 100%;
+		min-width: 0;
+	}
+
+	.goal-title,
+	.goal-next {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.goal-title {
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.goal-next {
+		color: var(--text-muted);
+	}
+
+	.goal-progress {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		min-width: 0;
+	}
+
+	.goal-track {
+		flex: 1;
+		height: var(--size-bar);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		overflow: hidden;
+	}
+
+	.goal-fill {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--text-muted);
+	}
+
+	/* Dashboard intro: the bar grows from zero once the tile is in. */
+	:global(.tile[data-reveal]) .goal-fill {
+		transform-origin: left;
+		animation: goal-grow var(--duration-grow) var(--ease-out) both;
+	}
+
+	@keyframes goal-grow {
+		from {
+			transform: scaleX(0);
+		}
+	}
+
+	.goal-count {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text);
+	}
+
+	/* Low tile: the name and the bar share a line, the next step under them. */
+	@container (max-height: 80px) {
+		.goal {
+			grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+			align-content: end;
+			align-items: center;
+			column-gap: var(--space-2xl);
+		}
+
+		.goal-next {
+			grid-column: 1 / -1;
+		}
+	}
+
+	/* Room for one line only (1440×900): the name and the bar. */
+	@container (max-height: 44px) {
+		.goal-next {
+			display: none;
+		}
+	}
+</style>

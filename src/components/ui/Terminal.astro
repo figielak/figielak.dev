@@ -23,8 +23,11 @@ import type { TerminalData } from '../../scripts/terminal/types';
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
+/* Its own strings, plus the weather and air words `weather` shares with the tile. */
 const strings = Object.fromEntries(
-	(Object.keys(pl) as TranslationKey[]).filter((key) => key.startsWith('term.')).map((key) => [key, t(key)]),
+	(Object.keys(pl) as TranslationKey[])
+		.filter((key) => /^(term|weather|air)\./.test(key))
+		.map((key) => [key, t(key)]),
 );
 
 /* /maths is Polish-only (koncept.md §11), as in the navigation. */
