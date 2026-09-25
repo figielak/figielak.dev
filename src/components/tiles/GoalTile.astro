@@ -5,9 +5,9 @@ import { goal } from '../../lib/goal';
 
 /**
  * The goal I am working towards now, from src/lib/goal.ts (koncept.md §3.4):
- * its name, a neutral bar of the steps done (§5) and the next step. Wide and
- * low like its content — one line of text and a bar; in a half-height tile
- * (the desktop dashboard) the next step gives way first.
+ * its name, a neutral bar of the steps done (§5) and the next step, one under
+ * another in a narrow card; in a low tile the name and the bar share a line
+ * and the next step gives way first.
  */
 interface Props {
 	area?: string;
@@ -81,19 +81,21 @@ const progress = t('goal.progress').replace('{done}', String(done)).replace('{to
 		min-width: 0;
 	}
 
-	.goal-title,
-	.goal-next {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
+	/* A narrow card: the name may take two lines rather than lose its end. */
 	.goal-title {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		overflow: hidden;
 		font-size: var(--size-title);
 		font-weight: 500;
 	}
 
 	.goal-next {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 		color: var(--text-muted);
 	}
 
@@ -140,6 +142,12 @@ const progress = t('goal.progress').replace('{done}', String(done)).replace('{to
 
 	/* Low tile: the name and the bar share a line, the next step under them. */
 	@container (max-height: 80px) {
+		.goal-title {
+			display: block;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
 		.goal {
 			grid-template-columns: minmax(0, auto) minmax(0, 1fr);
 			align-content: end;

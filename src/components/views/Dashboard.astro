@@ -20,7 +20,7 @@ import GoalTile from '../tiles/GoalTile.astro';
  * most; the featured project is the biggest, as the one card that sells
  * something. WakaTime is two columns wide for its week chart and language bar.
  * The countdown is one number, so it gets a half-height tile like the socials.
- * The goal is one line and a bar, so it is wide and low, under the project.
+ * The goal is a name, a bar and the next step: a narrow card left of GitHub.
  * Homelab numbers are public: it is a server, so they do not tell when I am at
  * the computer (§14).
  *
@@ -30,20 +30,19 @@ import GoalTile from '../tiles/GoalTile.astro';
 const lg = [
 	'day      day      weather  music    lab      lab',
 	'day      day      weather  music    lab      lab',
-	'github   github   github   music    lab      lab',
-	'github   github   github   music    lab      lab',
+	'goal     github   github   music    lab      lab',
+	'goal     github   github   music    lab      lab',
 	'featured featured featured dc       ig       books',
 	'featured featured featured gh       li       books',
 	'featured featured featured waka     waka     books',
-	'goal     goal     goal     waka     waka     event',
+	'featured featured featured waka     waka     event',
 ];
 
 const md = [
 	'day      day      weather  music',
-	'github   github   github   music',
+	'goal     github   github   music',
 	'featured featured featured featured',
 	'featured featured featured featured',
-	'goal     goal     goal     goal',
 	'dc       ig       gh       li',
 	'lab      lab      lab      lab',
 	'lab      lab      lab      lab',
@@ -55,9 +54,9 @@ const md = [
 const base = [
 	'day      day',
 	'weather  music',
+	'goal     goal',
 	'github   github',
 	'featured featured',
-	'goal     goal',
 	'dc       ig',
 	'gh       li',
 	'lab      lab',

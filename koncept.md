@@ -171,31 +171,31 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 **Tryb publiczny** — karty w różnych kształtach, żeby siatka miała bentowy rytm, a nie równe rzędy:
 - to, co opisuje jedną rzecz, jest jedną kartą: czas, słońce i postęp to „Dzień”, pogoda i powietrze to „Pogoda”, a maszyna, usługi, transfer i blokada reklam to jeden „Homelab”;
 - kształt wynika z treści: GitHub jest szeroki i niski, bo wykres kontrybucji to długi pasek; muzyka jest wysoka i wąska jak okładka; homelab jest duży, bo ma najwięcej danych;
-- wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, 3 z 4 dolnych półrzędów), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
+- wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, połowa wysokości), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
 - sociale (Discord, Instagram, GitHub, LinkedIn) to cztery małe kafle 2×2: cały kafel jest przyciskiem w kolorach marki (gradient z tokenów `--brand-*`, biały tekst z kontrastem AA), z białym logo (Simple Icons) nad nazwą wersalikami, bez ↗;
 - Muzyka, Czytam i projekt przełamują ścianę tekstu obrazem; WakaTime ma dwie kolumny na wykres tygodnia i pasek języków;
 - pojedyncza liczba (odliczanie) dostaje mały kafel — na desktopie o wysokości półrzędu, jak sociale;
-- cel to jedna linia i pasek, więc jest szeroki i niski — półrząd na trzy kolumny pod projektem.
+- cel (nazwa, pasek kroków, następny krok) to wąska karta na jedną kolumnę, po lewej od GitHuba.
 
 Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od reszty.
 
 ```
 ≥ 1024px (6 kolumn, 8 półrzędów; jeden ekran od 1440×900)
 "day      day      weather  music    lab      lab"    ×2
-"github   github   github   music    lab      lab"    ×2
+"goal     github   github   music    lab      lab"    ×2
 "featured featured featured dc       ig       books"
 "featured featured featured gh       li       books"
 "featured featured featured waka     waka     books"
-"goal     goal     goal     waka     waka     event"
+"featured featured featured waka     waka     event"
 
 640–1023px (4 kolumny)
-"day day weather music" / "github github github music" /
-"featured ×4" ×2 / "goal ×4" / "dc ig gh li" / "lab ×4" ×2 /
+"day day weather music" / "goal github github music" /
+"featured ×4" ×2 / "dc ig gh li" / "lab ×4" ×2 /
 "event event books books" / "waka waka books books"
 
 < 640px (2 kolumny: szerokie karty na cały rząd, małe parami)
-"day day" / "weather music" / "github github" / "featured featured" /
-"goal goal" / "dc ig" / "gh li" / "lab lab" / "waka waka" / "event books"
+"day day" / "weather music" / "goal goal" / "github github" /
+"featured featured" / "dc ig" / "gh li" / "lab lab" / "waka waka" / "event books"
 ```
 
 | Kafel | Grupa | Zawartość |
@@ -210,7 +210,7 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 | `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole. Obok utworu okrągły przycisk ▶/❚❚ puszcza 30-sekundowy podgląd (iTunes Search API, bez klucza — Last.fm nie ma audio); serwer szuka po wykonawcy i tytule i bierze tylko wyraźne dopasowanie, a bez podglądu przycisku nie ma. Dźwięk ładuje się z CDN Apple dopiero po kliknięciu |
 | `books` | życie | aktualnie czytane książki z okładkami (statycznie, `src/lib/books.ts`, okładki w `src/assets/books/`); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast ↗; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
-| `goal` | życie | aktualny cel (`src/lib/goal.ts`, statycznie): nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i następny krok; w półrzędzie (desktop) następny krok znika |
+| `goal` | życie | aktualny cel (`src/lib/goal.ts`, statycznie): nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i następny krok; w niskim kaflu nazwa i pasek dzielą linię, a następny krok znika pierwszy |
 
 **Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne.
 
@@ -581,7 +581,7 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX (plugin gotowy, CSS jeszcze nigdzie nieładowany), Mermaid, karuzela featured z kolekcji. Jest tylko szkielet `/projects` z pustymi kartami.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`) i podgląd utworu w `/api/music`. Zostały w trybie prywatnym ostatni deploy i statystyki strony (analityka) — oba na danych testowych.
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music`. Zostały w trybie prywatnym ostatni deploy i statystyki strony (analityka) — oba na danych testowych.
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, now page w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---
