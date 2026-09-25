@@ -1,0 +1,39 @@
+---
+import Tile from '../ui/Tile.astro';
+import { localizePath, useTranslations } from '../../i18n';
+
+/* Shown on /maths while the tutoring view is closed (src/lib/tutoring.ts).
+   Polish only, like the view it stands in for. */
+const t = useTranslations('pl');
+---
+
+<div class="soon">
+	<Tile label={t('nav.maths')} icon="math-function">
+		<h1 class="soon-title">{t('maths.soon.title')}</h1>
+		<p class="soon-text">{t('maths.soon.text')}</p>
+		<a class="button" href={localizePath('/', 'pl')}>{t('maths.soon.back')}</a>
+	</Tile>
+</div>
+
+<style>
+	.soon {
+		display: grid;
+		place-items: center;
+		min-height: 60vh;
+	}
+
+	.soon :global(.tile) {
+		width: min(100%, 28rem);
+	}
+
+	.soon-title {
+		margin: var(--space-sm) 0 var(--space-xs);
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.soon-text {
+		margin: 0 0 var(--space-lg);
+		color: var(--text-muted);
+	}
+</style>

@@ -1,11 +1,21 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Maths from '../components/views/Maths.astro';
+import MathsSoon from '../components/views/MathsSoon.astro';
+import { tutoringOpen } from '../lib/tutoring';
 import { getLangFromUrl, useTranslations } from '../i18n';
 
 const t = useTranslations(getLangFromUrl(Astro.url));
 ---
 
-<BaseLayout title={t('meta.maths.title')} description={t('meta.maths.description')}>
-	<Maths />
-</BaseLayout>
+{
+	tutoringOpen ? (
+		<BaseLayout title={t('meta.maths.title')} description={t('meta.maths.description')}>
+			<Maths />
+		</BaseLayout>
+	) : (
+		<BaseLayout title={t('meta.maths.title')} description={t('meta.maths.soonDescription')} noindex>
+			<MathsSoon />
+		</BaseLayout>
+	)
+}

@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import { tutoringOpen } from '../../lib/tutoring';
 import {
 	defaultLang,
 	getLangFromUrl,
@@ -28,6 +29,9 @@ const polishOnly: string[] = ['/maths'];
 const hrefFor = (path: string) => (polishOnly.includes(path) ? path : localizePath(path, lang));
 const canSwitchLang = !polishOnly.includes(current);
 
+/* A view that is not open yet stays in the pill, greyed out and not a link. */
+const isSoon = (path: string) => path === '/maths' && !tutoringOpen;
+
 const isActive = (path: string) => current === path || current.startsWith(`${path}/`);
 
 /* The language switch keeps the reader on the same view. */
@@ -44,6 +48,12 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 		{
 			items.map((item) => (
 				<li>
+					{isSoon(item.path) ? (
+						<span class="nav-link" data-soon aria-disabled="true" title={t('nav.soonTitle')}>
+							{t(item.key)}
+							<span class="nav-soon">{t('nav.soon')}</span>
+						</span>
+					) : (
 					<a
 						href={hrefFor(item.path)}
 						class="nav-link"
@@ -53,6 +63,7 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 					>
 						{t(item.key)}
 					</a>
+					)}
 				</li>
 			))
 		}
@@ -232,6 +243,35 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 	.nav-link:hover {
 		color: var(--text);
 		background: var(--surface-hover);
+	}
+
+	/* Not open yet: no hover, a quiet mono tag instead (src/lib/tutoring.ts). */
+	.nav-link[data-soon] {
+		display: inline-flex;
+		align-items: baseline;
+		gap: var(--space-2xs);
+		color: var(--text-subtle);
+		cursor: default;
+	}
+
+	.nav-link[data-soon]:hover {
+		color: var(--text-subtle);
+		background: transparent;
+	}
+
+	/* Phones have no room for the tag in the pill; the grey says enough there. */
+	.nav-soon {
+		display: none;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	@media (min-width: 640px) {
+		.nav-soon {
+			display: inline;
+		}
 	}
 
 	/* The current page: the accent, see-through, so it sits with the glow. */

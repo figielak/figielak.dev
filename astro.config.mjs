@@ -5,6 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import { satteri } from '@astrojs/markdown-satteri';
 import tailwindcss from '@tailwindcss/vite';
 import { katexPlugin } from './src/plugins/katex.js';
+import { tutoringOpen } from './src/lib/tutoring.ts';
 
 export default defineConfig({
 	site: 'https://figielak.dev',
@@ -13,8 +14,11 @@ export default defineConfig({
 	adapter: node({ mode: 'standalone' }),
 	integrations: [
 		mdx(),
-		/* The private dashboard is password-protected (koncept.md §14). */
-		sitemap({ filter: (page) => !page.includes('/dashboard/private') }),
+		/* The private dashboard is password-protected (koncept.md §14); /maths
+		   stays out while it only says "in preparation" (src/lib/tutoring.ts). */
+		sitemap({
+			filter: (page) => !page.includes('/dashboard/private') && (tutoringOpen || !page.includes('/maths')),
+		}),
 	],
 	markdown: {
 		processor: satteri({
