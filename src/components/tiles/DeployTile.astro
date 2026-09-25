@@ -5,91 +5,184 @@ import LiveBody from '../ui/LiveBody.astro';
 import LiveFooter from '../ui/LiveFooter.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
-import { DEPLOY_PLACEHOLDER, type Deploy } from '../../lib/mocks/deploy';
+import { ago } from '../../lib/relative';
+import { DEPLOY_PLACEHOLDER, type Deploy, type DeployStatus } from '../../lib/mocks/deploy';
 
-/** The last deploy of this site from the Cloudflare API (koncept.md §9). Private. */
+/**
+ * The last deploys of this site from GitHub Actions (koncept.md §3.4, §9),
+ * newest first: status dot, commit and when. A run still going pulses, a
+ * failed one is red (§5). Private dashboard only.
+ *
+ * With `endpoint` the tile renders as loading and fills itself in the
+ * browser every minute; without it, it shows `deploy` as given.
+ */
 interface Props {
 	deploy: Deploy;
+	endpoint?: string;
 	area?: string;
 }
 
-const { deploy, area } = Astro.props;
+const { deploy, endpoint, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const d = deploy.data ?? DEPLOY_PLACEHOLDER;
+const runs = (deploy.data ?? DEPLOY_PLACEHOLDER).runs;
 
-const relative = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
-const minutes = Math.round((Date.now() - d.deployedAt.getTime()) / 60_000);
-const ago =
-	minutes < 60
-		? relative.format(-minutes, 'minute')
-		: minutes < 1440
-			? relative.format(-Math.round(minutes / 60), 'hour')
-			: relative.format(-Math.round(minutes / 1440), 'day');
+const DOT: Record<DeployStatus, 'up' | 'down' | 'none'> = { success: 'up', failed: 'down', building: 'none' };
+const known = Boolean(deploy.data);
 ---
 
-<Tile area={area} label={t('tile.deploy')} icon="rocket" dense>
+<Tile
+	area={area}
+	label={t('tile.deploy')}
+	icon="rocket"
+	dense
+	class="deploy-tile"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-success={t('deploy.success')}
+	data-building={t('deploy.building')}
+	data-failed={t('deploy.failed')}
+>
 	<LiveDot slot="meta" state={dotState(deploy.state)} />
 
 	<LiveBody state={deploy.state} errorText={t('deploy.unavailable')}>
-		<div class="deploy">
-			<span class="deploy-status" data-status={d.status}>
-				<LiveDot
-					state={!deploy.data ? 'none' : d.status === 'failed' ? 'down' : d.status === 'success' ? 'up' : 'none'}
-					pulse={d.status === 'building'}
-				/>
-				<span data-skeleton>{t(`deploy.${d.status}`)}</span>
-			</span>
-			<time class="deploy-when" datetime={d.deployedAt.toISOString()} data-skeleton>{ago}</time>
-			<span class="deploy-commit" data-skeleton>
-				<span class="deploy-hash">{d.commit}</span>
-				{d.message}
-			</span>
-		</div>
+		<ol class="deploys">
+			{
+				runs.map((run) => (
+					<li class="deploy" data-status={run.status}>
+						<a class="deploy-link" href={run.url} target="_blank" rel="noopener noreferrer">
+							<span class="deploy-dot">
+								<LiveDot
+									state={known ? DOT[run.status] : 'none'}
+									pulse={known && run.status === 'building'}
+									label={t(`deploy.${run.status}`)}
+								/>
+							</span>
+							<span class="deploy-message" data-skeleton>
+								{run.message}
+							</span>
+							<span class="deploy-hash" data-skeleton>
+								{run.commit}
+							</span>
+							<time class="deploy-when" datetime={run.startedAt.toISOString()} data-skeleton>
+								{known ? ago(run.startedAt, lang) : '—'}
+							</time>
+						</a>
+					</li>
+				))
+			}
+		</ol>
 	</LiveBody>
 
-	<LiveFooter slot="footer" live={deploy} />
+	<LiveFooter slot="footer" live={deploy}>GitHub Actions</LiveFooter>
 </Tile>
 
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import { ago } from '../../lib/relative';
+	import type { Deploy } from '../../lib/mocks/deploy';
+
+	type DeployData = Omit<NonNullable<Deploy['data']>, 'updatedAt'>;
+	const DOT = { success: 'up', failed: 'down', building: 'none' } as const;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.deploy-tile[data-endpoint]')) {
+		const lang = tile.dataset.lang ?? 'pl';
+		watchLive<DeployData>(
+			tile,
+			({ runs }) => {
+				tile.querySelectorAll<HTMLElement>('.deploy').forEach((row, i) => {
+					const run = runs[i];
+					row.hidden = !run;
+					if (!run) return;
+					const startedAt = new Date(run.startedAt);
+					row.dataset.status = run.status;
+					row.querySelector('a')!.href = run.url;
+					const dot = row.querySelector<HTMLElement>('.live-dot')!;
+					dot.dataset.state = DOT[run.status];
+					dot.toggleAttribute('data-pulse', run.status === 'building');
+					dot.setAttribute('aria-label', tile.dataset[run.status] ?? run.status);
+					setText(row.querySelector('.deploy-message'), run.message);
+					setText(row.querySelector('.deploy-hash'), run.commit);
+					const when = row.querySelector('time')!;
+					when.dateTime = startedAt.toISOString();
+					setText(when, ago(startedAt, lang));
+				});
+			},
+			60_000,
+		);
+	}
+</script>
+
 <style>
-	.deploy {
+	.deploys {
+		container-type: inline-size;
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		align-items: flex-start;
+		justify-content: space-evenly;
 		gap: var(--space-2xs);
 		height: 100%;
-		min-width: 0;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
-	.deploy-status {
-		display: inline-flex;
+	.deploy[hidden] {
+		display: none;
+	}
+
+	/* One line per run: dot, message, hash and time; the message gives way. */
+	.deploy-link {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto auto;
 		align-items: center;
-		gap: var(--space-xs);
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
-		letter-spacing: var(--tracking-label);
-		text-transform: uppercase;
-		color: var(--text-muted);
+		gap: var(--space-md);
+		padding: var(--space-3xs) 0;
+		color: inherit;
+		text-decoration: none;
 	}
 
-	.deploy-when {
-		font-size: var(--size-title);
-		font-weight: 500;
+	.deploy-link:hover .deploy-message {
+		color: var(--text);
 	}
 
-	.deploy-commit {
-		max-width: 100%;
+	.deploy-dot {
+		display: inline-flex;
+	}
+
+	.deploy-message {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		font-size: var(--size-label);
 		color: var(--text-muted);
+		transition: color var(--duration-hover) var(--ease-out);
 	}
 
-	.deploy-hash {
-		margin-right: var(--space-xs);
+	/* The newest run reads first. */
+	.deploy:first-child .deploy-message {
+		color: var(--text);
+	}
+
+	.deploy[data-status='failed'] .deploy-message {
+		color: var(--accent);
+	}
+
+	.deploy-hash,
+	.deploy-when {
 		font-family: var(--font-mono);
-		color: var(--text-subtle);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+
+	/* A narrow tile keeps the message and the time, the hash goes first. */
+	@container (max-width: 360px) {
+		.deploy-hash {
+			display: none;
+		}
+
+		.deploy-link {
+			grid-template-columns: auto minmax(0, 1fr) auto;
+		}
 	}
 </style>

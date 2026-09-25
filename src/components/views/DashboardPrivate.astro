@@ -1,34 +1,53 @@
 ---
 import BentoLayout from '../ui/BentoLayout.astro';
 import DashboardSwitch from '../ui/DashboardSwitch.astro';
-import NowTile from '../tiles/NowTile.astro';
-import LaunchersTile from '../tiles/LaunchersTile.astro';
+import ServicesBarTile from '../tiles/ServicesBarTile.astro';
+import ServerTile from '../tiles/ServerTile.astro';
+import BackupTile from '../tiles/BackupTile.astro';
 import DeployTile from '../tiles/DeployTile.astro';
 import SiteStatsTile from '../tiles/SiteStatsTile.astro';
-import { mockDeploy } from '../../lib/mocks/deploy';
-import { mockSite } from '../../lib/mocks/site';
+import LessonsTile from '../tiles/LessonsTile.astro';
+import ExpiringTile from '../tiles/ExpiringTile.astro';
+import GoalEditTile from '../tiles/GoalEditTile.astro';
 
 /*
  * Private dashboard (koncept.md §3.4), behind a password on the server (§14):
- * launchers with real host names, deploys, site analytics and the now page.
- * Homelab stats are public (/dashboard).
+ * a panel to run things from. The services in one line with their status on
+ * top; then the server, the last backup and deploys; site analytics beside
+ * the lessons; what expires beside the goal editor.
+ *
+ * Every tile reads its own /api/private/* endpoint, guarded like this page;
+ * only the machine usage comes from the public /api/homelab/lab.
+ * Rows count in halves, so the services bar is half as tall as the rest.
  */
 const lg = [
-	'deploy  deploy  site    site    now     now',
-	'launch  launch  launch  launch  launch  launch',
+	'svc     svc     svc     svc     svc      svc',
+	'server  server  server  backup  deploy   deploy',
+	'server  server  server  backup  deploy   deploy',
+	'site    site    site    lessons  lessons  lessons',
+	'site    site    site    lessons  lessons  lessons',
+	'expire  expire  expire  goal     goal     goal',
+	'expire  expire  expire  goal     goal     goal',
 ];
 
 const md = [
-	'launch  launch  launch  launch',
-	'deploy  deploy  site    site',
-	'now     now     now     now',
+	'svc     svc     svc     svc',
+	'server  server  server  server',
+	'backup  backup  deploy  deploy',
+	'site    site    site    site',
+	'lessons lessons expire  expire',
+	'goal    goal    goal    goal',
 ];
 
 const base = [
-	'launch  launch',
+	'svc     svc',
+	'server  server',
 	'deploy  deploy',
+	'backup  backup',
 	'site    site',
-	'now     now',
+	'lessons lessons',
+	'expire  expire',
+	'goal    goal',
 ];
 ---
 
@@ -38,12 +57,21 @@ const base = [
 	dense
 	base={{ areas: base, columns: 2 }}
 	md={{ areas: md, columns: 4 }}
-	lg={{ areas: lg, columns: 6, rowSize: 'minmax(var(--dashboard-row-min), 1fr)' }}
+	lg={{ areas: lg, columns: 6, rowSize: 'minmax(0, 1fr)' }}
 >
-	<NowTile area="now" />
-	<LaunchersTile area="launch" />
-	<DeployTile area="deploy" deploy={mockDeploy()} />
-	<SiteStatsTile area="site" site={mockSite()} />
+	<ServicesBarTile area="svc" monitors={{ state: 'loading' }} endpoint="/api/private/homelab/monitors" />
+	<ServerTile
+		area="server"
+		stats={{ state: 'loading' }}
+		containers={{ state: 'loading' }}
+		endpoints={{ lab: '/api/homelab/lab', containers: '/api/private/homelab/containers' }}
+	/>
+	<BackupTile area="backup" backup={{ state: 'loading' }} endpoint="/api/private/homelab/backup" />
+	<DeployTile area="deploy" deploy={{ state: 'loading' }} endpoint="/api/private/deploys" />
+	<SiteStatsTile area="site" site={{ state: 'loading' }} endpoint="/api/private/site" />
+	<LessonsTile area="lessons" lessons={{ state: 'loading' }} endpoint="/api/private/lessons" />
+	<ExpiringTile area="expire" expiring={{ state: 'loading' }} endpoint="/api/private/expiring" />
+	<GoalEditTile area="goal" />
 </BentoLayout>
 
 <DashboardSwitch to="public" />

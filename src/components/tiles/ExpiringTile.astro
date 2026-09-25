@@ -1,0 +1,219 @@
+---
+import Tile from '../ui/Tile.astro';
+import Icon, { type IconName } from '../ui/Icon.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { daysUntil } from '../../lib/relative';
+import { EXPIRING_PLACEHOLDER, EXPIRY_WARN_DAYS, type Expiring, type ExpiryItem } from '../../lib/mocks/expiring';
+
+/**
+ * What expires and when (koncept.md §3.4): the domain, the certificate and
+ * the API tokens, soonest first. Anything due within EXPIRY_WARN_DAYS or
+ * past is red — a real problem coming (§5). Private dashboard only.
+ *
+ * With `endpoint` the tile renders as loading and fills itself in the
+ * browser; without it, it shows `expiring` as given. The rows are built from
+ * a <template>, since the number of items comes with the data.
+ */
+interface Props {
+	expiring: Expiring;
+	endpoint?: string;
+	area?: string;
+}
+
+/* Cached for 6 h on the server, so stale only after twice that. */
+const STALE_AFTER_MIN = 12 * 60;
+const ICONS: Record<ExpiryItem['kind'], IconName> = { domain: 'world', cert: 'lock', token: 'key' };
+
+const { expiring, endpoint, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const items = (expiring.data ?? EXPIRING_PLACEHOLDER).items;
+const date = new Intl.DateTimeFormat(lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+const left = (item: ExpiryItem) => {
+	if (!item.expiresAt) return { text: t('expiring.noData'), soon: false };
+	const days = daysUntil(item.expiresAt);
+	if (days < 0) return { text: t('expiring.expired'), soon: true };
+	const text = t(days === 1 ? 'expiring.day' : 'expiring.days').replace('{n}', String(days));
+	return { text, soon: days <= EXPIRY_WARN_DAYS };
+};
+---
+
+<Tile
+	area={area}
+	label={t('tile.expiring')}
+	icon="hourglass"
+	dense
+	class="expiring-tile"
+	data-endpoint={endpoint}
+	data-stale-after={STALE_AFTER_MIN}
+	data-lang={lang}
+	data-warn-days={EXPIRY_WARN_DAYS}
+	data-kind-domain={t('expiring.domain')}
+	data-kind-cert={t('expiring.cert')}
+	data-kind-token={t('expiring.token')}
+	data-day={t('expiring.day')}
+	data-days={t('expiring.days')}
+	data-expired={t('expiring.expired')}
+	data-no-data={t('expiring.noData')}
+>
+	<LiveDot slot="meta" state={dotState(expiring.state)} />
+
+	<LiveBody state={expiring.state} errorText={t('expiring.unavailable')}>
+		<ul class="expiring" data-expiring-list>
+			{
+				items.map((item) => {
+					const { text, soon } = left(item);
+					return (
+						<li class="expiry" data-soon={soon ? '' : undefined}>
+							<span class="expiry-icon">
+								<Icon name={ICONS[item.kind]} size={14} />
+							</span>
+							<span class="expiry-name" data-skeleton>
+								{item.name}
+								<span class="expiry-kind"> · {t(`expiring.${item.kind}`)}</span>
+							</span>
+							<span class="expiry-date" data-skeleton>
+								{item.expiresAt ? date.format(item.expiresAt) : '—'}
+							</span>
+							<span class="expiry-left" data-skeleton>
+								{text}
+							</span>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</LiveBody>
+
+	<template data-expiry-template>
+		{
+			(['domain', 'cert', 'token'] as const).map((kind) => (
+				<li class="expiry" data-kind={kind}>
+					<span class="expiry-icon">
+						<Icon name={ICONS[kind]} size={14} />
+					</span>
+					<span class="expiry-name">
+						<span class="expiry-label" />
+						<span class="expiry-kind" />
+					</span>
+					<span class="expiry-date" />
+					<span class="expiry-left" />
+				</li>
+			))
+		}
+	</template>
+
+	<LiveFooter slot="footer" live={expiring} />
+</Tile>
+
+<script>
+	import { watchLive } from '../../scripts/live';
+	import { daysUntil } from '../../lib/relative';
+	import type { Expiring } from '../../lib/mocks/expiring';
+
+	type ExpiringData = Omit<NonNullable<Expiring['data']>, 'updatedAt'>;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.expiring-tile[data-endpoint]')) {
+		const list = tile.querySelector<HTMLElement>('[data-expiring-list]')!;
+		const template = tile.querySelector<HTMLTemplateElement>('[data-expiry-template]')!;
+		const d = tile.dataset;
+		const warnDays = Number(d.warnDays) || 30;
+		const date = new Intl.DateTimeFormat(d.lang, { day: '2-digit', month: '2-digit', year: 'numeric' });
+		const kindLabel = { domain: d.kindDomain, cert: d.kindCert, token: d.kindToken };
+
+		watchLive<ExpiringData>(tile, ({ items }) => {
+			list.replaceChildren(
+				...items.map((item) => {
+					const proto = template.content.querySelector<HTMLElement>(`[data-kind="${item.kind}"]`)!;
+					const row = proto.cloneNode(true) as HTMLElement;
+					row.querySelector('.expiry-label')!.textContent = item.name;
+					row.querySelector('.expiry-kind')!.textContent = ` · ${kindLabel[item.kind] ?? item.kind}`;
+
+					const expiresAt = item.expiresAt ? new Date(item.expiresAt) : undefined;
+					row.querySelector('.expiry-date')!.textContent = expiresAt ? date.format(expiresAt) : '—';
+					let text = d.noData ?? '';
+					if (expiresAt) {
+						const days = daysUntil(expiresAt);
+						text = days < 0 ? (d.expired ?? '') : ((days === 1 ? d.day : d.days) ?? '{n}').replace('{n}', String(days));
+						row.toggleAttribute('data-soon', days <= warnDays);
+					}
+					row.querySelector('.expiry-left')!.textContent = text;
+					return row;
+				}),
+			);
+		});
+	}
+</script>
+
+<style>
+	.expiring {
+		container-type: inline-size;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-evenly;
+		gap: var(--space-2xs);
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.expiry {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto auto;
+		align-items: center;
+		gap: var(--space-md);
+	}
+
+	.expiry-icon {
+		display: inline-flex;
+		color: var(--text-muted);
+	}
+
+	.expiry-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.expiry-kind {
+		color: var(--text-muted);
+	}
+
+	.expiry-date,
+	.expiry-left {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+
+	/* Days left right-aligned in one column, so the numbers line up. */
+	.expiry-left {
+		min-width: 7ch;
+		text-align: right;
+		color: var(--text);
+	}
+
+	/* Due soon or past: a real problem coming (koncept.md §5). */
+	.expiry[data-soon] :is(.expiry-icon, .expiry-left) {
+		color: var(--status-down);
+	}
+
+	@container (max-width: 320px) {
+		.expiry-date,
+		.expiry-kind {
+			display: none;
+		}
+
+		.expiry {
+			grid-template-columns: auto minmax(0, 1fr) auto;
+		}
+	}
+</style>

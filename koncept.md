@@ -29,7 +29,7 @@ Wizytówka i korepetycje są spokojniejsze i mniej gęste. Dashboard jest pełn�
 | Wizytówka | `figielak.dev` | rekruterzy, potencjalni współpracownicy | w kilka sekund: kim jestem, co umiem, jak się skontaktować |
 | Projekty | `figielak.dev/projects` | rekruterzy, ciekawscy | lista projektów i opisy (case studies) w MDX |
 | Korepetycje | `figielak.dev/maths` | uczniowie, rodzice | kim jestem, jak wyglądam, gdzie studiuję, szybki kontakt; w przyszłości dostępność i rezerwacja online |
-| Dashboard | `figielak.dev/dashboard` | głównie ja, a także osoby chcące wiedzieć więcej | dane na żywo: pogoda, czas, GitHub, homelab, muzyka; prywatnie launchery usług, deploy i statystyki strony |
+| Dashboard | `figielak.dev/dashboard` | głównie ja, a także osoby chcące wiedzieć więcej | dane na żywo: pogoda, czas, GitHub, homelab, muzyka; prywatnie panel: usługi i serwer, backup, deploye, statystyki strony, korepetycje, wygasające rzeczy i edycja celu |
 
 **Decyzja:** główną strukturą są **ścieżki** (jeden projekt Astro, wspólne komponenty, jedna domena dla SEO).
 Subdomeny `maths.figielak.dev` i `dashboard.figielak.dev` działają jako **przekierowania 301** na ścieżki (reguły przekierowań w Cloudflare), co daje krótkie adresy do wysyłania ludziom.
@@ -210,21 +210,33 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 | `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole. Obok utworu okrągły przycisk ▶/❚❚ puszcza 30-sekundowy podgląd (iTunes Search API, bez klucza — Last.fm nie ma audio); serwer szuka po wykonawcy i tytule i bierze tylko wyraźne dopasowanie, a bez podglądu przycisku nie ma. Dźwięk ładuje się z CDN Apple dopiero po kliknięciu |
 | `books` | życie | aktualnie czytane książki z okładkami, na żywo z Hardcover (`/api/books`, półka „Currently Reading”, 4 stany; tytuł i okładka z wybranego wydania); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast ↗; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
-| `goal` | życie | aktualny cel (`src/lib/goal.ts`, statycznie): nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i następny krok; w niskim kaflu nazwa i pasek dzielą linię, a następny krok znika pierwszy |
+| `goal` | życie | aktualny cel, edytowany w trybie prywatnym i czytany z Firestore (`/api/goal`) bez deployu; przed pierwszym zapisem `src/lib/goal.ts`: nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i następny krok; w niskim kaflu nazwa i pasek dzielą linię, a następny krok znika pierwszy |
 
-**Tryb prywatny** — rzeczy tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne.
+**Tryb prywatny** — panel do zarządzania, tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne, a w prywatnym dochodzą do nich nazwy usług i kontenerów oraz backup. Jeden ekran od 1280×720; rzędy w połówkach, pasek usług ma jedną.
 
 ```
-"deploy  deploy  site    site    now     now"
-"launch  launch  launch  launch  launch  launch"
+≥ 1024px (6 kolumn, 7 półrzędów)
+"svc    svc    svc    svc     svc     svc"          pasek usług, półrząd
+"server server server backup  deploy  deploy"   ×2
+"site   site   site   lessons lessons lessons"  ×2
+"expire expire expire goal    goal    goal"     ×2
+
+640–1023px: svc×4 / server×4 / backup backup deploy deploy / site×4 / lessons lessons expire expire / goal×4
+< 640px:    svc / server / deploy / backup / site / lessons / expire / goal (każdy na cały rząd, 2 kolumny)
 ```
+
+Każdy kafel czyta własny `/api/private/*` za tym samym strażnikiem co strona (§14); tylko zużycie maszyny idzie z publicznego `/api/homelab/lab`.
 
 | Kafel | Zawartość |
 |---|---|
-| `now` | now page: buduję, uczę się, czytam |
-| `launch` | launchery usług homelabu (domena z `HOMELAB_DOMAIN`, lista w `src/lib/services.ts`), działają tylko przez Tailscale |
-| `deploy` | ostatni deploy strony: kiedy, commit, status |
-| `site` | statystyki strony: odwiedziny dziś / 7 dni, online, top strona |
+| `svc` | pasek usług w jednej linii: pigułki-linki z `src/lib/services.ts` (domena z `HOMELAB_DOMAIN`, działają tylko przez Tailscale) z kropką up/down i średnim czasem odpowiedzi z Uptime Kumy, dostępność 30 dni w dymku; łączenie po nazwie monitora. Linki zostają przy błędzie danych (szare kropki) |
+| `server` | zużycie maszyny (jak publiczne) i kontenery po nazwie: kropka stanu (działa i zdrowy / restart, niezdrowy, zatrzymany / pauza), strzałka przy nowszym obrazie (Diun) |
+| `backup` | ostatni backup: kiedy, udany czy nie, rozmiar, snapshoty, narzędzie; nieudany, starszy niż 26 h albo brak kopii — na czerwono |
+| `deploy` | 3 ostatnie przebiegi workflow deployu z GitHub Actions: kropka statusu (trwający pulsuje, nieudany czerwony), commit, kiedy; wiersz prowadzi do runu |
+| `site` | Cloudflare Web Analytics: wizyty z 7 dni jako liczba i słupki (dziś w `--text`), odsłony, top 3 strony i top 3 źródła („bezpośrednio” dla wejść bez referera, własna domena pominięta) |
+| `lessons` | korepetycje z Google Calendar (prywatny iCal, lekcje cykliczne rozwijane z `RRULE`): 3 najbliższe lekcje i minione niezapłacone na czerwono z przyciskiem ✓ (znacznik w Firestore, klucz po planowanym terminie, więc przeniesienie go nie gubi) |
+| `expire` | co i kiedy wygasa, od najbliższego: domena (RDAP), certyfikat (TLS), tokeny GitHuba (nagłówek API) i Cloudflare (verify), ręczne daty (np. Hardcover) w `src/lib/server/expiring.ts`; ≤ 30 dni lub po terminie na czerwono |
+| `goal` | edycja celu: nazwa i termin po lewej, kroki po prawej (odhaczanie, dodawanie, usuwanie, do 8, przewijane w kaflu); przełącznik PL/EN i mały „Zapisz” w nagłówku, potwierdzenie „Zapisano ✓”; EN wraca do PL |
 
 Na później: `sched` (rozkład zajęć, patrz §14), `visits` i inne z sekcji 13.
 
@@ -409,12 +421,15 @@ Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło prz
 | Pogoda | Open-Meteo (bez klucza), centrum Rzeszowa; nieaktualne po 45 min | cache 15 min |
 | GitHub | GitHub GraphQL API (token po stronie serwera) | cache 1h |
 | Czas | lokalnie w przeglądarce | co sekundę |
-| Wizyty i statystyki strony (prywatne) | API Umami lub Plausible | cache 1–5 min |
+| Wizyty i statystyki strony (prywatne) | Cloudflare Web Analytics (beacon wstrzykiwany przez proxy, bez ciasteczek) przez GraphQL API, token Account Analytics: Read | cache 5 min |
 | Jakość powietrza | GIOŚ API v1 (bez klucza; stare `/pjp-api/rest` zwraca 410), stacja Rzeszów, Al. Piłsudskiego; `updatedAt` to czas pomiaru, nieaktualne po 3 h | cache 30 min |
 | Wschód i zachód słońca, % dnia/miesiąca/roku | liczone lokalnie (build + przeglądarka) | — |
 | Blokada reklam (DNS) | AdGuard Home (`/control/stats`, retencja 7 dni) przez push-agenta | przez push |
 | Transfer sieciowy | `/proc/net/dev` na Pi przez push-agenta (ruch homelaba, nie domu) | przez push |
-| Ostatni deploy (prywatne) | Cloud Run Admin API (rewizje usługi) lub GitHub Actions API | cache 1–5 min |
+| Ostatnie deploye (prywatne) | GitHub Actions API (przebiegi `deploy.yml`, `GITHUB_TOKEN`) | cache 60 s |
+| Korepetycje (prywatne) | prywatny adres iCal kalendarza Google (`TUTORING_ICAL_URL`), rozwijany przez `ical.js`; płatności w Firestore | cache 10 min |
+| Wygasa (prywatne) | RDAP domeny, certyfikat z TLS, nagłówek tokenu GitHuba, verify tokenu Cloudflare, ręczne daty | cache 6 h |
+| Cel | Firestore (`site/goal`), zapis z trybu prywatnego | cache 60 s |
 | Homelab | model **push**, opisany niżej | co 1–5 min |
 | Uptime usług | Uptime Kuma (`/metrics`: status, dostępność i czas odpowiedzi z 30 dni) przez push-agenta | przez push |
 | Rozkład zajęć | plik iCal (np. eksport z USOS, jeśli uczelnia go udostępnia) | cache 1h |
@@ -428,7 +443,8 @@ Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło prz
 - Homelab jest dostępny **tylko przez Tailscale**. Nie wystawiam go publicznie i nie wystawiam endpointów Homepage/Homarr.
 - Agent na homelabie (kontener Dockera w osobnym repo homelaba, `network_mode: host`) co 60 s zbiera dane z `/proc`, AdGuarda i Uptime Kumy i wysyła zanonimizowany JSON:
   - metodą POST na `/api/stats`, z tokenem `Authorization: Bearer` (`STATS_PUSH_TOKEN`);
-  - tylko liczby i ogólne rodzaje (`dns`, `media`…) — nazwy hostów, domeny, IP i nazwy monitorów zostają na Pi;
+  - w sekcjach publicznych tylko liczby i ogólne rodzaje (`dns`, `media`…) — nazwy hostów, domeny, IP i nazwy monitorów zostają na Pi;
+  - sekcje prywatne (`monitors`, `containers`, `backup`) niosą nazwy monitorów i kontenerów — same słowa, bez kropek, dwukropków i ukośników, więc nie przejdzie przez nie host, domena, URL ani IP; trafiają do osobnego dokumentu `homelab/private`, czytanego tylko przez `/api/private/homelab/*`;
   - kontrakt (v1) opisuje `src/lib/server/homelab.ts`.
 - Sekcje (`lab`, `dns`, `traffic`, `services`) są niezależne: agent pomija tę, której źródło nie odpowiedziało, a endpoint odrzuca tylko błędną sekcję. Każda ma własny czas, więc przy awarii jednego źródła szarzeje tylko jego kafel.
 - Endpoint zapisuje ostatni odczyt w **Firestore** (jeden dokument, REST bez biblioteki klienta). Kafle czytają go przez `/api/homelab/{lab,dns,net,uptime}` (cache 30 s) i odświeżają się co około minutę.
@@ -462,7 +478,7 @@ Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na 
   - Cloudflare zostaje z przodu jako DNS z proxy: SSL Full (strict), przekierowania 301 subdomen, cache `/_astro/*`, limit żądań do trybu prywatnego.
   - Region `europe-west1`, bo Cloud Run mapuje własne domeny tylko w części regionów (Warszawy wśród nich nie ma).
   - Deploy: GitHub Actions przy pushu na `master` (`.github/workflows/deploy.yml`, Workload Identity Federation, bez kluczy JSON). Jednorazowa konfiguracja: `docs/deploy.md`.
-- **Analityka:** Umami lub Plausible. Wybór zależy od tego, które API wygodniej zasila licznik wizyt.
+- **Analityka:** Cloudflare Web Analytics — strona i tak stoi za proxy Cloudflare, beacon nie używa ciasteczek, a dane czyta GraphQL API.
 - **Homelab:** Homepage lub Homarr, dostępne tylko przez Tailscale.
 
 Struktura (✱ — jeszcze nie istnieje):
@@ -528,7 +544,9 @@ Dockerfile       # obraz dla Cloud Run
 
 ## 13. Kafle fun-to-have (po must-have)
 
-Zrobione: top artyści, teraz słucham (Last.fm), WakaTime, now page, książki, aktualny cel (`goal`), terminal na całej stronie (§8) i podgląd utworu w kaflu Muzyki (zamiast osobnego odtwarzacza, §3.4).
+Usunięte: now page „Teraz” (zastąpiona edycją celu).
+
+Zrobione: top artyści, teraz słucham (Last.fm), WakaTime, książki, aktualny cel (`goal`, edytowany w trybie prywatnym), terminal na całej stronie (§8) i podgląd utworu w kaflu Muzyki (zamiast osobnego odtwarzacza, §3.4).
 
 Na później:
 - Zdjęcia (fotografia)
@@ -553,7 +571,8 @@ Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
   - Hasło (`DASHBOARD_PASSWORD`) jest w Secret Manager i trafia do Cloud Run jako zmienna środowiskowa przy starcie, nie przy buildzie. Bez hasła serwer odmawia wszystkim (poza `astro dev`).
   - Hasło jest długie i losowe. Reguła rate limiting w Cloudflare ogranicza próby zgadywania.
   - Odpowiedzi mają `Cache-Control: private, no-store`. Strony mają `noindex` i nie trafiają do sitemapy.
-  - Ten sam strażnik chroni przyszłe prywatne endpointy (`/api/private/*`).
+  - Ten sam strażnik chroni prywatne endpointy (`/api/private/*`), a ich odpowiedzi też mają `private, no-store`. Zapisy (`POST`) przyjmują tylko `application/json`, więc obca strona nie wyśle ich ani formularzem, ani `fetch` bez preflightu CORS.
+  - Imiona uczniów z kalendarza pojawiają się tylko w tych odpowiedziach.
 - **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym pokazuję ogólne etykiety.
 - **Tokeny i klucze** trzymam wyłącznie w zmiennych środowiskowych po stronie serwera. Endpoint `/api/stats`:
   - wymaga tokenu (`STATS_PUSH_TOKEN`, porównanie w stałym czasie);
@@ -582,18 +601,16 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX (plugin gotowy, CSS jeszcze nigdzie nieładowany), Mermaid, karuzela featured z kolekcji. Jest tylko szkielet `/projects` z pustymi kartami.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music` i książki z Hardcover (`/api/books`). Zostały w trybie prywatnym ostatni deploy i statystyki strony (analityka) — oba na danych testowych.
-7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, now page w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music` i książki z Hardcover (`/api/books`). Tryb prywatny przebudowany na panel (§3.4): usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu — w kodzie; na żywo po deployu i dodaniu kluczy: deploye (GitHub), wygasa (RDAP, TLS); czekają na konfigurację: Cloudflare Web Analytics, iCal korepetycji, a po stronie agenta sekcje `monitors`, `containers` i `backup` (restic jeszcze nie działa).
+7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, cel z edycją w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---
 
 ## 17. Otwarte decyzje
 
-- [ ] Umami czy Plausible
 - [ ] Źródło rozkładu zajęć i poziom szczegółowości publicznie
 - [ ] Narzędzie do rezerwacji korepetycji (Cal.com / własne)
-- [ ] Lista usług w launcherze (poza Mealie), wydarzeń w odliczaniu, książek w „Czytam” i kroków celu (na razie wypełniacze)
-- [ ] Źródło kafla ostatniego deployu: Cloud Run Admin API czy GitHub Actions API
+- [ ] Lista wydarzeń w odliczaniu, książek w „Czytam” i kroków celu (na razie wypełniacze)
 - [ ] Framework wysp: na razie czysty TS w `<script>` wystarcza; Preact dopiero, gdy potrzebny stan
 
 Podjęte (2026-09-25):
@@ -601,3 +618,7 @@ Podjęte (2026-09-25):
 - [x] Akcent zostaje `#E5484D`
 - [x] Mono: Geist Mono
 - [x] Miasto w kaflu pogody: Rzeszów
+- [x] Analityka: Cloudflare Web Analytics (nie Umami ani Plausible)
+- [x] Źródło deployów: GitHub Actions API
+- [x] Korepetycje: Google Calendar (iCal) + znacznik płatności w kaflu
+- [x] Cel edytowany w trybie prywatnym (zamiast kafla „Teraz”, który usunięto)

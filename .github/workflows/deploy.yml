@@ -52,6 +52,8 @@ jobs:
         id: deploy
         env:
           LASTFM_USER: ${{ vars.LASTFM_USER }}
+          CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
+          CF_WEB_ANALYTICS_SITE_TAG: ${{ vars.CF_WEB_ANALYTICS_SITE_TAG }}
         run: |
           gcloud run deploy "$SERVICE" \
             --source . \
@@ -60,8 +62,8 @@ jobs:
             --min-instances 0 \
             --max-instances 3 \
             --memory 512Mi \
-            --set-secrets DASHBOARD_PASSWORD=dashboard-password:latest,GITHUB_TOKEN=github-token:latest,LASTFM_API_KEY=lastfm-api-key:latest,WAKATIME_API_KEY=wakatime-api-key:latest,HARDCOVER_TOKEN=hardcover-token:latest,STATS_PUSH_TOKEN=stats-push-token:latest \
-            --set-env-vars "LASTFM_USER=$LASTFM_USER" \
+            --set-secrets DASHBOARD_PASSWORD=dashboard-password:latest,GITHUB_TOKEN=github-token:latest,LASTFM_API_KEY=lastfm-api-key:latest,WAKATIME_API_KEY=wakatime-api-key:latest,HARDCOVER_TOKEN=hardcover-token:latest,CF_ANALYTICS_TOKEN=cf-analytics-token:latest,TUTORING_ICAL_URL=tutoring-ical-url:latest,STATS_PUSH_TOKEN=stats-push-token:latest \
+            --set-env-vars "LASTFM_USER=$LASTFM_USER,CF_ACCOUNT_ID=$CF_ACCOUNT_ID,CF_WEB_ANALYTICS_SITE_TAG=$CF_WEB_ANALYTICS_SITE_TAG" \
             --quiet
           echo "url=$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')" >> "$GITHUB_OUTPUT"
 

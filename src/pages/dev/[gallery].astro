@@ -14,6 +14,12 @@ import MusicTile from '../../components/tiles/MusicTile.astro';
 import BooksTile from '../../components/tiles/BooksTile.astro';
 import DeployTile from '../../components/tiles/DeployTile.astro';
 import SiteStatsTile from '../../components/tiles/SiteStatsTile.astro';
+import ServicesBarTile from '../../components/tiles/ServicesBarTile.astro';
+import ServerTile from '../../components/tiles/ServerTile.astro';
+import BackupTile from '../../components/tiles/BackupTile.astro';
+import ExpiringTile from '../../components/tiles/ExpiringTile.astro';
+import LessonsTile from '../../components/tiles/LessonsTile.astro';
+import GoalEditTile from '../../components/tiles/GoalEditTile.astro';
 import { LIVE_STATES } from '../../lib/live';
 import { mockWeather } from '../../lib/mocks/weather';
 import { mockGithub } from '../../lib/mocks/github';
@@ -26,6 +32,9 @@ import { mockMusic } from '../../lib/mocks/music';
 import { mockBooks } from '../../lib/mocks/books';
 import { mockDeploy } from '../../lib/mocks/deploy';
 import { mockSite } from '../../lib/mocks/site';
+import { mockBackup, mockContainers, mockMonitors } from '../../lib/mocks/homelab-private';
+import { mockExpiring } from '../../lib/mocks/expiring';
+import { mockLessons } from '../../lib/mocks/lessons';
 
 /**
  * Dev-only gallery: every live tile in all four states side by side
@@ -67,12 +76,27 @@ export function getStaticPaths() {
 						<MusicTile music={mockMusic(state)} />
 						<BooksTile books={mockBooks(state)} />
 					</div>
+					<div class="bar">
+						<ServicesBarTile monitors={mockMonitors(state)} />
+					</div>
+					<div class="wide">
+						<ServerTile stats={mockLab(state)} containers={mockContainers(state)} />
+					</div>
 					<div class="pair">
+						<BackupTile backup={mockBackup(state)} />
 						<DeployTile deploy={mockDeploy(state)} />
 					</div>
 					<div class="wide">
 						<SiteStatsTile site={mockSite(state)} />
 					</div>
+					<div class="pair">
+						<GoalTile goal={{ state }} />
+					</div>
+					<div class="pair">
+						<LessonsTile lessons={mockLessons(state)} />
+						<ExpiringTile expiring={mockExpiring(state)} />
+					</div>
+
 				</section>
 			))
 		}
@@ -90,7 +114,15 @@ export function getStaticPaths() {
 					dns={mockDns('ok')}
 				/>
 			</div>
+			<div class="pair">
+				<BackupTile backup={mockBackup('ok', true)} />
+				<ServerTile stats={mockLab('ok')} containers={mockContainers('error')} />
+			</div>
 			<TileLabel>static</TileLabel>
+			<div class="wide">
+				<GoalEditTile />
+			</div>
+
 			<div class="big">
 				<FeaturedTile />
 			</div>
@@ -141,6 +173,12 @@ export function getStaticPaths() {
 
 	.low {
 		aspect-ratio: 2.4;
+	}
+
+	/* The private services bar: one line across. */
+	.bar {
+		display: grid;
+		aspect-ratio: 8;
 	}
 
 	.wide {

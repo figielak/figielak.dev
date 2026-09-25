@@ -105,7 +105,7 @@ const base = [
 	<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
 	<BooksTile area="books" books={{ state: 'loading' }} endpoint="/api/books" />
 	<EventTile area="event" />
-	<GoalTile area="goal" />
+	<GoalTile area="goal" goal={{ state: 'loading' }} endpoint="/api/goal" />
 </BentoLayout>
 
 <DashboardSwitch to="private" />

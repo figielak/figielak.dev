@@ -1,0 +1,386 @@
+---
+import Tile from '../ui/Tile.astro';
+import Icon from '../ui/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { goal, GOAL_MAX_STEPS, GOAL_MAX_TITLE } from '../../lib/goal';
+
+/**
+ * Edits the goal (koncept.md §3.4) from the private dashboard: the public
+ * goal tile reads what is saved here, so a change needs no deploy. The name
+ * and a due date on the left, the steps on the right — tick one off, add or
+ * remove it. Polish is required, English optional (falls back to Polish).
+ *
+ * The form loads the saved goal from /api/goal (before the first save, the
+ * one from src/lib/goal.ts) and posts JSON to /api/private/goal; the browser
+ * sends the dashboard password with it.
+ */
+interface Props {
+	area?: string;
+}
+
+const { area } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+const fallback = JSON.stringify(goal);
+---
+
+<Tile
+	area={area}
+	label={t('tile.goalEdit')}
+	icon="pencil"
+	dense
+	class="goal-edit-tile"
+	data-default={fallback}
+	data-max-steps={GOAL_MAX_STEPS}
+	data-saved={t('goalEdit.saved')}
+	data-failed={t('goalEdit.failed')}
+>
+	<div class="goal-box">
+		<form class="goal-form" id="goal-form" data-goal-form>
+			<div class="goal-form-main">
+				<label class="goal-field">
+					<span class="goal-label">{t('goalEdit.title')}</span>
+					<input class="goal-input" name="title" required maxlength={GOAL_MAX_TITLE} autocomplete="off" />
+				</label>
+				<label class="goal-field">
+					<span class="goal-label">{t('goalEdit.by')}</span>
+					<input class="goal-input" name="by" type="date" />
+				</label>
+			</div>
+
+			<fieldset class="goal-steps">
+				<legend class="goal-label">{t('goalEdit.steps')}</legend>
+				<ol class="goal-step-list" data-steps></ol>
+				<button type="button" class="goal-add" data-add-step>
+					<Icon name="plus" size={12} />
+					{t('goalEdit.addStep')}
+				</button>
+			</fieldset>
+		</form>
+	</div>
+
+	<template data-step-template>
+		<li class="goal-step">
+			<input class="goal-check" type="checkbox" aria-label={t('goalEdit.stepDone')} />
+			<input class="goal-input goal-step-title" maxlength={GOAL_MAX_TITLE} placeholder={t('goalEdit.stepPlaceholder')} autocomplete="off" />
+			<button type="button" class="goal-remove" aria-label={t('goalEdit.removeStep')} title={t('goalEdit.removeStep')}>
+				<Icon name="x" size={12} />
+			</button>
+		</li>
+	</template>
+
+	<div slot="meta" class="goal-actions">
+		<span class="goal-status" role="status" aria-live="polite"></span>
+		<span class="goal-langs" role="group" aria-label={t('goalEdit.language')}>
+			<button type="button" class="goal-lang" data-lang="pl" aria-pressed="true">PL</button>
+			<button type="button" class="goal-lang" data-lang="en" aria-pressed="false">EN</button>
+		</span>
+		<button type="submit" form="goal-form" class="button button-primary goal-save" title={t('goalEdit.hint')}>
+			{t('goalEdit.save')}
+		</button>
+	</div>
+</Tile>
+
+<script>
+	import type { Goal } from '../../lib/goal';
+
+	type Lang = 'pl' | 'en';
+	/* The form's own copy: both languages, English empty when it follows Polish. */
+	interface Draft {
+		title: Record<Lang, string>;
+		by: string;
+		steps: { title: Record<Lang, string>; done: boolean }[];
+	}
+
+	const toDraft = (g: Goal): Draft => ({
+		title: { pl: g.title.pl, en: g.title.en === g.title.pl ? '' : g.title.en },
+		by: g.by ?? '',
+		steps: g.steps.map((s) => ({ title: { pl: s.title.pl, en: s.title.en === s.title.pl ? '' : s.title.en }, done: s.done })),
+	});
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.goal-edit-tile')) {
+		const form = tile.querySelector<HTMLFormElement>('[data-goal-form]')!;
+		const list = tile.querySelector<HTMLElement>('[data-steps]')!;
+		const template = tile.querySelector<HTMLTemplateElement>('[data-step-template]')!;
+		const add = tile.querySelector<HTMLButtonElement>('[data-add-step]')!;
+		const status = tile.querySelector<HTMLElement>('.goal-status')!;
+		const save = tile.querySelector<HTMLButtonElement>('.goal-save')!;
+		const langs = [...tile.querySelectorAll<HTMLButtonElement>('.goal-lang')];
+		const titleInput = form.elements.namedItem('title') as HTMLInputElement;
+		const byInput = form.elements.namedItem('by') as HTMLInputElement;
+		const maxSteps = Number(tile.dataset.maxSteps) || 8;
+
+		let draft = toDraft(JSON.parse(tile.dataset.default ?? '{}') as Goal);
+		let lang: Lang = 'pl';
+
+		/* Polish is required; English shows Polish as its placeholder. */
+		const render = () => {
+			titleInput.value = draft.title[lang];
+			titleInput.required = lang === 'pl';
+			titleInput.placeholder = lang === 'en' ? draft.title.pl : '';
+			byInput.value = draft.by;
+			list.replaceChildren(
+				...draft.steps.map((step, i) => {
+					const row = template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+					const check = row.querySelector<HTMLInputElement>('.goal-check')!;
+					const input = row.querySelector<HTMLInputElement>('.goal-step-title')!;
+					check.checked = step.done;
+					check.addEventListener('change', () => (draft.steps[i].done = check.checked));
+					input.value = step.title[lang];
+					if (lang === 'en') input.placeholder = step.title.pl;
+					input.addEventListener('input', () => (draft.steps[i].title[lang] = input.value));
+					row.querySelector('.goal-remove')!.addEventListener('click', () => {
+						draft.steps.splice(i, 1);
+						render();
+					});
+					return row;
+				}),
+			);
+			add.hidden = draft.steps.length >= maxSteps;
+		};
+
+		titleInput.addEventListener('input', () => (draft.title[lang] = titleInput.value));
+		byInput.addEventListener('input', () => (draft.by = byInput.value));
+
+		const setLang = (next: Lang) => {
+			lang = next;
+			for (const button of langs) button.setAttribute('aria-pressed', String(button.dataset.lang === lang));
+			render();
+		};
+		for (const button of langs) button.addEventListener('click', () => setLang(button.dataset.lang as Lang));
+		/* A required Polish field left empty brings Polish back to show it. */
+		form.addEventListener('invalid', () => lang !== 'pl' && setLang('pl'), true);
+
+		add.addEventListener('click', () => {
+			draft.steps.push({ title: { pl: '', en: '' }, done: false });
+			render();
+			list.querySelector<HTMLInputElement>('.goal-step:last-child .goal-step-title')?.focus();
+		});
+
+		render();
+		fetch('/api/goal')
+			.then((response) => (response.ok ? (response.json() as Promise<{ goal: Goal | null }>) : null))
+			.then((data) => {
+				if (!data?.goal) return;
+				draft = toDraft(data.goal);
+				render();
+			})
+			.catch(() => {});
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			save.disabled = true;
+			try {
+				const response = await fetch('/api/private/goal', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(draft),
+				});
+				if (!response.ok) throw new Error(String(response.status));
+				draft = toDraft(((await response.json()) as { goal: Goal }).goal);
+				render();
+				status.textContent = tile.dataset.saved ?? '';
+				status.dataset.state = 'saved';
+			} catch {
+				status.textContent = tile.dataset.failed ?? '';
+				status.dataset.state = 'failed';
+			} finally {
+				save.disabled = false;
+			}
+		});
+	}
+</script>
+
+<style>
+	.goal-box {
+		container-type: inline-size;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.goal-form {
+		overflow: hidden;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+		gap: var(--space-xl);
+		height: 100%;
+		min-height: 0;
+	}
+
+	.goal-form-main {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+	}
+
+	/* Label beside its field, so the name and the date take two short rows. */
+	.goal-field {
+		display: grid;
+		grid-template-columns: 7ch minmax(0, 1fr);
+		align-items: center;
+		gap: var(--space-md);
+		min-width: 0;
+	}
+
+	.goal-label {
+		padding: 0;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.goal-input {
+		width: 100%;
+		min-width: 0;
+		padding: var(--space-2xs) var(--space-md);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		color: var(--text);
+		font: inherit;
+		color-scheme: dark;
+		transition: border-color var(--duration-hover) var(--ease-out);
+	}
+
+	.goal-input:hover,
+	.goal-input:focus {
+		border-color: var(--border-hover);
+	}
+
+	.goal-input::placeholder {
+		color: var(--text-subtle);
+	}
+
+	/* The steps scroll inside the tile when there are more than fit. */
+	.goal-steps {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--border-hover) transparent;
+	}
+
+	.goal-step-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.goal-step {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.goal-check {
+		width: var(--space-lg);
+		height: var(--space-lg);
+		margin: 0;
+		accent-color: var(--text-muted);
+	}
+
+	.goal-remove,
+	.goal-add {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		padding: var(--space-3xs);
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: none;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		cursor: pointer;
+	}
+
+	.goal-remove:hover,
+	.goal-add:hover {
+		color: var(--text);
+	}
+
+	.goal-add {
+		align-self: flex-start;
+	}
+
+	.goal-add[hidden] {
+		display: none;
+	}
+
+	/* A narrow tile (phone): the name and date above the steps. */
+	@container (max-width: 480px) {
+		.goal-form {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	/* In the tile's header, so the form keeps the whole body. */
+	.goal-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+		min-width: 0;
+		text-transform: none;
+		letter-spacing: normal;
+	}
+
+	.goal-langs {
+		display: inline-flex;
+		padding: var(--space-3xs);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+	}
+
+	.goal-lang {
+		padding: var(--space-3xs) var(--space-md);
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: none;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		cursor: pointer;
+	}
+
+	.goal-lang[aria-pressed='true'] {
+		background: var(--surface-hover);
+		color: var(--text);
+	}
+
+	.goal-status {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+
+	.goal-status:empty {
+		display: none;
+	}
+
+	/* A confirmation takes the accent (koncept.md §4); a failure is a problem. */
+	.goal-status[data-state='saved'],
+	.goal-status[data-state='failed'] {
+		color: var(--accent);
+	}
+
+	/* A small primary button: it sits on the label's line. */
+	.goal-save {
+		flex: none;
+		padding: var(--space-3xs) var(--space-lg);
+		font-size: var(--size-label);
+	}
+</style>

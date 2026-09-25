@@ -1,0 +1,175 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { ago } from '../../lib/relative';
+import { BACKUP_MAX_AGE_H, BACKUP_PLACEHOLDER, type Backup, type BackupRun } from '../../lib/mocks/homelab-private';
+
+/**
+ * The last homelab backup (koncept.md §3.4): when, whether it worked, how
+ * big. A failed backup, one older than BACKUP_MAX_AGE_H, or none at all is a
+ * real problem, so it is red (§5) — a missed backup is usually found out too
+ * late. Private dashboard only.
+ */
+interface Props {
+	backup: Backup;
+	endpoint?: string;
+	area?: string;
+}
+
+const { backup, endpoint, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const run = backup.data ? backup.data.backup : BACKUP_PLACEHOLDER.backup;
+const known = Boolean(backup.data);
+const size = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
+
+type Verdict = 'ok' | 'failed' | 'old' | 'none';
+const verdict = (r: BackupRun | null): Verdict => {
+	if (!r) return 'none';
+	if (!r.ok) return 'failed';
+	return Date.now() - new Date(r.lastRunAt).getTime() > BACKUP_MAX_AGE_H * 3_600_000 ? 'old' : 'ok';
+};
+const v = known ? verdict(run) : 'ok';
+const details = (r: BackupRun | null) =>
+	r
+		? [
+				r.sizeGb === undefined ? '' : `${size.format(r.sizeGb)} GB`,
+				r.snapshots === undefined ? '' : t('backup.snapshots').replace('{n}', String(r.snapshots)),
+				r.tool,
+			]
+				.filter(Boolean)
+				.join(' · ')
+		: t('backup.noneDetail');
+---
+
+<Tile
+	area={area}
+	label={t('tile.backup')}
+	icon="database"
+	dense
+	class="backup-tile"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-max-age-h={BACKUP_MAX_AGE_H}
+	data-snapshots={t('backup.snapshots')}
+	data-none-detail={t('backup.noneDetail')}
+	data-never={t('backup.never')}
+	data-verdict-ok={t('backup.ok')}
+	data-verdict-failed={t('backup.failed')}
+	data-verdict-old={t('backup.old')}
+	data-verdict-none={t('backup.none')}
+>
+	<LiveDot slot="meta" state={dotState(backup.state)} />
+
+	<LiveBody state={backup.state} errorText={t('backup.unavailable')}>
+		<div class="backup" data-verdict={v}>
+			<span class="backup-status">
+				<LiveDot state={!known ? 'none' : v === 'ok' ? 'up' : 'down'} />
+				<span class="backup-verdict" data-skeleton>{t(`backup.${v}`)}</span>
+			</span>
+			<span class="backup-when" data-skeleton>
+				{run ? ago(new Date(run.lastRunAt), lang) : t('backup.never')}
+			</span>
+			<span class="backup-details" data-skeleton>{details(run)}</span>
+		</div>
+	</LiveBody>
+
+	<LiveFooter slot="footer" live={backup} />
+</Tile>
+
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import { ago } from '../../lib/relative';
+	import type { Backup } from '../../lib/mocks/homelab-private';
+
+	type BackupData = Omit<NonNullable<Backup['data']>, 'updatedAt'>;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.backup-tile[data-endpoint]')) {
+		const d = tile.dataset;
+		const lang = d.lang ?? 'pl';
+		const maxAgeMs = (Number(d.maxAgeH) || 26) * 3_600_000;
+		const size = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
+		const box = tile.querySelector<HTMLElement>('.backup')!;
+
+		watchLive<BackupData>(
+			tile,
+			({ backup }) => {
+				const lastRunAt = backup ? new Date(backup.lastRunAt) : undefined;
+				const verdict = !backup
+					? 'none'
+					: !backup.ok
+						? 'failed'
+						: Date.now() - lastRunAt!.getTime() > maxAgeMs
+							? 'old'
+							: 'ok';
+				box.dataset.verdict = verdict;
+				box.querySelector<HTMLElement>('.backup-status .live-dot')!.dataset.state = verdict === 'ok' ? 'up' : 'down';
+				const key = `verdict${verdict[0].toUpperCase()}${verdict.slice(1)}` as const;
+				setText(box.querySelector('.backup-verdict'), d[key] ?? verdict);
+				setText(box.querySelector('.backup-when'), lastRunAt ? ago(lastRunAt, lang) : (d.never ?? ''));
+				setText(
+					box.querySelector('.backup-details'),
+					backup
+						? [
+								backup.sizeGb === undefined ? '' : `${size.format(backup.sizeGb)} GB`,
+								backup.snapshots === undefined ? '' : (d.snapshots ?? '{n}').replace('{n}', String(backup.snapshots)),
+								backup.tool,
+							]
+								.filter(Boolean)
+								.join(' · ')
+						: (d.noneDetail ?? ''),
+				);
+			},
+			5 * 60_000,
+		);
+	}
+</script>
+
+<style>
+	.backup {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: var(--space-2xs);
+		height: 100%;
+		min-width: 0;
+	}
+
+	.backup-status {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.backup-when {
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.backup-when:empty {
+		display: none;
+	}
+
+	.backup-details {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+
+	/* No backup, a failed or a missed one: the one thing on this tile that
+	   must not be overlooked (koncept.md §5). */
+	.backup:not([data-verdict='ok']) :is(.backup-verdict, .backup-when) {
+		color: var(--status-down);
+	}
+</style>

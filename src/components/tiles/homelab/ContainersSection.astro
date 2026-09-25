@@ -1,0 +1,151 @@
+---
+import Section from './Section.astro';
+import LiveDot from '../../ui/LiveDot.astro';
+import Icon from '../../ui/Icon.astro';
+import { getLangFromUrl, useTranslations } from '../../../i18n';
+import { CONTAINERS_PLACEHOLDER, type Container, type Containers } from '../../../lib/mocks/homelab-private';
+
+/**
+ * The homelab's containers by name (koncept.md §3.4), for the owner only:
+ * a green dot when running (and healthy), red when restarting, unhealthy or
+ * stopped, grey when paused or not started. An arrow marks a newer image.
+ * The chips are built from a <template>, since the list comes with the data.
+ */
+interface Props {
+	containers: Containers;
+	endpoint?: string;
+}
+
+const { containers, endpoint } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+const list = (containers.data ?? CONTAINERS_PLACEHOLDER).containers;
+const known = Boolean(containers.data);
+
+const dot = (c: Container): 'up' | 'down' | 'none' => {
+	if (c.state === 'running') return c.health === 'unhealthy' ? 'down' : 'up';
+	if (c.state === 'paused' || c.state === 'created') return 'none';
+	return 'down';
+};
+const updates = list.filter((c) => c.updateAvailable).length;
+const summary = (count: number, withUpdates: number) =>
+	[
+		t('containers.count').replace('{n}', String(count)),
+		withUpdates ? t('containers.updates').replace('{n}', String(withUpdates)) : '',
+	]
+		.filter(Boolean)
+		.join(' · ');
+---
+
+<Section
+	title={t('homelab.containers')}
+	live={containers}
+	class="containers-section"
+	data-endpoint={endpoint}
+	data-count={t('containers.count')}
+	data-updates={t('containers.updates')}
+	data-update={t('containers.update')}
+>
+	<span slot="meta" class="containers-summary">{known ? summary(list.length, updates) : ''}</span>
+	<ul class="containers" data-containers>
+		{
+			list.map((c) => (
+				<li class="chip" data-state={c.state}>
+					<LiveDot state={known ? dot(c) : 'none'} />
+					<span class="container-name" data-skeleton>
+						{c.name}
+					</span>
+					{c.updateAvailable && (
+						<span class="container-update" title={t('containers.update')}>
+							<Icon name="arrow-up" size={12} />
+						</span>
+					)}
+				</li>
+			))
+		}
+	</ul>
+	<template data-container-template>
+		<li class="chip">
+			<LiveDot state="none" />
+			<span class="container-name"></span>
+			<span class="container-update" title={t('containers.update')}>
+				<Icon name="arrow-up" size={12} />
+			</span>
+		</li>
+	</template>
+</Section>
+
+<script>
+	import { watchLive } from '../../../scripts/live';
+	import type { Container, Containers } from '../../../lib/mocks/homelab-private';
+
+	type ContainersData = Omit<NonNullable<Containers['data']>, 'updatedAt'>;
+
+	const dot = (c: Container) => {
+		if (c.state === 'running') return c.health === 'unhealthy' ? 'down' : 'up';
+		if (c.state === 'paused' || c.state === 'created') return 'none';
+		return 'down';
+	};
+
+	for (const section of document.querySelectorAll<HTMLElement>('.containers-section[data-endpoint]')) {
+		const list = section.querySelector<HTMLElement>('[data-containers]')!;
+		const template = section.querySelector<HTMLTemplateElement>('[data-container-template]')!;
+		const summary = section.querySelector<HTMLElement>('.containers-summary')!;
+		const { count = '{n}', updates = '{n}' } = section.dataset;
+
+		watchLive<ContainersData>(section, ({ containers }) => {
+			list.replaceChildren(
+				...containers.map((c) => {
+					const chip = template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+					chip.dataset.state = c.state;
+					chip.querySelector<HTMLElement>('.live-dot')!.dataset.state = dot(c);
+					chip.querySelector('.container-name')!.textContent = c.name;
+					if (!c.updateAvailable) chip.querySelector('.container-update')!.remove();
+					return chip;
+				}),
+			);
+			const withUpdates = containers.filter((c) => c.updateAvailable).length;
+			summary.textContent = [
+				count.replace('{n}', String(containers.length)),
+				withUpdates ? updates.replace('{n}', String(withUpdates)) : '',
+			]
+				.filter(Boolean)
+				.join(' · ');
+		});
+	}
+</script>
+
+<style>
+	.containers-summary {
+		text-transform: none;
+		letter-spacing: normal;
+	}
+
+	.containers {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs) var(--space-lg);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	/* Not `.container`: that is a Tailwind utility with a width of its own. */
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+
+	.chip:not([data-state='running']) .container-name {
+		color: var(--text);
+	}
+
+	.container-update {
+		display: inline-flex;
+		color: var(--text);
+	}
+</style>

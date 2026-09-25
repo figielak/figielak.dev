@@ -1,7 +1,8 @@
 /**
- * Homelab services for the launcher tile on the private dashboard
- * (koncept.md §3.4). They resolve only over Tailscale. Everything except
- * Mealie is a placeholder — replace with the services that really run.
+ * Homelab services for the services bar on the private dashboard
+ * (koncept.md §3.4): the ones that really run. They resolve only over
+ * Tailscale. `name` is also the Uptime Kuma monitor name the agent sends,
+ * which is how the bar finds each one's status.
  *
  * The domain comes from HOMELAB_DOMAIN at build time: the repository is
  * public and must not reveal homelab host names (koncept.md §14).
@@ -19,9 +20,7 @@ const host = (name: string) => `https://${name}.${domain}`;
 
 export const services: Service[] = [
 	{ name: 'Mealie', url: host('mealie'), icon: 'chef-hat' },
-	{ name: 'Homepage', url: host('homepage'), icon: 'home' },
-	{ name: 'Jellyfin', url: host('jellyfin'), icon: 'movie' },
-	{ name: 'Immich', url: host('immich'), icon: 'photo' },
 	{ name: 'AdGuard', url: host('adguard'), icon: 'shield' },
-	{ name: 'Uptime Kuma', url: host('uptime'), icon: 'activity' },
+	{ name: 'Uptime Kuma', url: host('uptime-kuma'), icon: 'activity' },
+	{ name: 'Beszel', url: host('beszel'), icon: 'chart-bar' },
 ];

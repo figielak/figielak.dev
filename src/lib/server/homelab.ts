@@ -11,7 +11,12 @@
  *                   uptimeDays, containers? },
  *     "dns":      { queriesToday, blockedToday, queriesWeek?, blockedWeek? },
  *     "traffic":  { downGbToday, upGbToday, downGbTotal, upGbTotal, totalSince },
- *     "services": [{ kind, up, uptime30d?, avgMs? }]
+ *     "services": [{ kind, up, uptime30d?, avgMs? }],
+ *
+ *     // Private: stored apart, served only behind the password (§14).
+ *     "monitors":   [{ name, up, avgMs?, uptime30d? }],
+ *     "containers": [{ name, state, health?, updateAvailable? }],
+ *     "backup":     { tool, lastRunAt, ok, sizeGb?, snapshots? }
  *   }
  *
  * Every section is optional: the agent leaves out one whose source did not
@@ -19,11 +24,22 @@
  * goes stale. Sections are validated one by one — a bad one is rejected with
  * a reason, the good ones are still saved. Sizes are GiB, percentages 0–100.
  *
- * Only generic kinds travel (koncept.md §14): no host names, IPs or monitors.
+ * The public sections carry only generic kinds (koncept.md §14): no host
+ * names, IPs or monitors. The private ones name monitors and containers for
+ * the owner; names are plain words (letters, digits, spaces, `-`, `_`), so
+ * no host name, domain, URL or IP can pass as one.
  */
 import type { MachineStats, Disk, DiskKind } from '../mocks/stats';
 import type { Dns, Traffic } from '../mocks/network';
 import { SERVICE_KINDS, type ServiceStatus } from '../mocks/uptime';
+import {
+	BACKUP_TOOLS,
+	CONTAINER_HEALTH,
+	CONTAINER_STATES,
+	type BackupRun,
+	type Container,
+	type Monitor,
+} from '../mocks/homelab-private';
 
 type Data<T extends { data?: unknown }> = Omit<NonNullable<T['data']>, 'updatedAt'>;
 
@@ -42,17 +58,28 @@ export interface Sections {
 export type SectionName = keyof Sections;
 export const SECTION_NAMES: SectionName[] = ['lab', 'dns', 'traffic', 'services'];
 
+export interface PrivateSections {
+	monitors: { monitors: Monitor[] };
+	containers: { containers: Container[] };
+	backup: { backup: Omit<BackupRun, 'lastRunAt'> & { lastRunAt: string } };
+}
+
+export type PrivateSectionName = keyof PrivateSections;
+export const PRIVATE_SECTION_NAMES: PrivateSectionName[] = ['monitors', 'containers', 'backup'];
+export type StoredPrivateSections = { [K in PrivateSectionName]?: Stored<PrivateSections[K]> };
+
 /** A section as stored: its data and when the agent read it. */
 export type Stored<T> = T & { updatedAt: string };
 export type StoredSections = { [K in SectionName]?: Stored<Sections[K]> };
 
 export interface Rejected {
-	section: SectionName;
+	section: SectionName | PrivateSectionName;
 	reason: string;
 }
 
 export interface Parsed {
 	sections: StoredSections;
+	privateSections: StoredPrivateSections;
 	rejected: Rejected[];
 }
 
@@ -167,6 +194,86 @@ function parseServices(value: unknown): ServicesSection {
 	return { services };
 }
 
+/* A plain word or two: no dots, colons or slashes, so no host, URL or IP. */
+const NAME = /^[\p{L}\p{N}][\p{L}\p{N} _-]{0,39}$/u;
+
+function name(o: Obj, path: string): string {
+	const value = o.name;
+	if (typeof value !== 'string' || !NAME.test(value)) throw new Invalid(`${path}.name is not a plain name`);
+	return value;
+}
+
+function optionalBoolean(o: Obj, key: string, path: string): boolean | undefined {
+	if (o[key] === undefined || o[key] === null) return undefined;
+	if (typeof o[key] !== 'boolean') throw new Invalid(`${path}.${key} is not a boolean`);
+	return o[key] as boolean;
+}
+
+function uniqueNames<T extends { name: string }>(items: T[], path: string): T[] {
+	const seen = new Set<string>();
+	for (const item of items) {
+		if (seen.has(item.name)) throw new Invalid(`${path}: duplicate name`);
+		seen.add(item.name);
+	}
+	return items;
+}
+
+function parseMonitors(value: unknown): PrivateSections['monitors'] {
+	if (!Array.isArray(value)) throw new Invalid('monitors is not an array');
+	if (value.length > 30) throw new Invalid('monitors is too long');
+	const monitors = value.map((item, i): Monitor => {
+		const path = `monitors[${i}]`;
+		const o = object(item, path);
+		if (typeof o.up !== 'boolean') throw new Invalid(`${path}.up is not a boolean`);
+		return {
+			name: name(o, path),
+			up: o.up,
+			avgMs: optionalNumber(o, 'avgMs', path, 0, 60_000),
+			uptime30d: optionalNumber(o, 'uptime30d', path, 0, 100),
+		};
+	});
+	return { monitors: uniqueNames(monitors, 'monitors') };
+}
+
+function parseContainers(value: unknown): PrivateSections['containers'] {
+	if (!Array.isArray(value)) throw new Invalid('containers is not an array');
+	if (value.length > 60) throw new Invalid('containers is too long');
+	const containers = value.map((item, i): Container => {
+		const path = `containers[${i}]`;
+		const o = object(item, path);
+		return {
+			name: name(o, path),
+			state: oneOf(o, 'state', path, CONTAINER_STATES),
+			health: o.health === undefined || o.health === null ? undefined : oneOf(o, 'health', path, CONTAINER_HEALTH),
+			updateAvailable: optionalBoolean(o, 'updateAvailable', path),
+		};
+	});
+	return { containers: uniqueNames(containers, 'containers') };
+}
+
+function parseBackup(value: unknown, now = Date.now()): PrivateSections['backup'] {
+	const o = object(value, 'backup');
+	const lastRunAt = typeof o.lastRunAt === 'string' ? Date.parse(o.lastRunAt) : NaN;
+	if (Number.isNaN(lastRunAt)) throw new Invalid('backup.lastRunAt is not an ISO date');
+	if (lastRunAt > now + MAX_CLOCK_SKEW_MS) throw new Invalid('backup.lastRunAt is in the future');
+	if (typeof o.ok !== 'boolean') throw new Invalid('backup.ok is not a boolean');
+	return {
+		backup: {
+			tool: oneOf(o, 'tool', 'backup', BACKUP_TOOLS),
+			lastRunAt: new Date(lastRunAt).toISOString(),
+			ok: o.ok,
+			sizeGb: optionalNumber(o, 'sizeGb', 'backup', 0, GIB),
+			snapshots: optionalNumber(o, 'snapshots', 'backup', 0, 1e6, true),
+		},
+	};
+}
+
+const PRIVATE_PARSERS: { [K in PrivateSectionName]: (value: unknown) => PrivateSections[K] } = {
+	monitors: parseMonitors,
+	containers: parseContainers,
+	backup: parseBackup,
+};
+
 const PARSERS: { [K in SectionName]: (value: unknown) => Sections[K] } = {
 	lab: parseLab,
 	dns: parseDns,
@@ -188,12 +295,22 @@ export function parsePush(body: unknown, now = Date.now()): Parsed {
 	if (sentAt > now + MAX_CLOCK_SKEW_MS) throw new Invalid('sentAt is in the future');
 	const updatedAt = new Date(Math.min(sentAt, now)).toISOString();
 
-	const parsed: Parsed = { sections: {}, rejected: [] };
+	const parsed: Parsed = { sections: {}, privateSections: {}, rejected: [] };
 	for (const name of SECTION_NAMES) {
 		if (o[name] === undefined) continue;
 		try {
 			const data = PARSERS[name](o[name]);
 			(parsed.sections as Obj)[name] = { ...stripUndefined(data), updatedAt };
+		} catch (error) {
+			if (!(error instanceof Invalid)) throw error;
+			parsed.rejected.push({ section: name, reason: error.message });
+		}
+	}
+	for (const name of PRIVATE_SECTION_NAMES) {
+		if (o[name] === undefined) continue;
+		try {
+			const data = PRIVATE_PARSERS[name](o[name]);
+			(parsed.privateSections as Obj)[name] = { ...stripUndefined(data), updatedAt };
 		} catch (error) {
 			if (!(error instanceof Invalid)) throw error;
 			parsed.rejected.push({ section: name, reason: error.message });

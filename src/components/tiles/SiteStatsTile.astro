@@ -8,74 +8,292 @@ import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { SITE_PLACEHOLDER, type SiteStats } from '../../lib/mocks/site';
 
-/** Visitors of this site from the analytics API, cached 1–5 min (koncept.md §9). Private. */
+/**
+ * Visits of this site from Cloudflare Web Analytics (koncept.md §3.4, §9):
+ * the week as a number and seven neutral bars with today in --text (§5),
+ * then the most visited pages and where the visitors came from. Private.
+ *
+ * With `endpoint` the tile renders as loading and fills itself in the
+ * browser every 5 minutes; without it, it shows `site` as given.
+ */
 interface Props {
 	site: SiteStats;
+	endpoint?: string;
 	area?: string;
 }
 
-const { site, area } = Astro.props;
+const { site, endpoint, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const d = site.data ?? SITE_PLACEHOLDER;
 const number = new Intl.NumberFormat(lang);
+const weekday = new Intl.DateTimeFormat(lang, { weekday: 'narrow', timeZone: 'UTC' });
+const max = Math.max(1, ...d.days.map((day) => day.visits));
+const direct = t('site.direct');
 ---
 
-<Tile area={area} label={t('tile.site')} icon="chart-bar" dense>
+<Tile
+	area={area}
+	label={t('tile.site')}
+	icon="chart-bar"
+	dense
+	class="site-tile"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-direct={direct}
+	data-pageviews={t('site.pageviews')}
+	data-week={t('site.week')}
+>
 	<LiveDot slot="meta" state={dotState(site.state)} />
 
 	<LiveBody state={site.state} errorText={t('site.unavailable')}>
-		<div class="site">
-			<BigNumber value={number.format(d.visitorsToday)} caption={t('site.today')} />
-			<ul class="site-details">
-				<li class="site-online" data-skeleton>
-					<LiveDot state={site.state === 'ok' && d.online > 0 ? 'up' : 'none'} />
-					{t('site.online').replace('{n}', String(d.online))}
-				</li>
-				<li data-skeleton>{t('site.week').replace('{n}', number.format(d.visitorsWeek))}</li>
-				<li class="site-top" data-skeleton>{t('site.top').replace('{path}', d.topPage)}</li>
-			</ul>
+		<div class="site-box">
+			<div class="site">
+				<div class="site-week">
+					<BigNumber value={number.format(d.visitsWeek)} />
+					<span class="site-pageviews" data-skeleton>
+						{t('site.week')} · {t('site.pageviews').replace('{n}', number.format(d.pageviewsWeek))}
+					</span>
+					<ol class="site-days" aria-label={t('site.days')}>
+						{
+							d.days.map((day) => (
+								<li class="site-day" title={`${day.date}: ${number.format(day.visits)}`}>
+									<span class="site-track">
+									<span class="site-bar" style={`--value: ${day.visits / max}`} />
+								</span>
+									<span class="site-weekday">{weekday.format(new Date(`${day.date}T12:00:00Z`))}</span>
+								</li>
+							))
+						}
+					</ol>
+				</div>
+
+				<section class="site-list">
+					<h3 class="site-list-title">{t('site.pages')}</h3>
+					<ol class="site-rows" data-list="pages">
+						{
+							d.topPages.map((page) => (
+								<li class="site-row">
+									<span class="site-name" data-skeleton>
+										{page.path}
+									</span>
+									<span class="site-count" data-skeleton>
+										{number.format(page.visits)}
+									</span>
+								</li>
+							))
+						}
+					</ol>
+				</section>
+
+				<section class="site-list">
+					<h3 class="site-list-title">{t('site.referrers')}</h3>
+					<ol class="site-rows" data-list="referrers">
+						{
+							d.referrers.map((ref) => (
+								<li class="site-row">
+									<span class="site-name" data-skeleton>
+										{ref.host || direct}
+									</span>
+									<span class="site-count" data-skeleton>
+										{number.format(ref.visits)}
+									</span>
+								</li>
+							))
+						}
+					</ol>
+				</section>
+			</div>
 		</div>
 	</LiveBody>
 
 	<LiveFooter slot="footer" live={site} />
 </Tile>
 
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import type { SiteStats } from '../../lib/mocks/site';
+
+	type SiteData = Omit<NonNullable<SiteStats['data']>, 'updatedAt'>;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.site-tile[data-endpoint]')) {
+		const { lang = 'pl', direct = '', pageviews = '{n}', week = '' } = tile.dataset;
+		const number = new Intl.NumberFormat(lang);
+		const weekday = new Intl.DateTimeFormat(lang, { weekday: 'narrow', timeZone: 'UTC' });
+
+		const fillRows = (list: string, rows: { name: string; visits: number }[]) => {
+			tile.querySelectorAll<HTMLElement>(`[data-list="${list}"] .site-row`).forEach((row, i) => {
+				const item = rows[i];
+				row.hidden = !item;
+				if (!item) return;
+				setText(row.querySelector('.site-name'), item.name);
+				setText(row.querySelector('.site-count'), number.format(item.visits));
+			});
+		};
+
+		watchLive<SiteData>(
+			tile,
+			(d) => {
+				setText(tile.querySelector('.big-value'), number.format(d.visitsWeek));
+				setText(
+					tile.querySelector('.site-pageviews'),
+					`${week} · ${pageviews.replace('{n}', number.format(d.pageviewsWeek))}`,
+				);
+				const max = Math.max(1, ...d.days.map((day) => day.visits));
+				tile.querySelectorAll<HTMLElement>('.site-day').forEach((bar, i) => {
+					const day = d.days[i];
+					if (!day) return;
+					bar.title = `${day.date}: ${number.format(day.visits)}`;
+					bar.querySelector<HTMLElement>('.site-bar')!.style.setProperty('--value', String(day.visits / max));
+					setText(bar.querySelector('.site-weekday'), weekday.format(new Date(`${day.date}T12:00:00Z`)));
+				});
+				fillRows('pages', d.topPages.map((p) => ({ name: p.path, visits: p.visits })));
+				fillRows('referrers', d.referrers.map((r) => ({ name: r.host || direct, visits: r.visits })));
+			},
+			5 * 60_000,
+		);
+	}
+</script>
+
 <style>
-	.site {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		align-items: center;
-		gap: var(--space-xl);
+	.site-box {
+		container-type: inline-size;
 		height: 100%;
 	}
 
-	.site-details {
+	.site {
+		display: grid;
+		grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+		gap: var(--space-xl);
+		height: 100%;
+		min-height: 0;
+	}
+
+	.site-week {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
 		gap: var(--space-2xs);
+		min-height: 0;
+	}
+
+	.site-pageviews {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+
+	/* Seven neutral bars, today (the last) in --text (koncept.md §5). */
+	/* The bars take what height is left; each grows from the bottom of its
+	   track, so the tallest day reaches the top. */
+	.site-days {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: var(--space-2xs);
+		flex: 1;
+		min-height: var(--space-2xl);
+		margin: var(--space-xs) 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.site-day {
+		display: grid;
+		grid-template-rows: minmax(0, 1fr) auto;
+		justify-items: center;
+		gap: var(--space-3xs);
+		min-height: 0;
+	}
+
+	.site-track {
+		display: flex;
+		align-items: flex-end;
+		width: 100%;
+		min-height: 0;
+	}
+
+	.site-bar {
+		width: 100%;
+		height: calc(var(--value, 0) * 100%);
+		min-height: 2px;
+		border-radius: var(--space-3xs);
+		background: var(--text-muted);
+	}
+
+	.site-day:last-child .site-bar {
+		background: var(--text);
+	}
+
+	.site-day:last-child .site-weekday {
+		color: var(--text);
+	}
+
+	.site-weekday {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-subtle);
+	}
+
+	.site-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
 		min-width: 0;
+	}
+
+	.site-list-title {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-weight: 500;
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.site-rows {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	.site-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: var(--space-md);
+	}
+
+	.site-row[hidden] {
+		display: none;
+	}
+
+	.site-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.site-count {
 		font-family: var(--font-mono);
 		font-size: var(--size-label);
 		font-variant-numeric: tabular-nums;
 		color: var(--text-muted);
 	}
 
-	.site-online {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-xs);
-		color: var(--text);
-	}
+	/* A narrow tile (phone): the week on top, the two lists side by side. */
+	@container (max-width: 520px) {
+		.site {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		}
 
-	.site-top {
-		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		.site-week {
+			grid-column: 1 / -1;
+		}
+
+		.site-days {
+			min-height: calc(var(--space-2xl) * 2);
+		}
 	}
 </style>

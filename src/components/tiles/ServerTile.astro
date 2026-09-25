@@ -1,0 +1,79 @@
+---
+import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import MachineSection from './homelab/MachineSection.astro';
+import ContainersSection from './homelab/ContainersSection.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState, worstState } from '../../lib/live';
+import type { MachineStats } from '../../lib/mocks/stats';
+import type { Containers } from '../../lib/mocks/homelab-private';
+
+/**
+ * The homelab server in detail (koncept.md §3.4), for the owner: usage from
+ * the public machine section, then the containers by name, each section with
+ * its own source and states (§9). Private dashboard only.
+ */
+interface Props {
+	stats: MachineStats;
+	containers: Containers;
+	endpoints?: { lab: string; containers: string };
+	area?: string;
+}
+
+const { stats, containers, endpoints, area } = Astro.props;
+const t = useTranslations(getLangFromUrl(Astro.url));
+const states = [stats.state, containers.state];
+---
+
+<Tile
+	area={area}
+	label={t('tile.server')}
+	icon="server"
+	dense
+	class="server-tile"
+	data-offline={states.every((state) => state === 'error') ? '' : undefined}
+>
+	<LiveDot slot="meta" state={dotState(worstState(states))} />
+
+	<div class="server-box">
+		<div class="server">
+			<MachineSection stats={stats} endpoint={endpoints?.lab} />
+			<ContainersSection containers={containers} endpoint={endpoints?.containers} />
+		</div>
+	</div>
+</Tile>
+
+<style>
+	.server-box {
+		container-type: inline-size;
+		height: 100%;
+	}
+
+	/* Usage over the containers in a narrow tile, beside them in a wide one. */
+	.server {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+		height: 100%;
+		min-height: 0;
+	}
+
+	.server > :global(.containers-section) {
+		padding-top: var(--space-md);
+		border-top: 1px solid var(--border);
+	}
+
+	@container (min-width: 520px) {
+		.server {
+			display: grid;
+			grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+			gap: var(--space-xl);
+		}
+
+		.server > :global(.containers-section) {
+			padding: 0 0 0 var(--space-xl);
+			border-top: 0;
+			border-left: 1px solid var(--border);
+		}
+	}
+</style>

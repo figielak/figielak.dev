@@ -110,6 +110,39 @@ Odpowiedzi `POST /api/stats`: **204** wszystko zapisane; **200** część sekcji
 token; **503** brak tokenu na serwerze albo Firestore niedostępny. Treść musi mieć
 `Content-Type: application/json` — Astro odrzuca POST-y wyglądające na formularz (403).
 
+### Prywatny dashboard: analityka i kalendarz
+
+Kafle statystyk strony i korepetycji czytają `/api/private/site` i `/api/private/lessons`
+(koncept.md §3.4). Workflow podpina oba sekrety do Cloud Run, więc **muszą istnieć przed
+deployem** — bez nich krok *Deploy* się wywali.
+
+- **Cloudflare Web Analytics:** Cloudflare → *Analytics & Logs → Web Analytics* → dodaj stronę
+  `figielak.dev` z automatyczną konfiguracją (beacon wstrzykuje proxy, bez ciasteczek).
+  Z ustawień strony weź **site tag**, a z adresu panelu **Account ID**. Token: *My Profile →
+  API Tokens → Create Token → Custom*, uprawnienie **Account · Account Analytics · Read**,
+  z datą ważności (kafel „Wygasa” pokaże ją sam).
+- **Kalendarz lekcji:** osobny kalendarz Google tylko z lekcjami (tytuł wydarzenia = uczeń).
+  *Ustawienia kalendarza → Integracja kalendarza →* **Tajny adres w formacie iCal**. To sekret:
+  kto go zna, widzi wszystkie lekcje.
+
+```bash
+# Nowa sesja Cloud Shell nie pamięta zmiennych z kroku 1.
+PROJECT_ID=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+
+for secret in cf-analytics-token tutoring-ical-url; do
+  read -rsp "$secret: " value; echo
+  printf '%s' "$value" | gcloud secrets create "$secret" --data-file=-
+  gcloud secrets add-iam-policy-binding "$secret" \
+    --member="serviceAccount:$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+    --role=roles/secretmanager.secretAccessor
+done
+```
+
+Account ID i site tag nie są sekretami — idą jako GitHub Variables (krok 2). Znaczniki
+„zapłacone” i cel trafiają do tej samej bazy Firestore co homelab (dokumenty
+`private/payments` i `site/goal`), więc nie trzeba nic więcej włączać.
+
 ### Konto serwisowe dla GitHub Actions
 
 ```bash
@@ -153,7 +186,8 @@ echo "GCP_SERVICE_ACCOUNT=$SA"
 Repo → Settings → Secrets and variables → Actions:
 
 - **Variables** (identyfikatory, nie sekrety): `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`,
-  `GCP_SERVICE_ACCOUNT` — wartości z końca kroku 1; `LASTFM_USER` — nazwa konta Last.fm.
+  `GCP_SERVICE_ACCOUNT` — wartości z końca kroku 1; `LASTFM_USER` — nazwa konta Last.fm;
+  `CF_ACCOUNT_ID` i `CF_WEB_ANALYTICS_SITE_TAG` — z Cloudflare Web Analytics (krok 1).
 - **Secrets** (dane, których nie ma w publicznym repo — koncept.md §14, `.env.example`):
   `CONTACT_EMAIL`, `CONTACT_PHONE`, `HOMELAB_DOMAIN`. Workflow wstawia je przy buildzie.
 
@@ -177,8 +211,9 @@ gcloud beta run domain-mappings describe --domain figielak.dev --region "$REGION
    Gdy `describe` pokaże certyfikat jako gotowy — **włącz proxy** (pomarańczowa chmurka).
 2. **SSL/TLS → Overview:** tryb **Full (strict)**.
 3. **Security → WAF → Rate limiting rules** (1 reguła w darmowym planie): gdy URI path zawiera
-   `/dashboard/private`, blokuj po 10 żądaniach na 10 s z jednego IP. Hasło chroni serwer,
-   a ta reguła ogranicza zgadywanie. `/api/stats` (agent: 1 żądanie na minutę z jednego IP)
+   `/private` (obejmuje `/dashboard/private` i `/api/private/*`), blokuj po 30 żądaniach na 10 s
+   z jednego IP. Hasło chroni serwer, a ta reguła ogranicza zgadywanie. Próg nie może być
+   niższy: jedno wejście na prywatny dashboard to strona i ok. 8 zapytań kafli naraz. `/api/stats` (agent: 1 żądanie na minutę z jednego IP)
    też powinien mieć limit: jeśli próg reguły nie jest surowszy niż ~10 żądań na minutę, dopisz
    do jej wyrażenia `or (http.request.uri.path eq "/api/stats")`; jeśli jest, potrzebna osobna
    reguła (np. 20 na minutę) — na darmowym planie może nie być na nią miejsca.
@@ -226,6 +261,7 @@ Problemy, które wystąpiły przy pierwszym wdrożeniu (2026-09-24).
 | Na stronie `+48 000 000 000`, `kontakt@example.com`, `home.example` | brak GitHub Secrets przy buildzie (albo dodane po deployu) | dodaj Secrets (nie Variables) i uruchom deploy ponownie |
 | `/dashboard/private` zwraca **503** | Cloud Run nie dostał `DASHBOARD_PASSWORD` | sprawdź sekret i flagę `--set-secrets` w workflow |
 | **429** przy logowaniu do trybu prywatnego | limit żądań w Cloudflare (liczą się też próby bez hasła) | odczekaj kilka sekund |
+| Kafel prywatny „chwilowo niedostępny” (`/api/private/site`, `/lessons`, `/deploys` — **503**) | brak `CF_*` lub `TUTORING_ICAL_URL`, zły site tag, wygasły token | przyczyna w logach Cloud Run (`[api] …`); nowe wartości jako nowe wersje sekretów lub Variables |
 | `/api/github`, `/api/music`, `/api/waka` lub `/api/books` zwraca **503**, kafel „chwilowo niedostępny” | brak klucza, zła nazwa `LASTFM_USER` albo wygasły token GitHuba | przyczyna jest w logach Cloud Run (`[api] …`); nowy token jako nowa wersja sekretu |
 | Deploy pada na *Creating Revision*: `Secret …/versions/latest was not found` | sekret nie istnieje albo nie ma wersji (pusta wartość przy `read`) | `gcloud secrets versions list <nazwa>`; brakującą wartość dodaj przez `gcloud secrets versions add` |
 | `/api/stats` zwraca **503** `storage unavailable` | Firestore nie jest włączony, baza nie istnieje albo konto Compute nie ma `roles/datastore.user` | szczegóły w logach (`[api/stats]`); krok „Homelab: Firestore i token agenta” |

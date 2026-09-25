@@ -11,7 +11,7 @@
  */
 import type { APIRoute } from 'astro';
 import { isInvalid, parsePush, type Parsed, type Rejected } from '../../lib/server/homelab';
-import { writeSections } from '../../lib/server/firestore';
+import { writePrivateSections, writeSections } from '../../lib/server/firestore';
 import { sameSecret } from '../../lib/server/secret';
 
 export const prerender = false;
@@ -50,13 +50,13 @@ export const POST: APIRoute = async ({ request }) => {
 		throw error;
 	}
 
-	const saved = Object.keys(parsed.sections);
+	const saved = [...Object.keys(parsed.sections), ...Object.keys(parsed.privateSections)];
 	const rejected: Rejected[] = parsed.rejected;
 	if (rejected.length > 0) console.warn('[api/stats] rejected', rejected);
 	if (saved.length === 0) return reply(400, { error: 'no valid section', rejected });
 
 	try {
-		await writeSections(parsed.sections);
+		await Promise.all([writeSections(parsed.sections), writePrivateSections(parsed.privateSections)]);
 	} catch (error) {
 		console.error('[api/stats]', error);
 		return reply(503, { error: 'storage unavailable' });

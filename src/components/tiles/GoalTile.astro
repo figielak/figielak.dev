@@ -1,58 +1,124 @@
 ---
 import Tile from '../ui/Tile.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
-import { goal } from '../../lib/goal';
+import { dotState } from '../../lib/live';
+import { goal as defaultGoal, goalProgress, type LiveGoal } from '../../lib/goal';
 
 /**
- * The goal I am working towards now, from src/lib/goal.ts (koncept.md §3.4):
- * its name, a neutral bar of the steps done (§5) and the next step, one under
- * another in a narrow card; in a low tile the name and the bar share a line
- * and the next step gives way first.
+ * The goal I am working towards now (koncept.md §3.4): its name, a neutral
+ * bar of the steps done (§5) and the next step, one under another in a
+ * narrow card; in a low tile the name and the bar share a line and the next
+ * step gives way first.
+ *
+ * Edited on the private dashboard (GoalEditTile) and read from /api/goal, so
+ * a change needs no deploy; until the first save it shows src/lib/goal.ts.
  */
 interface Props {
+	goal?: LiveGoal;
+	endpoint?: string;
 	area?: string;
 }
 
-const { area } = Astro.props;
+/* A goal written by hand does not age: never shown as stale. */
+const NEVER_STALE_MIN = 100 * 365 * 24 * 60;
+
+const { goal: live = { state: 'ok' }, endpoint, area } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-
-const total = goal.steps.length;
-const done = goal.steps.filter((step) => step.done).length;
-const percent = total ? Math.round((done / total) * 100) : 0;
-const next = goal.steps.find((step) => !step.done);
+const goal = live.data?.goal ?? defaultGoal;
+const { total, done, percent, next } = goalProgress(goal);
 
 /* MM.YYYY, like the periods on the home page. */
 const by = goal.by ? t('goal.by').replace('{date}', `${goal.by.slice(5, 7)}.${goal.by.slice(0, 4)}`) : '';
 const progress = t('goal.progress').replace('{done}', String(done)).replace('{total}', String(total));
 ---
 
-<Tile area={area} label={t('tile.goal')} icon="target" dense>
-	{by && <span slot="meta" class="goal-by">{by}</span>}
+<Tile
+	area={area}
+	label={t('tile.goal')}
+	icon="target"
+	dense
+	class="goal-tile"
+	data-endpoint={endpoint}
+	data-stale-after={NEVER_STALE_MIN}
+	data-lang={lang}
+	data-by={t('goal.by')}
+	data-progress={t('goal.progress')}
+	data-next={t('goal.next')}
+	data-all-done={t('goal.done')}
+>
+	<span slot="meta" class="goal-meta">
+		<span class="goal-by">{by}</span>
+		{endpoint && <LiveDot state={dotState(live.state)} />}
+	</span>
 
-	<div class="goal-box">
-		<div class="goal">
-			<span class="goal-title">{goal.title[lang]}</span>
-			<span
-				class="goal-progress"
-				role="meter"
-				aria-label={t('tile.goal')}
-				aria-valuemin="0"
-				aria-valuemax={total}
-				aria-valuenow={done}
-				aria-valuetext={progress}
-			>
-				<span class="goal-track"><span class="goal-fill" style={`width: ${percent}%`}></span></span>
-				<span class="goal-count" aria-hidden="true">{done}/{total}</span>
-			</span>
-			<span class="goal-next">
-				{next ? `${t('goal.next')}: ${next.title[lang]}` : t('goal.done')}
-			</span>
+	<LiveBody state={live.state} errorText={t('goal.unavailable')}>
+		<div class="goal-box">
+			<div class="goal">
+				<span class="goal-title" data-skeleton>{goal.title[lang]}</span>
+				<span
+					class="goal-progress"
+					role="meter"
+					aria-label={t('tile.goal')}
+					aria-valuemin="0"
+					aria-valuemax={total}
+					aria-valuenow={done}
+					aria-valuetext={progress}
+				>
+					<span class="goal-track"><span class="goal-fill" style={`width: ${percent}%`}></span></span>
+					<span class="goal-count" aria-hidden="true">{done}/{total}</span>
+				</span>
+				<span class="goal-next" data-skeleton>
+					{next ? `${t('goal.next')}: ${next.title[lang]}` : t('goal.done')}
+				</span>
+			</div>
 		</div>
-	</div>
+	</LiveBody>
 </Tile>
 
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import { goalProgress, type LiveGoal } from '../../lib/goal';
+
+	type GoalData = Omit<NonNullable<LiveGoal['data']>, 'updatedAt'>;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.goal-tile[data-endpoint]')) {
+		const d = tile.dataset;
+		const lang = d.lang === 'en' ? 'en' : 'pl';
+
+		watchLive<GoalData>(
+			tile,
+			({ goal }) => {
+				/* Nothing saved yet: the tile keeps the goal it was built with. */
+				if (!goal) return;
+				const { total, done, percent, next } = goalProgress(goal);
+				const progress = (d.progress ?? '').replace('{done}', String(done)).replace('{total}', String(total));
+				const by = goal.by ? (d.by ?? '{date}').replace('{date}', `${goal.by.slice(5, 7)}.${goal.by.slice(0, 4)}`) : '';
+
+				setText(tile.querySelector('.goal-by'), by);
+				setText(tile.querySelector('.goal-title'), goal.title[lang]);
+				const meter = tile.querySelector<HTMLElement>('.goal-progress')!;
+				meter.setAttribute('aria-valuemax', String(total));
+				meter.setAttribute('aria-valuenow', String(done));
+				meter.setAttribute('aria-valuetext', progress);
+				tile.querySelector<HTMLElement>('.goal-fill')!.style.width = `${percent}%`;
+				setText(tile.querySelector('.goal-count'), `${done}/${total}`);
+				setText(tile.querySelector('.goal-next'), next ? `${d.next}: ${next.title[lang]}` : (d.allDone ?? ''));
+			},
+			5 * 60_000,
+		);
+	}
+</script>
+
 <style>
+	.goal-meta {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-md);
+	}
+
 	.goal-by {
 		font-family: var(--font-mono);
 		font-size: var(--size-label);

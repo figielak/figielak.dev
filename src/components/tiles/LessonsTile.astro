@@ -1,0 +1,314 @@
+---
+import Tile from '../ui/Tile.astro';
+import Icon from '../ui/Icon.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import LiveFooter from '../ui/LiveFooter.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { LESSONS_PLACEHOLDER, LESSONS_SHOWN, type Lesson, type Lessons } from '../../lib/mocks/lessons';
+
+/**
+ * Tutoring from the calendar (koncept.md §3.4): the next lessons, then past
+ * ones nobody has paid for yet — red, a real thing to chase (§5), each with
+ * a ✓ that marks it paid (/api/private/payments). Student names are private:
+ * this tile lives only behind the password.
+ *
+ * The rows are built from <template>s, since both lists come with the data.
+ */
+interface Props {
+	lessons: Lessons;
+	endpoint?: string;
+	area?: string;
+}
+
+const { lessons, endpoint, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const d = lessons.data ?? LESSONS_PLACEHOLDER;
+const day = new Intl.DateTimeFormat(lang, { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'Europe/Warsaw' });
+const time = new Intl.DateTimeFormat(lang, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' });
+const when = (lesson: Lesson) => `${day.format(lesson.start)} ${time.format(lesson.start)}`;
+---
+
+<Tile
+	area={area}
+	label={t('tile.lessons')}
+	icon="school"
+	dense
+	class="lessons-tile"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-shown={LESSONS_SHOWN}
+	data-unpaid={t('lessons.unpaid')}
+	data-failed={t('lessons.failed')}
+>
+	<LiveDot slot="meta" state={dotState(lessons.state)} />
+
+	<LiveBody state={lessons.state} errorText={t('lessons.unavailable')}>
+		<div class="lessons-box">
+			<div class="lessons">
+				<section class="lessons-part">
+					<h3 class="lessons-title">{t('lessons.next')}</h3>
+					<ol class="lessons-list" data-list="upcoming">
+						{
+							d.upcoming.map((lesson) => (
+								<li class="lesson">
+									<span class="lesson-when" data-skeleton>
+										{when(lesson)}
+									</span>
+									<span class="lesson-student" data-skeleton>
+										{lesson.student}
+									</span>
+								</li>
+							))
+						}
+					</ol>
+					<p class="lessons-empty" hidden={d.upcoming.length > 0}>{t('lessons.none')}</p>
+				</section>
+
+				<section class="lessons-part" data-unpaid-part hidden={d.unpaid.length === 0}>
+					<h3 class="lessons-title lessons-title-unpaid" data-unpaid-title>
+						{t('lessons.unpaid').replace('{n}', String(d.unpaid.length))}
+					</h3>
+					<ol class="lessons-list" data-list="unpaid">
+						{
+							d.unpaid.slice(0, LESSONS_SHOWN).map((lesson) => (
+								<li class="lesson lesson-unpaid" data-key={lesson.key}>
+									<span class="lesson-when">{when(lesson)}</span>
+									<span class="lesson-student">{lesson.student}</span>
+									<button type="button" class="lesson-paid" aria-label={t('lessons.markPaid')} title={t('lessons.markPaid')}>
+										<Icon name="check" size={14} />
+									</button>
+								</li>
+							))
+						}
+					</ol>
+				</section>
+			</div>
+		</div>
+	</LiveBody>
+
+	<template data-lesson-template>
+		<li class="lesson">
+			<span class="lesson-when"></span>
+			<span class="lesson-student"></span>
+		</li>
+	</template>
+	<template data-unpaid-template>
+		<li class="lesson lesson-unpaid">
+			<span class="lesson-when"></span>
+			<span class="lesson-student"></span>
+			<button type="button" class="lesson-paid" aria-label={t('lessons.markPaid')} title={t('lessons.markPaid')}>
+				<Icon name="check" size={14} />
+			</button>
+		</li>
+	</template>
+
+	<LiveFooter slot="footer" live={lessons}>Google Calendar</LiveFooter>
+</Tile>
+
+<script>
+	import { watchLive } from '../../scripts/live';
+	import type { Lesson, Lessons } from '../../lib/mocks/lessons';
+
+	type LessonsData = Omit<NonNullable<Lessons['data']>, 'updatedAt'>;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.lessons-tile[data-endpoint]')) {
+		const d = tile.dataset;
+		const shown = Number(d.shown) || 4;
+		const day = new Intl.DateTimeFormat(d.lang, { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'Europe/Warsaw' });
+		const time = new Intl.DateTimeFormat(d.lang, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' });
+		const when = (lesson: Lesson) => {
+			const start = new Date(lesson.start);
+			return `${day.format(start)} ${time.format(start)}`;
+		};
+
+		const upcomingList = tile.querySelector<HTMLElement>('[data-list="upcoming"]')!;
+		const unpaidList = tile.querySelector<HTMLElement>('[data-list="unpaid"]')!;
+		const unpaidPart = tile.querySelector<HTMLElement>('[data-unpaid-part]')!;
+		const unpaidTitle = tile.querySelector<HTMLElement>('[data-unpaid-title]')!;
+		const empty = tile.querySelector<HTMLElement>('.lessons-empty')!;
+		const row = (selector: string, lesson: Lesson) => {
+			const template = tile.querySelector<HTMLTemplateElement>(selector)!;
+			const item = template.content.firstElementChild!.cloneNode(true) as HTMLElement;
+			item.dataset.key = lesson.key;
+			item.querySelector('.lesson-when')!.textContent = when(lesson);
+			item.querySelector('.lesson-student')!.textContent = lesson.student;
+			return item;
+		};
+
+		let unpaidCount = 0;
+		const setUnpaidCount = (n: number) => {
+			unpaidCount = n;
+			unpaidPart.hidden = n === 0;
+			unpaidTitle.textContent = (d.unpaid ?? '{n}').replace('{n}', String(n));
+		};
+
+		watchLive<LessonsData>(
+			tile,
+			({ upcoming, unpaid }) => {
+				upcomingList.replaceChildren(...upcoming.map((lesson) => row('[data-lesson-template]', lesson)));
+				empty.hidden = upcoming.length > 0;
+				unpaidList.replaceChildren(...unpaid.slice(0, shown).map((lesson) => row('[data-unpaid-template]', lesson)));
+				setUnpaidCount(unpaid.length);
+			},
+			10 * 60_000,
+		);
+
+		/* Marked at once; put back with a note if the save fails. */
+		unpaidList.addEventListener('click', async (event) => {
+			const button = (event.target as Element).closest<HTMLButtonElement>('.lesson-paid');
+			const item = button?.closest<HTMLElement>('.lesson');
+			if (!button || !item?.dataset.key) return;
+			button.disabled = true;
+			item.hidden = true;
+			try {
+				const response = await fetch('/api/private/payments', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ key: item.dataset.key, paid: true }),
+				});
+				if (!response.ok) throw new Error(String(response.status));
+				item.remove();
+				setUnpaidCount(unpaidCount - 1);
+			} catch {
+				item.hidden = false;
+				button.disabled = false;
+				button.title = d.failed ?? '';
+			}
+		});
+	}
+</script>
+
+<style>
+	.lessons-box {
+		container-type: inline-size;
+		height: 100%;
+	}
+
+	.lessons {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		height: 100%;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.lessons-part {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.lessons-part[hidden] {
+		display: none;
+	}
+
+	.lessons-part + .lessons-part {
+		padding-top: var(--space-md);
+		border-top: 1px solid var(--border);
+	}
+
+	/* Wide: the next lessons and the unpaid ones side by side. */
+	@container (min-width: 480px) {
+		.lessons {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			gap: var(--space-xl);
+		}
+
+		.lessons-part + .lessons-part {
+			padding: 0 0 0 var(--space-xl);
+			border-top: 0;
+			border-left: 1px solid var(--border);
+		}
+	}
+
+	.lessons-title {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-weight: 500;
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	/* Not paid yet: a real thing to chase (koncept.md §5). */
+	.lessons-title-unpaid,
+	.lesson-unpaid .lesson-when {
+		color: var(--status-down);
+	}
+
+	.lessons-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3xs);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.lesson {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--space-md);
+		line-height: 1.3;
+	}
+
+	.lesson[hidden] {
+		display: none;
+	}
+
+	.lesson-when {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+		white-space: nowrap;
+	}
+
+	/* The next lesson reads first. */
+	[data-list='upcoming'] .lesson:first-child .lesson-when {
+		color: var(--text);
+	}
+
+	.lesson-student {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.lesson-paid {
+		display: inline-grid;
+		place-items: center;
+		width: calc(var(--space-xl) + var(--space-2xs));
+		height: calc(var(--space-xl) + var(--space-2xs));
+		padding: 0;
+		border: 1px solid var(--border-hover);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		color: var(--text);
+		cursor: pointer;
+		transition: background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.lesson-paid:hover {
+		background: var(--surface-hover);
+	}
+
+	.lessons-empty {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.lessons-empty[hidden] {
+		display: none;
+	}
+</style>

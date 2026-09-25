@@ -44,3 +44,8 @@ export async function cached<T>(key: string, ttlMs: number, load: () => Promise<
 
 	return { value: entry.value as T, updatedAt: new Date(entry.updatedAt) };
 }
+
+/** Drops a cached value, so the next request loads it again — after a write. */
+export function forget(key: string) {
+	entries.delete(key);
+}

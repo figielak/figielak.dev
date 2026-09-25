@@ -1,0 +1,205 @@
+---
+import Tile from '../ui/Tile.astro';
+import Icon from '../ui/Icon.astro';
+import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
+import { dotState } from '../../lib/live';
+import { services } from '../../lib/services';
+import type { Monitors } from '../../lib/mocks/homelab-private';
+
+/**
+ * The homelab services in one line (koncept.md §3.4): each a link with its
+ * Uptime Kuma status and response time, matched by name. Private dashboard
+ * only: the host names are real and resolve only over Tailscale (§14).
+ *
+ * The links work without the monitors, so they stay on screen in every
+ * state; only the dots and times wait for the data, and on an error the
+ * tile's dot turns red while the service dots stay grey.
+ */
+interface Props {
+	monitors: Monitors;
+	endpoint?: string;
+	area?: string;
+}
+
+const { monitors, endpoint, area } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const byName = new Map((monitors.data?.monitors ?? []).map((monitor) => [monitor.name, monitor]));
+const uptime = new Intl.NumberFormat(lang, { maximumFractionDigits: 2 });
+
+const title = (name: string) => {
+	const monitor = byName.get(name);
+	if (!monitor) return t('services.noData');
+	const status = t(monitor.up ? 'services.up' : 'services.down');
+	return monitor.uptime30d === undefined
+		? status
+		: `${status} · ${t('services.uptime').replace('{n}', uptime.format(monitor.uptime30d))}`;
+};
+---
+
+<Tile
+	area={area}
+	label={t('tile.services')}
+	icon="activity"
+	dense
+	class="services-tile"
+	data-endpoint={endpoint}
+	data-lang={lang}
+	data-up={t('services.up')}
+	data-down={t('services.down')}
+	data-no-data={t('services.noData')}
+	data-uptime={t('services.uptime')}
+>
+	<LiveDot slot="meta" state={dotState(monitors.state)} />
+
+	<LiveBody state={monitors.state} errorText={t('services.unavailable')}>
+		<ul class="services">
+			{
+				services.map((service) => {
+					const monitor = byName.get(service.name);
+					return (
+						<li>
+							<a
+								class="service"
+								href={service.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								title={title(service.name)}
+								data-name={service.name}
+							>
+								<LiveDot state={monitor ? (monitor.up ? 'up' : 'down') : 'none'} />
+								<Icon name={service.icon} size={14} />
+								<span class="service-name">{service.name}</span>
+								<span class="service-ms" data-skeleton>
+									{monitor?.avgMs === undefined ? '' : `${Math.round(monitor.avgMs)} ms`}
+								</span>
+							</a>
+						</li>
+					);
+				})
+			}
+		</ul>
+	</LiveBody>
+</Tile>
+
+<script>
+	import { watchLive } from '../../scripts/live';
+	import type { Monitors } from '../../lib/mocks/homelab-private';
+
+	type MonitorsData = Omit<NonNullable<Monitors['data']>, 'updatedAt'>;
+
+	for (const tile of document.querySelectorAll<HTMLElement>('.services-tile[data-endpoint]')) {
+		const d = tile.dataset;
+		const uptime = new Intl.NumberFormat(d.lang, { maximumFractionDigits: 2 });
+
+		watchLive<MonitorsData>(
+			tile,
+			({ monitors }) => {
+				const byName = new Map(monitors.map((monitor) => [monitor.name, monitor]));
+				for (const link of tile.querySelectorAll<HTMLAnchorElement>('.service')) {
+					const monitor = byName.get(link.dataset.name ?? '');
+					link.querySelector<HTMLElement>('.live-dot')!.dataset.state = monitor ? (monitor.up ? 'up' : 'down') : 'none';
+					link.querySelector('.service-ms')!.textContent =
+						monitor?.avgMs === undefined ? '' : `${Math.round(monitor.avgMs)} ms`;
+					const status = monitor ? ((monitor.up ? d.up : d.down) ?? '') : (d.noData ?? '');
+					link.title =
+						monitor?.uptime30d === undefined
+							? status
+							: `${status} · ${(d.uptime ?? '{n}').replace('{n}', uptime.format(monitor.uptime30d))}`;
+				}
+			},
+			60_000,
+		);
+	}
+</script>
+
+<style>
+	/* One line: the label on the left, the services beside it. */
+	:global(.tile.services-tile) {
+		flex-direction: row;
+		align-items: center;
+		gap: var(--space-xl);
+	}
+
+	:global(.tile.services-tile) > :global(.tile-header) {
+		flex: none;
+		gap: var(--space-sm);
+	}
+
+	:global(.tile.services-tile) > :global(.tile-body) {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* The links do not depend on the monitors: on an error they stay, with
+	   grey dots, and the tile's dot alone says the status is missing. */
+	.services-tile :global(.live-body[data-live='error'] > .live-content) {
+		visibility: visible;
+	}
+
+	.services-tile :global(.live-body[data-live='error'] > .live-error) {
+		display: none;
+	}
+
+	.services-tile :global(.live-body[data-live='error'] .service .live-dot) {
+		background: var(--text-subtle);
+	}
+
+	.services {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-sm);
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.service {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		padding: var(--space-2xs) var(--space-md);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		color: var(--text);
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			border-color var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.service:hover {
+		border-color: var(--border-hover);
+		background: var(--surface-hover);
+	}
+
+	.service > :global(svg) {
+		color: var(--text-muted);
+	}
+
+	.service-ms {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+	}
+
+	.service-ms:empty {
+		display: none;
+	}
+
+	/* Below the desktop the label goes above the services, as in other tiles. */
+	@media (max-width: 1023px) {
+		:global(.tile.services-tile) {
+			flex-direction: column;
+			align-items: stretch;
+			gap: var(--space-md);
+		}
+	}
+</style>
