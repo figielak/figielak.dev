@@ -15,10 +15,12 @@ interface Props {
 	/** Base64 of the value — `emailEncoded` / `phoneEncoded` from src/lib/contact.ts. */
 	encoded: string;
 	kind?: 'email' | 'phone';
+	/** Icon-only button with a tooltip, so a long value fits a narrow column. */
+	compact?: boolean;
 	class?: string;
 }
 
-const { encoded, kind = 'email', class: className } = Astro.props;
+const { encoded, kind = 'email', compact = false, class: className } = Astro.props;
 
 const t = useTranslations(getLangFromUrl(Astro.url));
 const labels = {
@@ -33,13 +35,15 @@ const labels = {
 	data-copy-value={encoded}
 	data-label-copied={t('contact.copied')}
 	data-label-failed={t('contact.copyFailed')}
+	data-compact={compact ? '' : undefined}
 	aria-label={labels.action}
+	title={compact ? labels.action : undefined}
 >
 	<span class="copy-value-text" data-value-text>{labels.hidden}</span>
 	<span class="copy-value-status" aria-live="polite">
 		<span class="copy-value-idle">
 			<Icon name="copy" size={14} />
-			{t('contact.copy')}
+			<span class="copy-value-word">{t('contact.copy')}</span>
 		</span>
 		<span class="copy-value-done">
 			<Icon name="check" size={14} />
@@ -173,6 +177,27 @@ const labels = {
 
 	.copy-value[data-state] .copy-value-done {
 		display: inline-flex;
+	}
+
+	/* Compact: icons only. The confirmation text stays for screen readers,
+	   and a failure still says so in words. */
+	.copy-value[data-compact] {
+		padding-left: var(--space-md);
+	}
+
+	.copy-value[data-compact] .copy-value-idle,
+	.copy-value[data-compact] .copy-value-done {
+		padding: var(--space-2xs);
+	}
+
+	.copy-value[data-compact] .copy-value-word,
+	.copy-value[data-compact]:not([data-state='failed']) [data-status-text] {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 
 	/* No tick when the copy did not happen. */

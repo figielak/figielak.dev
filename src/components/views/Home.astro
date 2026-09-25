@@ -1,5 +1,4 @@
 ---
-import Tile from '../ui/Tile.astro';
 import Pill from '../ui/Pill.astro';
 import CopyValue from '../ui/CopyValue.astro';
 import Dossier from '../ui/Dossier.astro';
@@ -7,7 +6,9 @@ import DossierSection from '../ui/DossierSection.astro';
 import ProfileCard from '../ui/ProfileCard.astro';
 import type { Social } from '../ui/ProfileCard.astro';
 import DashboardTeaserTile from '../tiles/DashboardTeaserTile.astro';
+import FeaturedCarousel from '../ui/FeaturedCarousel.astro';
 import { mockWeather } from '../../lib/mocks/weather';
+import { featuredProjects } from '../../lib/featured';
 import { emailEncoded, githubUrl, linkedinUrl } from '../../lib/contact';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 
@@ -32,11 +33,35 @@ const socials: Social[] = [
 		href: linkedinUrl,
 		external: true,
 	},
-	/* href is filled in by CopyValue's script from the encoded address. */
-	{ label: 'E-mail', icon: 'mail', attrs: { 'data-mailto': emailEncoded } },
 ];
 
-const experience = [{ period: '2024–' }, { period: '2023–2024' }, { period: '2022–2023' }];
+/* Newest first. `period`: months (MM.YYYY) for stints under a year, years
+   otherwise; `current` marks what is still going on. The company (`org`)
+   shares the title's line, place and length go under it (`meta`), and `note`
+   is one sentence on what I did — context, not a list of duties. */
+const experience = [
+	{
+		period: '02.2026–05.2026',
+		title: 'exp.bmm.title',
+		org: 'exp.bmm.org',
+		meta: 'exp.bmm.meta',
+		note: 'exp.bmm.note',
+	},
+	{
+		period: `2025–${t('edu.present')}`,
+		title: 'exp.mlclub.title',
+		meta: 'exp.mlclub.meta',
+		note: 'exp.mlclub.note',
+		current: true,
+	},
+	{
+		period: '2023, 2024',
+		title: 'exp.mfcomp.title',
+		org: 'exp.mfcomp.org',
+		meta: 'exp.mfcomp.meta',
+		note: 'exp.mfcomp.note',
+	},
+] as const;
 
 /* Newest first. A missing `end` means ongoing. */
 const education = [
@@ -71,37 +96,39 @@ const skills = [
 		name={name}
 		role={t('home.role')}
 		status={t('home.status')}
-		location={t('home.location')}
 		bio={t('home.bio')}
 		socials={socials}
+		inlineSocials
 	>
 		<Fragment slot="actions">
 			<a class="button button-primary" data-mailto={emailEncoded}>{t('home.write')}</a>
 			<a class="button" href={cvHref}>{t('home.cv')}</a>
 		</Fragment>
 
-		<CopyValue encoded={emailEncoded} />
+		<CopyValue encoded={emailEncoded} compact />
 	</ProfileCard>
 
 	<DossierSection
 		label={t('home.featured')}
 		action={{ href: localizePath('/projects', lang), label: t('home.allProjects') }}
 	>
-		<Tile>
-			<div class="featured">
-				<div class="featured-cover" aria-hidden="true"></div>
-				<p class="placeholder">{t('state.placeholder')}</p>
-			</div>
-		</Tile>
+		<FeaturedCarousel projects={featuredProjects} />
 	</DossierSection>
 
 	<DossierSection label={t('tile.experience')} action={{ href: cvHref, label: t('home.fullCv') }}>
 		<ul class="rows">
 			{
 				experience.map((item) => (
-					<li class="row">
+					<li class="row" data-current={'current' in item ? '' : undefined}>
 						<span class="row-period">{item.period}</span>
-						<span class="placeholder">{t('state.placeholder')}</span>
+						<span class="row-main">
+							<span class="row-title">
+								{t(item.title)}
+								{'org' in item && <span class="row-org"> · {t(item.org)}</span>}
+							</span>
+							<span class="row-detail">{t(item.meta)}</span>
+							<span class="row-note">{t(item.note)}</span>
+						</span>
 					</li>
 				))
 			}
@@ -120,6 +147,10 @@ const skills = [
 		</ul>
 	</DossierSection>
 
+	<DossierSection label={t('tile.languages')}>
+		<p class="languages">{t('home.languages')}</p>
+	</DossierSection>
+
 	<DossierSection label={t('tile.education')}>
 		<ul class="rows">
 			{
@@ -136,25 +167,11 @@ const skills = [
 		</ul>
 	</DossierSection>
 
-	<DashboardTeaserTile weather={weather} />
+	<DashboardTeaserTile weather={weather} music={{ state: 'loading' }} musicEndpoint="/api/music" />
 </Dossier>
 
 <style>
-	.featured {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-lg);
-	}
-
-	.featured-cover {
-		aspect-ratio: 16 / 9;
-		border-radius: var(--radius-inset);
-		border: 1px solid var(--border);
-		background: var(--surface-inset);
-	}
-
-	.placeholder {
+	.languages {
 		margin: 0;
-		color: var(--text-subtle);
 	}
 </style>

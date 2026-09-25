@@ -112,6 +112,60 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		</div>
 
 		<Terminal />
+
+		<script>
+			/* Phones: the navigation is pinned to the top, slides away while the
+			   reader scrolls down and comes back on the first move up (koncept.md
+			   §2). Hidden, it is also inert, so Tab never lands in it unseen. */
+			const topbar = document.querySelector<HTMLElement>('.topbar');
+			const phone = window.matchMedia('(max-width: 639px)');
+			/* Pixels of scroll in one direction before the bar reacts, so a
+			   shaky thumb does not make it flicker. */
+			const THRESHOLD = 8;
+
+			if (topbar) {
+				let last = window.scrollY;
+				let queued = false;
+
+				const setHidden = (hidden: boolean) => {
+					topbar.toggleAttribute('data-hidden', hidden);
+					topbar.toggleAttribute('inert', hidden);
+				};
+
+				const update = () => {
+					queued = false;
+					const y = window.scrollY;
+					/* The terminal locks the page; its scroll jumps say nothing. */
+					if (!phone.matches || document.documentElement.classList.contains('terminal-open')) {
+						last = y;
+						return;
+					}
+					if (y <= topbar.offsetHeight) setHidden(false);
+					else if (y - last > THRESHOLD) setHidden(true);
+					else if (last - y > THRESHOLD) setHidden(false);
+					else return;
+					last = y;
+				};
+
+				window.addEventListener(
+					'scroll',
+					() => {
+						if (queued) return;
+						queued = true;
+						requestAnimationFrame(update);
+					},
+					{ passive: true },
+				);
+
+				/* Wider screens (a turned phone) never hide it. */
+				phone.addEventListener('change', () => {
+					if (!phone.matches) setHidden(false);
+					last = window.scrollY;
+				});
+
+				topbar.addEventListener('focusin', () => setHidden(false));
+			}
+		</script>
 	</body>
 </html>
 
@@ -121,6 +175,29 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 	.topbar {
 		width: 100%;
 		border-bottom: 1px solid var(--border-divider);
+	}
+
+	/* Phones: pinned to the top on frosted glass; the script above slides it
+	   away while scrolling down. Only the transform moves (koncept.md §8). */
+	@media (max-width: 639px) {
+		.topbar {
+			position: sticky;
+			top: 0;
+			z-index: var(--z-nav);
+			background: var(--nav-glass);
+			backdrop-filter: blur(var(--glass-blur));
+			transition: transform var(--duration-nav) var(--ease-out);
+		}
+
+		.topbar[data-hidden] {
+			transform: translateY(-100%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.topbar {
+			transition: none;
+		}
 	}
 
 	.shell {

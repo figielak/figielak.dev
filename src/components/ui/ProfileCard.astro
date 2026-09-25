@@ -25,14 +25,30 @@ interface Props {
 	name: string;
 	role: string;
 	status: string;
-	location: string;
+	/** Own line under the status; leave out when the role already names the place. */
+	location?: string;
 	bio: string;
 	socials: readonly Social[];
 	/** `lg` gives the photo more room, e.g. where parents want to see who teaches. */
 	avatarSize?: 'md' | 'lg';
+	/** Social icons in one row with the actions instead of a row of their own. */
+	inlineSocials?: boolean;
 }
 
-const { name, role, status, location, bio, socials, avatarSize = 'md' } = Astro.props;
+const {
+	name,
+	role,
+	status,
+	location,
+	bio,
+	socials,
+	avatarSize = 'md',
+	inlineSocials = false,
+} = Astro.props;
+
+/* "Student · Data & Software Developer · Rzeszów": each part stays whole and
+   the separator leads the next part, so a line never ends on a dot. */
+const roleParts = role.split(' · ');
 
 /* Rendered widths for 1x–3x screens; must match --size-avatar / --size-avatar-lg. */
 const avatarPx = avatarSize === 'lg' ? 160 : 96;
@@ -66,7 +82,18 @@ const avatar = Object.values(avatarFiles)[0]?.default;
 
 		<div>
 			<h1 class="profile-name">{name}</h1>
-			<p class="profile-role">{role}</p>
+			<p class="profile-role">
+				{
+					roleParts.length > 1
+						? roleParts.map((part, i) => (
+								<>
+									{i > 0 && ' '}
+									<span class="profile-role-part">{i > 0 ? `· ${part}` : part}</span>
+								</>
+							))
+						: role
+				}
+			</p>
 		</div>
 
 		<p class="profile-status">
@@ -74,36 +101,43 @@ const avatar = Object.values(avatarFiles)[0]?.default;
 			<span>{status}</span>
 		</p>
 
-		<p class="profile-muted">{location}</p>
+		{location && <p class="profile-muted">{location}</p>}
 
 		<p class="profile-muted">{bio}</p>
 
-		{
-			Astro.slots.has('actions') && (
-				<div class="profile-actions">
-					<slot name="actions" />
-				</div>
-			)
-		}
-
-		<slot />
-
-		<ul class="profile-socials">
+		{/* Inline: actions and icons share one wrapping row, the default slot
+		    (e.g. the e-mail field) comes after it. Otherwise the wrapper is
+		    transparent and the order is actions, default slot, icons. */}
+		<div class="profile-links" data-inline={inlineSocials ? '' : undefined}>
 			{
-				socials.map((social) => (
-					<li>
-						<IconLink
-							href={social.href}
-							label={social.label}
-							external={social.external}
-							{...social.attrs}
-						>
-							<Icon name={social.icon} size={22} />
-						</IconLink>
-					</li>
-				))
+				Astro.slots.has('actions') && (
+					<div class="profile-actions">
+						<slot name="actions" />
+					</div>
+				)
 			}
-		</ul>
+
+			{!inlineSocials && <slot />}
+
+			<ul class="profile-socials">
+				{
+					socials.map((social) => (
+						<li>
+							<IconLink
+								href={social.href}
+								label={social.label}
+								external={social.external}
+								{...social.attrs}
+							>
+								<Icon name={social.icon} size={22} />
+							</IconLink>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		{inlineSocials && <slot />}
 	</div>
 </Tile>
 
@@ -141,11 +175,21 @@ const avatar = Object.values(avatarFiles)[0]?.default;
 		color: var(--text-muted);
 	}
 
+	.profile-role-part {
+		white-space: nowrap;
+	}
+
+	/* A badge, not a plain line: it is the first thing a visitor looks for. */
 	.profile-status {
 		display: flex;
 		align-items: center;
 		gap: var(--space-sm);
+		width: fit-content;
 		margin: 0;
+		padding: var(--space-2xs) var(--space-md);
+		border: 1px solid var(--status-ok-border);
+		border-radius: var(--radius-pill);
+		background: var(--status-ok-soft);
 		color: var(--text);
 	}
 
@@ -166,5 +210,26 @@ const avatar = Object.values(avatarFiles)[0]?.default;
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	.profile-links {
+		display: contents;
+	}
+
+	/* Buttons and icons in one row: slimmer buttons at the icons' height, so
+	   two buttons and two icons fit the 320px column. */
+	.profile-links[data-inline] {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+	}
+
+	.profile-links[data-inline] .profile-actions {
+		display: contents;
+	}
+
+	.profile-links[data-inline] .profile-actions :global(.button) {
+		min-height: var(--size-icon-button);
+		padding-inline: var(--space-lg);
 	}
 </style>

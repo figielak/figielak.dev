@@ -41,7 +41,7 @@ export function getStaticPaths() {
 			LIVE_STATES.map((state) => (
 				<section class="state">
 					<TileLabel>{state}</TileLabel>
-					<DashboardTeaserTile weather={mockWeather(state)} />
+					<DashboardTeaserTile weather={mockWeather(state)} music={mockMusic(state)} />
 					<div class="pair">
 						<WeatherTile weather={mockWeather(state)} air={mockAir(state)} />
 						<EventTile />

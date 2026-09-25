@@ -1,0 +1,362 @@
+---
+import { Image } from 'astro:assets';
+import Tile from './Tile.astro';
+import Pill from './Pill.astro';
+import Icon from './Icon.astro';
+import type { FeaturedProject } from '../../lib/featured';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
+
+/**
+ * Featured projects on the home page (koncept.md §3.1) as a sideways strip:
+ * one card per project, the next one peeking in; ‹ › under the strip jump a
+ * card at a time with a smooth scroll (instant with reduced motion), and a
+ * swipe or the arrow keys on the focused strip work as well.
+ * The screenshot fills the card; name, summary, highlights and stack sit in a
+ * right-hand column on a sideways scrim that is solid behind the text. On
+ * phones the scrim turns downwards and the text moves to the bottom.
+ * Every card has the same height, with or without a screenshot.
+ */
+interface Props {
+	projects: FeaturedProject[];
+}
+
+const SHOT_WIDTHS = [480, 720, 960, 1440];
+
+const { projects } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div class="featured-carousel">
+	<div class="track" tabindex="0" aria-label={t('home.featured')}>
+		{
+			projects.map((project, i) => (
+				<Tile href={localizePath(project.href, lang)} arrow={false} class="slide">
+					<article class="card">
+						<div class="shot">
+							{project.image ? (
+								<Image
+									src={project.image}
+									alt={t('featured.shot').replace('{name}', project.title)}
+									widths={SHOT_WIDTHS}
+									sizes="(min-width: 1024px) 50vw, 100vw"
+									loading={i === 0 ? 'eager' : 'lazy'}
+								/>
+							) : (
+								<span class="empty">
+									<Icon name="photo" size={24} />
+									{t('state.placeholder')}
+								</span>
+							)}
+						</div>
+						<div class="text">
+							<p class="title">{project.title} ↗</p>
+							<p class="summary">{project.summary[lang]}</p>
+							{project.features && (
+								<ul class="features">
+									{project.features.map((feature) => (
+										<li>
+											<Icon name={feature.icon} size={14} />
+											{feature[lang]}
+										</li>
+									))}
+								</ul>
+							)}
+							<ul class="stack">
+								{project.stack.map((item) => (
+									<li>
+										<Pill>{item}</Pill>
+									</li>
+								))}
+							</ul>
+						</div>
+					</article>
+				</Tile>
+			))
+		}
+	</div>
+	{
+		projects.length > 1 && (
+			<div class="controls">
+				<span class="counter" aria-hidden="true">
+					<span class="counter-current">1</span> / {projects.length}
+				</span>
+				<span class="buttons">
+					<button type="button" class="control" data-step="-1" aria-label={t('featured.prev')} disabled>
+						<Icon name="chevron-left" size={18} />
+					</button>
+					<button type="button" class="control" data-step="1" aria-label={t('featured.next')}>
+						<Icon name="chevron-right" size={18} />
+					</button>
+				</span>
+			</div>
+		)
+	}
+</div>
+
+<script>
+	for (const carousel of document.querySelectorAll<HTMLElement>('.featured-carousel')) {
+		const track = carousel.querySelector<HTMLElement>('.track');
+		const current = carousel.querySelector<HTMLElement>('.counter-current');
+		const buttons = [...carousel.querySelectorAll<HTMLButtonElement>('.control')];
+		if (!track || buttons.length === 0) continue;
+
+		const slides = [...track.children] as HTMLElement[];
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+		/* The card whose left edge is nearest the strip's; at the end of the
+		   scroll the last card, which is narrower than the strip and never
+		   reaches its left edge. */
+		const index = () => {
+			if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 1) return slides.length - 1;
+			const left = track.getBoundingClientRect().left;
+			let best = 0;
+			slides.forEach((slide, i) => {
+				const distance = Math.abs(slide.getBoundingClientRect().left - left);
+				if (distance < Math.abs(slides[best].getBoundingClientRect().left - left)) best = i;
+			});
+			return best;
+		};
+
+		const update = () => {
+			const i = index();
+			if (current) current.textContent = String(i + 1);
+			buttons.forEach((button) => {
+				const step = Number(button.dataset.step);
+				button.disabled = step < 0 ? i === 0 : i === slides.length - 1;
+			});
+		};
+
+		for (const button of buttons) {
+			button.addEventListener('click', () => {
+				const target = slides[Math.min(Math.max(index() + Number(button.dataset.step), 0), slides.length - 1)];
+				track.scrollTo({
+					left: target.offsetLeft - slides[0].offsetLeft,
+					behavior: reduced.matches ? 'auto' : 'smooth',
+				});
+			});
+		}
+
+		/* The counter and buttons follow the strip however it moved (buttons, swipe, keys). */
+		track.addEventListener('scroll', update, { passive: true });
+		update();
+	}
+</script>
+
+<style>
+	/* One card per page with the next peeking in; the track keeps a little air
+	   above for the hover lift. The scrollbar is hidden, the ‹ › move it. */
+	.track {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: var(--featured-slide-width);
+		gap: var(--grid-gap);
+		padding-top: var(--space-xs);
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scrollbar-width: none;
+	}
+
+	.track::-webkit-scrollbar {
+		display: none;
+	}
+
+	.controls {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: var(--space-md);
+	}
+
+	.counter {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		color: var(--text-muted);
+	}
+
+	.counter-current {
+		color: var(--text);
+	}
+
+	.buttons {
+		display: inline-flex;
+		gap: var(--space-xs);
+	}
+
+	.control {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--size-carousel-control);
+		height: var(--size-carousel-control);
+		padding: 0;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: var(--surface-inset);
+		color: var(--text-muted);
+		cursor: pointer;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out),
+			background-color var(--duration-hover) var(--ease-out);
+	}
+
+	.control:hover:not(:disabled) {
+		color: var(--text);
+		border-color: var(--border-hover);
+		background: var(--surface-hover);
+	}
+
+	/* At either end: still in place, so the row does not jump, but clearly off. */
+	.control:disabled {
+		opacity: 0.35;
+		cursor: default;
+	}
+
+	.track :global(.slide) {
+		height: var(--featured-slide-height);
+		padding: 0;
+		scroll-snap-align: start;
+	}
+
+	.card {
+		position: relative;
+		display: grid;
+		height: 100%;
+		margin: 0;
+	}
+
+	.shot {
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
+		background: var(--surface-inset);
+	}
+
+	.shot :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top left;
+	}
+
+	.empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-sm);
+		height: 100%;
+		color: var(--text-subtle);
+	}
+
+	.text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-width: 0;
+		padding: var(--tile-padding);
+	}
+
+	.title {
+		margin: 0;
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.summary {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	.features,
+	.stack {
+		display: flex;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.features {
+		flex-direction: column;
+		gap: var(--space-xs);
+		margin-top: var(--space-md);
+		font-family: var(--font-mono);
+		font-size: var(--size-small);
+		color: var(--text-muted);
+	}
+
+	.features li {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.stack {
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		margin-top: auto;
+		padding-top: var(--space-md);
+	}
+
+	/* The screenshot under the whole card, the scrim over it, and the text
+	   in the right-hand column on top. */
+	.card {
+		grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+	}
+
+	.shot {
+		position: absolute;
+		inset: 0;
+	}
+
+	/* Without a screenshot the placeholder stays in the part the scrim leaves clear. */
+	.empty {
+		width: 60%;
+	}
+
+	.card::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--featured-scrim-side);
+		pointer-events: none;
+	}
+
+	.text {
+		position: relative;
+		grid-column: 2;
+		z-index: 1;
+	}
+
+	@media (max-width: 639px) {
+		.card {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.card::after {
+			background: var(--featured-scrim-down);
+		}
+
+		.empty {
+			width: auto;
+			height: 45%;
+		}
+
+		.text {
+			grid-column: 1;
+			justify-content: flex-end;
+		}
+
+		.features {
+			display: none;
+		}
+
+		.stack {
+			margin-top: 0;
+		}
+	}
+</style>

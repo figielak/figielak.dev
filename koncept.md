@@ -38,6 +38,7 @@ Nawigacja: górny pasek w formie pigułki, wspólny dla wszystkich widoków.
 - Po lewej: logo `figielak_` — nazwa i migający czerwony kursor `_` jak w terminalu (bez migania przy reduced motion)
 - Na środku: Wizytówka · Projekty · Dashboard · Korepetycje
 - Po prawej: PL/EN i przełącznik motywu
+- Na telefonie (<640px) pasek jest przyklejony do góry ekranu na prawie kryjącym tle (`--nav-glass`, rozmycie `--glass-blur`): chowa się przy przewijaniu w dół i wraca przy pierwszym ruchu w górę (próg 8 px, żeby nie migał), a przy samej górze strony jest zawsze widoczny. Schowany jest `inert`, a fokus w nim go pokazuje. Na desktopie pasek przewija się razem ze stroną.
 
 ---
 
@@ -56,18 +57,18 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 ```
 ┌──────────────┬──────────────────────────┐
 │  [ avatar ]  │  WYRÓŻNIONY PROJEKT      │
-│              │  ┌────────────────────┐  │
-│  Krystian    │  │   zrzut 16:9       │  │
-│  Figiela     │  └────────────────────┘  │
+│              │  ┌────────────────┐┌──  │
+│  Krystian    │  │ zrzut ░ opis   ││    │
+│  Figiela     │  └────────────────┘└──  │
 │  Student ·   │  ──────────────────────  │
-│  Data &      │  DOŚWIADCZENIE           │
-│  Software Dev│  2024 —  Firma · rola    │
-│  ● Dostępny  │  ──────────────────────  │
-│    Rzeszów   │  UMIEJĘTNOŚCI            │
-│              │  [TS] [Astro] [Go] …     │
-│  [ Napisz ]  │  ──────────────────────  │
-│  [ CV ↗ ]    │  EDUKACJA                │
-│  gh li mail  │  ──────────────────────  │
+│  Data & SW   │  DOŚWIADCZENIE           │
+│  · Rzeszów   │  2024 —  Firma · rola    │
+│ [● Otwarty   │  ──────────────────────  │
+│   na staż]   │  UMIEJĘTNOŚCI            │
+│  bio         │  [Python] [SQL] …        │
+│ [Napisz][CV] │  ──────────────────────  │
+│   [gh] [li]  │  EDUKACJA                │
+│  [@      ⧉]  │  ──────────────────────  │
 │              │  [ zajawka dashboardu ]  │
 └──────────────┴──────────────────────────┘
      sticky              scroll
@@ -77,23 +78,23 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 
 | Element | Zawartość |
 |---|---|
-| avatar | zdjęcie lub inicjał |
-| imię i rola | nagłówek hero + rola pod spodem |
-| status | zielona kropka z pulsowaniem + „Dostępny do pracy” |
-| lokalizacja | miasto i kraj |
-| bio | 2–3 zdania o mnie |
-| akcje | „Napisz” (pełny akcent) i „Pobierz CV” (PDF z Typst, PL/EN zgodnie z językiem); **kopiowanie e-maila jednym kliknięciem** z potwierdzeniem „Skopiowano ✓” |
-| social | GitHub, LinkedIn i inne; ikony w kolorze tekstu albo prawdziwe loga |
+| avatar | zdjęcie lub inicjał, zaokrąglony kwadrat; zdjęcie na ciemnym tle, żeby nie odstawało od motywu |
+| imię i rola | nagłówek hero + rola pod spodem, z miastem na końcu („Student · Data & Software Developer · Rzeszów”); człony się nie łamią, a kropka zaczyna następny człon, więc linia nigdy nie kończy się kropką |
+| status | plakietka (pigułka w tle `--status-ok-soft` z obwódką `--status-ok-border`): zielona kropka z pulsowaniem + konkretnie, czego szukam: „Otwarty na staż (Data / Backend)” |
+| bio | 2 krótkie zdania o mnie |
+| akcje | „Napisz” (pełny akcent) i „Pobierz CV” (EN: „Contact”, „CV” — krótko, żeby zmieściły się w rzędzie z ikonami; PDF z Typst, PL/EN zgodnie z językiem); **kopiowanie e-maila jednym kliknięciem** z potwierdzeniem „Skopiowano ✓” — adres widoczny w całości, obok sam przycisk z ikoną kopiowania (etykieta w `aria-label` i dymku; na `/maths` z napisem „Kopiuj”) |
+| social | GitHub i LinkedIn w jednym rzędzie z przyciskami akcji (`ProfileCard inlineSocials`); ikony w kolorze tekstu albo prawdziwe loga. Bez ikony e-maila — adres dają już „Napisz” i pole kopiowania |
 
 **Prawa kolumna — strumień sekcji**, rozdzielonych włosową linią `--border-divider`:
 
 | Sekcja | Zawartość |
 |---|---|
-| Wyróżniony projekt | jedyna sekcja w ramce: zrzut 16:9, nazwa, 1 zdanie, tagi; akcja „Wszystkie projekty ↗” prowadzi do `/projects` |
-| Doświadczenie | wiersze `okres · stanowisko`, okres w mono z `tabular-nums`; akcja „Pełne CV ↗” |
+| Wyróżniony projekt | jedyna sekcja w ramkach: przewijany w bok pasek kart projektów (`FeaturedCarousel`, kolejna karta wystaje; pod paskiem licznik „1 / 3” i strzałki ‹ ›, które przeskakują o jedną kartę płynnym przewinięciem — bez animacji przy reduced motion — i gasną na końcach; pasek przewijania ukryty, działa też przesunięcie palcem i strzałki klawiatury). Zrzut wypełnia całą kartę, a w prawej kolumnie na gradiencie (przezroczysty do 35%, pełny od 80% — tokeny `--featured-scrim-*`) stoją nazwa ↗, 1 zdanie, kilka funkcji z ikonami i tagi; na telefonie gradient idzie w dół, tekst na dole, bez listy funkcji. Karty mają stałą wysokość, także bez zrzutu. Akcja „Wszystkie projekty ↗” prowadzi do `/projects` |
+| Doświadczenie | wiersze `okres · stanowisko · firma` (firma w linii tytułu, szara), pod spodem miejsce i czas trwania, a na końcu **jedno** zdanie o tym, co tam robiłem (czynność + technologia, bez listy punktów; o stopień mniejsze, nie ciemniejsze — `--text-subtle` nie ma AA). Ciasno wewnątrz pozycji, duży odstęp między pozycjami, bez linii; okres w mono z `tabular-nums`: miesiące `MM.RRRR–MM.RRRR` dla okresów krótszych niż rok, lata dla dłuższych; akcja „Pełne CV ↗” |
 | Umiejętności | pigułki z nazwami technologii |
+| Języki | jedna linia: „Polski — ojczysty · Angielski — B1” |
 | Edukacja | uczelnia, kierunek, lata — ten sam format wierszy |
-| Zajawka dashboardu | mały kafel na dole: godzina i pogoda, „Więcej o mnie ↗” |
+| Zajawka dashboardu | mały kafel na dole: godzina, pogoda i utwór z Last.fm („teraz gra” / „ostatnio”, na żywo z `/api/music`, 4 stany) — dowód, że dashboard naprawdę działa; stopka „Zobacz dashboard na żywo ↗” |
 
 Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama linia. Dzięki temu w prawej kolumnie widać hierarchię, a nie rząd równorzędnych pudełek.
 
@@ -131,7 +132,7 @@ Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama lin
      sticky              scroll
 ```
 
-**Lewa kolumna — karta tożsamości:** większe zdjęcie niż na wizytówce (160px — rodzic ma widzieć, kto uczy), imię, rola „Korepetycje z matematyki”, status „Przyjmuję nowych uczniów”, lokalizacja, jednozdaniowe bio; akcje „Umów darmową lekcję” (pełny akcent, prowadzi do sekcji kontaktu) i „Zadzwoń”; ikony WhatsApp, Messenger, Instagram, e-mail. Bez CV, GitHuba i LinkedIna.
+**Lewa kolumna — karta tożsamości:** większe zdjęcie niż na wizytówce (160px — rodzic ma widzieć, kto uczy), imię, rola „Korepetycje z matematyki”, status „Przyjmuję nowych uczniów” (plakietka jak na wizytówce), lokalizacja, jednozdaniowe bio; akcje „Umów darmową lekcję” (pełny akcent, prowadzi do sekcji kontaktu) i „Zadzwoń”; ikony WhatsApp, Messenger, Instagram, e-mail. Bez CV, GitHuba i LinkedIna.
 
 **Prawa kolumna — strumień sekcji jako mini-bento.** Treść to rzędy kart (`FeatureTile` w `CardGrid`), nie wiersze tekstu — strona ma dać się przeskanować wzrokiem w kilka sekund. Każda karta: ikona, opcjonalna etykieta mono, tytuł i **jedno** krótkie zdanie. Większe odstępy między sekcjami niż na wizytówce (`Dossier relaxed`).
 
@@ -257,7 +258,11 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits`, `fact`, `term` i
   - grafiki, ilustracje, mapy, wykresy.
 
   Zasady: kolor pochodzi z samego assetu (SVG/obraz), a nie z hexów w stylach komponentów; każdy element graficzny ma sensowny tekst alternatywny; nic kolorowego nie może zbić kontrastu tekstu poniżej AA. Tekst obok grafik nadal jest pełnoprawną treścią — grafika uzupełnia, nie zastępuje.
-- **Zdjęcia i okładki** mogą mieć delikatny ciemny gradient u dołu pod tekstem.
+- **Zdjęcia, okładki i zrzuty ekranu** mogą leżeć pod tekstem na ciemnym gradiencie (scrim) — u dołu albo z boku, po stronie tekstu:
+  - gradient zaczyna się przezroczysty i pod tekstem dochodzi do pełnego krycia (wzór: przezroczysty do 35%, `--featured-scrim-soft` na 60%, `--featured-scrim-solid` od 80%); słaby gradient na ruchliwym obrazie (zrzuty, wykresy) nie wystarcza, bo spod tekstu przebijają liczby i kratki;
+  - tekst na gradiencie musi mieć kontrast AA niezależnie od obrazka — stąd pełne krycie pod tekstem, a nie tylko przyciemnienie;
+  - kolory gradientu tylko z tokenów (`--scrim*`, `--featured-scrim-*`), nigdy hex/rgb w komponencie;
+  - przykłady: okładka w kaflu muzyki (gradient u dołu), karty wyróżnionych projektów na wizytówce (gradient z boku, na telefonie u dołu).
 
 ---
 
@@ -279,17 +284,20 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--accent` | `#E5484D` | akcent: stonowana czerwień, kontrast AA na tle |
 | `--accent-hover` | `#EC5D5E` | akcent po najechaniu |
 | `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
+| `--status-ok-soft` / `--status-ok-border` | `--status-ok` z przezroczystością 0.1 / 0.3 | plakietka statusu w karcie profilu |
 | `--lang-*` | kolory GitHub Linguist | języki w kaflu WakaTime — kolor treści jak loga (§4); najciemniejsze rozjaśnione |
 | `--nav-active` | `rgb(229 72 77 / 0.22)` | tło aktywnej zakładki w nawigacji |
+| `--nav-glass` | `rgb(14 14 16 / 0.9)` | tło przyklejonej nawigacji na telefonie (§2) |
 | `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
 | `--spotlight` | `rgb(229 72 77 / 0.6)` | światło na ramkach kafli wokół kursora (dashboard) |
+| `--featured-scrim-soft` / `--featured-scrim-solid` | `rgb(15 15 17 / 0.85)` / `rgb(15 15 17)` | gradient pod tekstem na zrzutach projektów; gotowe gradienty `--featured-scrim-side` (z boku) i `--featured-scrim-down` (w dół), §4 |
 | `--glow` | `rgb(229 72 77 / 0.35)` | rozmyta poświata pod kaflami dashboardu (tekst `--text-muted` na szkle zostaje ≥ 4,6:1) |
 
 Zasady:
 - **Kropki stanu: czerwień tylko przy problemie.** Czerwień czyta się jak „awaria”, więc gdyby świeciła wszędzie, prawdziwy problem zginąłby w tłumie.
   - Kropka w rogu kafla (świeżość danych): świeże dane — `--text-subtle`, bez pulsu; nieaktualne dane i błąd — `--status-down` (czerwień). Kafle, które nie mogą być nieaktualne (zegar, zajawka dashboardu), nie mają kropki.
-  - Status rzeczy (usługi, deploy, „online”, „teraz gra”, „Dostępny do pracy”): działa — `--status-ok` (zielony); nie działa — `--status-down`; brak danych lub bezczynność — `--text-subtle`.
-  - Pulsują tylko rzeczy dziejące się teraz: „Dostępny do pracy”, „teraz gra”, trwający build.
+  - Status rzeczy (usługi, deploy, „online”, „teraz gra”, status na wizytówce): działa — `--status-ok` (zielony); nie działa — `--status-down`; brak danych lub bezczynność — `--text-subtle`.
+  - Pulsują tylko rzeczy dziejące się teraz: status na wizytówce („Otwarty na staż”), „teraz gra”, trwający build.
 - **Paski** (postęp, CPU/RAM/dysk) mają neutralne wypełnienie `--text-muted`. Paski homelaba robią się czerwone (`--status-down`) od progu zajętości (85%). Bieżący stopień skali powietrza ma kolor `--text`.
 - Inne kolory semantyczne (np. skala jakości powietrza) są dozwolone, jeśli poprawiają czytelność — wtedy dodaję je jako tokeny.
 - Wykres kontrybucji GitHuba rysuję w oryginalnych zieleniach GitHuba (4 poziomy z ciemnego motywu, tokeny `--github-level-*`) — czyta się jak prawdziwy wykres z profilu.
@@ -362,6 +370,7 @@ Na start:
 - **Poświata dashboardu:** plamy dryfują w cyklach ok. 48 i 62 s.
 - **Światło przy kursorze (dashboard, tylko mysz):** ramki kafli w zasięgu kursora (`--spotlight-size`) lekko czerwienieją, także sąsiednich; światło płynie za kursorem z lekkim opóźnieniem jak fala (`src/scripts/spotlight.ts`). Bez kafla akcentowego; przy reduced motion bez opóźnienia.
 - **Obrót karty (Czytam):** kafel zwęża się do krawędzi, podmienia treść i rozszerza z powrotem (ok. 0,3 s). Płaski `scaleX`, nie `rotateY` — obrót 3D kafla ze szklanym tłem rozjaśnia poświatę w Chromium. Przy reduced motion treść zmienia się bez animacji.
+- **Nawigacja na telefonie** (§2): wysuwa się i chowa samym `transform` w ok. 200 ms (`--duration-nav`); przy reduced motion bez animacji.
 - **Pulsowanie kropki** (tylko rzeczy dziejące się teraz, patrz §5): łagodne, skala i przezroczystość, około 2s.
 - **Focus:** widoczny ring w kolorze akcentu (`:focus-visible`).
 - **`prefers-reduced-motion`:** wyłącza unoszenie, pulsowanie, dryf poświaty i animacje wejścia.
@@ -553,13 +562,11 @@ Dockerfile       # obraz dla Cloud Run
 
 ## 16. Kolejność prac
 
-Stan na 2026-09-24: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
+Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 
 1. ✅ **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
-2. 🟡 **Wizytówka:** układ dossier, tożsamość, edukacja, umiejętności, zdjęcie, linki, kopiowanie e-maila, zajawka dashboardu — gotowe. Zostało:
-   - sekcja „Doświadczenie” ma zastępcze wiersze (do decyzji: ukryć, praktyki, „Projekty i działalność”);
-   - CV z Typst (`cv/` → `public/cv/`) — linki „Pobierz CV” dają 404;
-   - zrzut w wyróżnionym projekcie.
+2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie, edukacja, umiejętności, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z `src/lib/featured.ts`, ta sama lista co na dashboardzie), zajawka dashboardu — gotowe. Zostało:
+   - CV z Typst (`cv/` → `public/cv/`) — linki „Pobierz CV” dają 404.
 3. ⬜ **Projekty:** content collection, lista, strona projektu, KaTeX, Mermaid, karuzela featured. Jest tylko szkielet `/projects`.
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania.
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.

@@ -16,6 +16,9 @@
 	--surface-inset: #111113;
 	/* Tiles on the dashboard: the surfaces above, see-through to the glow. */
 	--surface-glass: rgb(22 22 24 / 0.55);
+	/* Phone navigation pinned over the page: the page background, nearly
+	   opaque, so text scrolling under it never competes with the links. */
+	--nav-glass: rgb(14 14 16 / 0.9);
 	--surface-glass-hover: rgb(28 28 31 / 0.62);
 
 	/* Borders */
@@ -32,6 +35,9 @@
 	/* Status dots (koncept.md §5): green for up / active, red only for a
 	   problem — down, stale or missing data. Fresh data stays --text-subtle. */
 	--status-ok: #46a758;
+	/* Status badge on the profile card: tint and edge of --status-ok. */
+	--status-ok-soft: rgb(70 167 88 / 0.1);
+	--status-ok-border: rgb(70 167 88 / 0.3);
 	--status-down: var(--accent);
 
 	/* Accent — used sparingly: progress bars, primary CTAs, active states,
@@ -120,6 +126,7 @@
 	--radius-pill: 999px;
 
 	/* Spacing scale — every gap, margin and padding comes from here. */
+	--space-3xs: 2px;
 	--space-2xs: 4px;
 	--space-xs: 6px;
 	--space-sm: 8px;
@@ -155,6 +162,28 @@
 	--size-book-cover: 72px;
 	--size-book-cover-small: 48px;
 	--featured-shot-min: 160px;
+	/* Home featured carousel: one height for every slide, so a project
+	   without a screenshot does not change the card. */
+	--featured-slide-height: 260px;
+	--featured-slide-width: 92%;
+	--size-carousel-control: 36px;
+	/* Scrim over a full-card screenshot: clear for the first third, near-opaque
+	   where the text starts, solid under the text. Sideways on wide cards,
+	   whose text column starts at 60%; down on phones, text at the bottom. */
+	--featured-scrim-soft: rgb(15 15 17 / 0.85);
+	--featured-scrim-solid: rgb(15 15 17);
+	--featured-scrim-down: linear-gradient(
+		to bottom,
+		transparent 35%,
+		var(--featured-scrim-soft) 60%,
+		var(--featured-scrim-solid) 80%
+	);
+	--featured-scrim-side: linear-gradient(
+		to right,
+		transparent 35%,
+		var(--featured-scrim-soft) 60%,
+		var(--featured-scrim-solid) 80%
+	);
 	--gallery-column: 460px;
 	--size-social-row: 80px;
 	--size-bar: 6px;
@@ -174,6 +203,7 @@
 
 	/* Type scale */
 	--size-label: 11px;
+	--size-small: 13px;
 	--size-body: 14px;
 	--size-title: 17px;
 	--size-hero: clamp(28px, 1.5rem + 1.6vw, 36px);
@@ -183,6 +213,8 @@
 
 	/* Terminal panel (koncept.md §8): above the navigation and the skip link. */
 	--z-terminal: 100;
+	/* Phone navigation pinned to the top: above the page, under the terminal. */
+	--z-nav: 50;
 	--terminal-height: 45vh;
 	--terminal-height-mobile: 70dvh;
 	--terminal-max-height: 640px;
@@ -204,6 +236,7 @@
 	--duration-pulse: 2s;
 	--duration-terminal-open: 200ms;
 	--duration-terminal-close: 150ms;
+	--duration-nav: 200ms;
 	--duration-blink: 1s;
 	--duration-glow: 48s;
 	--duration-shimmer: 1.4s;

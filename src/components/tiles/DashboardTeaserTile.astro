@@ -1,21 +1,31 @@
 ---
 import Tile from '../ui/Tile.astro';
 import LiveDot from '../ui/LiveDot.astro';
+import LiveBody from '../ui/LiveBody.astro';
 import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
 import type { Weather } from '../../lib/mocks/weather';
+import { MUSIC_PLACEHOLDER, type Music } from '../../lib/mocks/music';
 
 /**
  * Small teaser at the bottom of the home stream: live local time and the
  * weather, linking to the full dashboard (koncept.md §3.1).
  *
- * The clock is local, so it is always live. Weather goes through the four
- * live-tile states; every state keeps the same footprint (koncept.md §9).
+ * The clock is local, so it is always live. Weather and the track from
+ * Last.fm go through the four live-tile states; every state keeps the same
+ * footprint (koncept.md §9). The track is the proof the dashboard is real.
+ *
+ * With `musicEndpoint` the track renders as loading and fills itself in the
+ * browser, refreshing every 30 s; without it, it shows `music` as given.
  */
 interface Props {
 	weather: Weather;
+	music: Music;
+	musicEndpoint?: string;
 }
 
-const { weather } = Astro.props;
+const { weather, music, musicEndpoint } = Astro.props;
+const track = (music.data ?? MUSIC_PLACEHOLDER).track;
+const playing = music.state === 'ok' && track.nowPlaying;
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
@@ -59,15 +69,51 @@ const minutesAgo = weather.data
 			}
 			{weather.state === 'error' && <span class="teaser-error">{t('weather.unavailable')}</span>}
 		</div>
+
+		<div class="teaser-music" data-endpoint={musicEndpoint}>
+			<LiveBody state={music.state} errorText={t('music.unavailable')}>
+				<span class="teaser-track">
+					<span class="teaser-track-status" data-now={t('music.nowPlaying')} data-last={t('music.lastPlayed')}>
+						<span class="teaser-track-dot" hidden={!playing}><LiveDot state="up" pulse /></span>
+						<span class="teaser-track-status-text">
+							{playing ? t('music.nowPlaying') : t('music.lastPlayed')}
+						</span>
+					</span>
+					<span class="teaser-track-name" data-skeleton aria-live="polite">
+						{track.title} — {track.artist}
+					</span>
+				</span>
+			</LiveBody>
+		</div>
 	</div>
 
-	<span slot="footer">{t('home.moreAboutMe')}</span>
+	<span slot="footer">{t('home.liveDashboard')}</span>
 </Tile>
 
 <script>
 	import { startClocks } from '../../scripts/clock';
+	import { setText, watchLive } from '../../scripts/live';
+	import type { Music } from '../../lib/mocks/music';
+
+	type MusicData = Omit<NonNullable<Music['data']>, 'updatedAt'>;
 
 	startClocks();
+
+	for (const section of document.querySelectorAll<HTMLElement>('.teaser-music[data-endpoint]')) {
+		watchLive<MusicData>(
+			section,
+			({ track }) => {
+				const status = section.querySelector<HTMLElement>('.teaser-track-status');
+				section.querySelector<HTMLElement>('.teaser-track-dot')!.hidden = !track.nowPlaying;
+				setText(
+					section.querySelector('.teaser-track-status-text'),
+					(track.nowPlaying ? status?.dataset.now : status?.dataset.last) ?? '',
+				);
+				setText(section.querySelector('.teaser-track-name'), `${track.title} — ${track.artist}`);
+			},
+			30_000,
+		);
+	}
 </script>
 
 <style>
@@ -123,6 +169,67 @@ const minutesAgo = weather.data
 
 	.teaser-error {
 		color: var(--text-subtle);
+	}
+
+	/* Third column on wide screens; on a phone it takes its own row. */
+	.teaser-music {
+		flex: 1;
+		min-width: 0;
+		padding-left: var(--space-2xl);
+		border-left: 1px solid var(--border);
+	}
+
+	.teaser-track {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-width: 0;
+	}
+
+	.teaser-track-status {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-subtle);
+	}
+
+	.teaser-track-dot {
+		display: inline-flex;
+	}
+
+	.teaser-track-dot[hidden] {
+		display: none;
+	}
+
+	.teaser-track-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--text-muted);
+	}
+
+	/* Error text of the track: one quiet line on the left, like the weather's. */
+	.teaser-music :global(.live-error) {
+		place-items: center start;
+		text-align: left;
+	}
+
+	@media (max-width: 639px) {
+		.teaser {
+			flex-wrap: wrap;
+			row-gap: var(--space-lg);
+		}
+
+		.teaser-music {
+			flex-basis: 100%;
+			padding: var(--space-lg) 0 0;
+			border-left: 0;
+			border-top: 1px solid var(--border);
+		}
 	}
 
 	.skeleton-temp {
