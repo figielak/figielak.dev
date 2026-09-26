@@ -1,5 +1,5 @@
 /**
- * Site analytics for the private dashboard (koncept.md §3.4), cached 5 min.
+ * Site analytics for the private dashboard (docs/koncept.md §3.4), cached 5 min.
  * Owner only (src/lib/owner.ts). Without the Cloudflare settings `astro dev`
  * serves the mock, production answers 503.
  */

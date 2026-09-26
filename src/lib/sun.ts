@@ -1,6 +1,6 @@
 /**
  * Sunrise and sunset from the sunrise equation (NOAA approximation), accurate
- * to about a minute — no API needed (koncept.md §3.4). Runs at build time for
+ * to about a minute — no API needed (docs/koncept.md §3.4). Runs at build time for
  * the first paint and again in the browser, so the times follow the real date.
  */
 

@@ -1,5 +1,5 @@
 # Builds and deploys figielak.dev to Cloud Run on every push to master
-# (koncept.md §10). One-time GCP and Cloudflare setup: docs/deploy.md.
+# (docs/koncept.md §10). One-time GCP and Cloudflare setup: docs/deploy.md.
 name: Deploy
 
 on:
@@ -32,7 +32,7 @@ jobs:
       - run: npm ci
 
       # Personal data and homelab host names are GitHub secrets, never in the
-      # public repo (.env.example, koncept.md §14).
+      # public repo (.env.example, docs/koncept.md §14).
       - name: Build
         run: npm run build
         env:

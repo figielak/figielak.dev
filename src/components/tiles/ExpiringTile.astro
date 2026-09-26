@@ -10,7 +10,7 @@ import { daysUntil } from '../../lib/relative';
 import { EXPIRING_PLACEHOLDER, EXPIRY_WARN_DAYS, type Expiring, type ExpiryItem } from '../../lib/mocks/expiring';
 
 /**
- * What expires and when (koncept.md §3.4): the domain, the certificate and
+ * What expires and when (docs/koncept.md §3.4): the domain, the certificate and
  * the API tokens, soonest first. Anything due within EXPIRY_WARN_DAYS or
  * past is red — a real problem coming (§5). Private dashboard only.
  *
@@ -201,7 +201,7 @@ const left = (item: ExpiryItem) => {
 		color: var(--text);
 	}
 
-	/* Due soon or past: a real problem coming (koncept.md §5). */
+	/* Due soon or past: a real problem coming (docs/koncept.md §5). */
 	.expiry[data-soon] :is(.expiry-icon, .expiry-left) {
 		color: var(--status-down);
 	}

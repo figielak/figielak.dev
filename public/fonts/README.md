@@ -1,6 +1,6 @@
 # Fonts
 
-Satoshi is not available on Fontsource, so it is self-hosted (koncept.md §6).
+Satoshi is not available on Fontsource, so it is self-hosted (docs/koncept.md §6).
 
 Drop the variable file here as:
 

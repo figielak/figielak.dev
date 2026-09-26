@@ -1,5 +1,5 @@
 /**
- * Air quality in Rzeszów from GIOŚ (koncept.md §9) — no key needed. API v1
+ * Air quality in Rzeszów from GIOŚ (docs/koncept.md §9) — no key needed. API v1
  * answers in Polish field names and local time; the old /pjp-api/rest is gone.
  *
  * One station in the city centre: its index (six levels) and the latest

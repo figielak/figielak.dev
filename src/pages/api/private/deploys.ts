@@ -1,5 +1,5 @@
 /**
- * The last deploys for the private dashboard (koncept.md §3.4), cached 60 s.
+ * The last deploys for the private dashboard (docs/koncept.md §3.4), cached 60 s.
  * Owner only (src/lib/owner.ts). Without GITHUB_TOKEN `astro dev` serves the
  * mock, production answers 503.
  */

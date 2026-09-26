@@ -1,5 +1,5 @@
 /**
- * Important upcoming events for the countdown tile (koncept.md §3.4).
+ * Important upcoming events for the countdown tile (docs/koncept.md §3.4).
  * Past events are skipped, so the list can simply grow.
  */
 import type { Lang } from '../i18n';

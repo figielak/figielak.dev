@@ -1,5 +1,5 @@
 /**
- * Shared shape of every live tile (koncept.md §9): one of four states, and
+ * Shared shape of every live tile (docs/koncept.md §9): one of four states, and
  * data that is missing while loading or on error.
  */
 export type LiveState = 'loading' | 'ok' | 'stale' | 'error';
@@ -12,7 +12,7 @@ export interface Live<T> {
 	data?: T & { updatedAt: Date };
 }
 
-/** Data older than this is shown as stale (koncept.md §9). */
+/** Data older than this is shown as stale (docs/koncept.md §9). */
 export const STALE_AFTER_MIN = 10;
 
 /** The dot a tile shows for its state: grey while loading or fresh, red once there is a problem. */
@@ -23,7 +23,7 @@ export function dotState(state: LiveState): 'live' | 'stale' | 'offline' {
 }
 
 /**
- * State of a tile made of sections with their own sources (koncept.md §9):
+ * State of a tile made of sections with their own sources (docs/koncept.md §9):
  * the most serious of theirs, so one failing source is enough to show it.
  */
 export function worstState(states: LiveState[]): LiveState {

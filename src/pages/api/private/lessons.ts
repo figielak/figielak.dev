@@ -1,5 +1,5 @@
 /**
- * Tutoring lessons for the private dashboard (koncept.md §3.4), cached
+ * Tutoring lessons for the private dashboard (docs/koncept.md §3.4), cached
  * 10 min. Owner only (src/lib/owner.ts). Without TUTORING_ICAL_URL `astro
  * dev` serves the mock, production answers 503.
  */

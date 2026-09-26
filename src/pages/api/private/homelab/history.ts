@@ -1,5 +1,5 @@
 /**
- * CPU and RAM of the last 24 hours for the private server tile (koncept.md
+ * CPU and RAM of the last 24 hours for the private server tile (docs/koncept.md
  * §3.4), cached 60 s. Owner only (src/lib/owner.ts). A static route, so it
  * wins over [section].ts. In `astro dev` the mock stands in until pushes
  * build up a history.

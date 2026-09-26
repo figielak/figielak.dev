@@ -3,7 +3,7 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 /**
- * Projects (koncept.md §3.2): one MDX file per project. The frontmatter feeds
+ * Projects (docs/koncept.md §3.2): one MDX file per project. The frontmatter feeds
  * the /projects list, the featured strip on the home page and the featured
  * tile on the dashboard; the body, when there is one, is the case study
  * (Polish) at /projects/<slug>. An empty body means no case study page.

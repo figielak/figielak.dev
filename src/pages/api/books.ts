@@ -1,6 +1,6 @@
 /**
  * Books I am reading from Hardcover for the "Reading" tile, cached 1 h
- * (koncept.md §9). Without HARDCOVER_TOKEN `astro dev` serves the mock,
+ * (docs/koncept.md §9). Without HARDCOVER_TOKEN `astro dev` serves the mock,
  * production answers 503.
  */
 import type { APIRoute } from 'astro';

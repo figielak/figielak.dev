@@ -1,6 +1,6 @@
 /**
  * Red light on the tile edges around the cursor, on grids with `alive` — the
- * dashboards (koncept.md §8). Each tile gets the light's position relative to
+ * dashboards (docs/koncept.md §8). Each tile gets the light's position relative to
  * itself (`--spot-x`, `--spot-y`), so tiles next to the cursor light up too;
  * the ring itself is drawn by Tile. The light trails the cursor a little,
  * which reads as a wave; with reduced motion it follows at once.

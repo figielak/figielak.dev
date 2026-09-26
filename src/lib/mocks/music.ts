@@ -1,5 +1,5 @@
 /**
- * Mock Last.fm data until the endpoint exists (koncept.md §9): the track
+ * Mock Last.fm data until the endpoint exists (docs/koncept.md §9): the track
  * playing now (or last played) and this week's top artists.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';

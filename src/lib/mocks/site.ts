@@ -1,5 +1,5 @@
 /**
- * Site analytics for the private dashboard (koncept.md §3.4), as
+ * Site analytics for the private dashboard (docs/koncept.md §3.4), as
  * /api/private/site returns them from Cloudflare Web Analytics: the last 7
  * days, the most visited pages and where visitors came from.
  */

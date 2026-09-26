@@ -1,10 +1,10 @@
 /**
  * Homelab uptime and service status as the uptime tile shows them, and mocks
- * for /dev/tiles and `astro dev`. Live data: /api/homelab/uptime (koncept.md §9).
+ * for /dev/tiles and `astro dev`. Live data: /api/homelab/uptime (docs/koncept.md §9).
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
-/** Generic service kinds — no host names on a public page (koncept.md §14). */
+/** Generic service kinds — no host names on a public page (docs/koncept.md §14). */
 export const SERVICE_KINDS = ['media', 'files', 'dns', 'backup'] as const;
 export type ServiceKind = (typeof SERVICE_KINDS)[number];
 

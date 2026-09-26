@@ -1,5 +1,5 @@
 /**
- * Mock of the books I am reading, from Hardcover (koncept.md §9): what
+ * Mock of the books I am reading, from Hardcover (docs/koncept.md §9): what
  * /api/books returns, for the tile gallery and `astro dev` without a token.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';

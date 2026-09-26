@@ -1,5 +1,5 @@
 /**
- * The last deploys of this site from the GitHub Actions API (koncept.md §9):
+ * The last deploys of this site from the GitHub Actions API (docs/koncept.md §9):
  * runs of .github/workflows/deploy.yml, newest first. The repository is
  * public, so GITHUB_TOKEN needs no scopes.
  */

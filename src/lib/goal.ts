@@ -1,5 +1,5 @@
 /**
- * The goal I am working towards now, for the goal tile (koncept.md §3.4).
+ * The goal I am working towards now, for the goal tile (docs/koncept.md §3.4).
  * Edited on the private dashboard and kept in Firestore (site/goal), so a
  * change needs no deploy; `goal` below is what the tile shows until the
  * first save. Progress is the share of steps done, so it moves only when a

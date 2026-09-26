@@ -9,7 +9,7 @@ import { ago } from '../../lib/relative';
 import { BACKUP_MAX_AGE_H, BACKUP_PLACEHOLDER, type Backup, type BackupRun } from '../../lib/mocks/homelab-private';
 
 /**
- * The last homelab backup (koncept.md §3.4): when, whether it worked, how
+ * The last homelab backup (docs/koncept.md §3.4): when, whether it worked, how
  * big. A failed backup, one older than BACKUP_MAX_AGE_H, or none at all is a
  * real problem, so it is red (§5) — a missed backup is usually found out too
  * late. Private dashboard only.
@@ -168,7 +168,7 @@ const details = (r: BackupRun | null) =>
 	}
 
 	/* No backup, a failed or a missed one: the one thing on this tile that
-	   must not be overlooked (koncept.md §5). */
+	   must not be overlooked (docs/koncept.md §5). */
 	.backup:not([data-verdict='ok']) :is(.backup-verdict, .backup-when) {
 		color: var(--status-down);
 	}

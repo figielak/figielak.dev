@@ -9,7 +9,7 @@ import { dotState } from '../../lib/live';
 import { SITE_PLACEHOLDER, type SiteStats } from '../../lib/mocks/site';
 
 /**
- * Visits of this site from Cloudflare Web Analytics (koncept.md §3.4, §9):
+ * Visits of this site from Cloudflare Web Analytics (docs/koncept.md §3.4, §9):
  * the week as a number and seven neutral bars with today in --text (§5),
  * then the most visited pages and where the visitors came from. Private.
  *
@@ -182,7 +182,7 @@ const direct = t('site.direct');
 		color: var(--text-muted);
 	}
 
-	/* Seven neutral bars, today (the last) in --text (koncept.md §5). */
+	/* Seven neutral bars, today (the last) in --text (docs/koncept.md §5). */
 	/* The bars take what height is left; each grows from the bottom of its
 	   track, so the tallest day reaches the top. */
 	.site-days {

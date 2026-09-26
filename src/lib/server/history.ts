@@ -1,5 +1,5 @@
 /**
- * CPU and RAM history for the private dashboard (koncept.md §3.4), kept by
+ * CPU and RAM history for the private dashboard (docs/koncept.md §3.4), kept by
  * the site in Firestore (homelab/history): every push of the machine section
  * folds into its 5-minute bucket as a running average, and buckets older
  * than 24 hours drop out. The agent sends nothing extra.

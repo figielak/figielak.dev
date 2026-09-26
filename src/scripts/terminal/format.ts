@@ -6,7 +6,7 @@ import type { Context, Line } from './types';
 
 export const ZONE = 'Europe/Warsaw';
 
-/** Homelab bars turn red from this usage on, as in the tile (koncept.md §5). */
+/** Homelab bars turn red from this usage on, as in the tile (docs/koncept.md §5). */
 export const HIGH_USAGE = 85;
 
 export const locale = (ctx: Context) => (ctx.data.lang === 'pl' ? 'pl-PL' : 'en-GB');

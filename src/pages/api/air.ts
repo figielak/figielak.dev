@@ -1,5 +1,5 @@
 /**
- * Air quality in Rzeszów from GIOŚ, cached 30 min (koncept.md §9): the
+ * Air quality in Rzeszów from GIOŚ, cached 30 min (docs/koncept.md §9): the
  * stations measure hourly and publish some twenty minutes later. `updatedAt`
  * is the time of the measurement, so the tile goes stale on its own when the
  * station falls silent.

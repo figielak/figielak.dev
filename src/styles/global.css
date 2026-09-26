@@ -2,7 +2,7 @@
 @import './tokens.css';
 
 /*
- * Satoshi is not on Fontsource, so it is self-hosted (koncept.md §6): one
+ * Satoshi is not on Fontsource, so it is self-hosted (docs/koncept.md §6): one
  * variable file with the whole 300–900 weight axis.
  */
 @font-face {
@@ -71,7 +71,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
-/* Numbers must not jitter as live tiles refresh (koncept.md §6). */
+/* Numbers must not jitter as live tiles refresh (docs/koncept.md §6). */
 .tabular,
 [data-numeric] {
 	font-variant-numeric: tabular-nums;
@@ -132,7 +132,7 @@ body {
 	white-space: nowrap;
 }
 
-/* Loading placeholder in the shape of the final content (koncept.md §9). */
+/* Loading placeholder in the shape of the final content (docs/koncept.md §9). */
 .skeleton {
 	display: block;
 	border-radius: var(--radius-inset);

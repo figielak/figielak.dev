@@ -1,5 +1,5 @@
 /**
- * WakaTime stats for the dashboard tile, cached 1 h (koncept.md §9).
+ * WakaTime stats for the dashboard tile, cached 1 h (docs/koncept.md §9).
  * Without WAKATIME_API_KEY `astro dev` serves the mock, production answers 503.
  */
 import type { APIRoute } from 'astro';

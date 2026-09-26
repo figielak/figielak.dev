@@ -1,5 +1,5 @@
 /**
- * Documents in Firestore (koncept.md §9). Cloud Run scales to zero, so what
+ * Documents in Firestore (docs/koncept.md §9). Cloud Run scales to zero, so what
  * must outlive an instance lives here: the last homelab reading
  * (homelab/latest, public sections; homelab/private, the owner's), the goal
  * (site/goal) and lesson payments (private/payments).
@@ -100,7 +100,7 @@ export async function readSections(): Promise<StoredSections> {
 }
 
 /* The owner's sections live in their own document, so no public endpoint,
-   which reads homelab/latest, can ever return them (koncept.md §14). */
+   which reads homelab/latest, can ever return them (docs/koncept.md §14). */
 export const writePrivateSections = (sections: StoredPrivateSections) => writeDoc('homelab/private', sections);
 
 export async function readPrivateSections(): Promise<StoredPrivateSections> {

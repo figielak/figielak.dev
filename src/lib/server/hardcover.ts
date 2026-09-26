@@ -1,5 +1,5 @@
 /**
- * Books I am reading from Hardcover (koncept.md §9): my library entries with
+ * Books I am reading from Hardcover (docs/koncept.md §9): my library entries with
  * the "Currently Reading" status, newest first. HARDCOVER_TOKEN is a server
  * secret read at runtime; a token with the `read:library` scope is enough.
  * Hardcover allows its API only where the token stays secret, never in the

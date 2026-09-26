@@ -1,4 +1,4 @@
-# figielak.dev on Cloud Run (koncept.md §10): prerendered pages plus the
+# figielak.dev on Cloud Run (docs/koncept.md §10): prerendered pages plus the
 # Node server for /api/*. Cloud Run sets PORT; the server reads HOST and PORT.
 #
 # The site is built beforehand (GitHub Actions or `npm run build` locally),

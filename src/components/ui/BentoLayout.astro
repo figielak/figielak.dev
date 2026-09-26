@@ -1,6 +1,6 @@
 ---
 /**
- * The bento grid (koncept.md §7).
+ * The bento grid (docs/koncept.md §7).
  *
  * Every breakpoint gets its own explicit `grid-template-areas`, so tile order
  * never depends on the order of the markup. Phones always get two columns —
@@ -31,7 +31,7 @@ interface Props {
 	/** With `fill` and `xl`: fit one screen only from 1440×900, not 1280×720. */
 	tall?: boolean;
 	/** Dashboard look: see-through tiles over the glow, and a small hover on
-	    every tile (koncept.md §4, §8). */
+	    every tile (docs/koncept.md §4, §8). */
 	alive?: boolean;
 	class?: string;
 }
@@ -130,7 +130,7 @@ const vars = [
 		}
 	}
 
-	/* One screen on desktop (koncept.md §7): tiles stop sizing the rows by
+	/* One screen on desktop (docs/koncept.md §7): tiles stop sizing the rows by
 	   their content, so the grid takes exactly the height the page leaves
 	   and the rows split it. Smaller screens scroll as usual; a grid with an
 	   xl layout fits one screen only from 1280px. */

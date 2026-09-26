@@ -1,12 +1,12 @@
 /**
- * Current weather in Rzeszów from Open-Meteo (koncept.md §9) — no key needed.
+ * Current weather in Rzeszów from Open-Meteo (docs/koncept.md §9) — no key needed.
  * The WMO weather code is folded into the tile's few conditions.
  */
 import type { Weather, WeatherCondition } from '../mocks/weather';
 
 export type WeatherData = Omit<NonNullable<Weather['data']>, 'updatedAt'>;
 
-/* City centre of Rzeszów (koncept.md §17). */
+/* City centre of Rzeszów (docs/koncept.md §17). */
 const CITY = 'Rzeszów';
 const LATITUDE = 50.0413;
 const LONGITUDE = 21.999;

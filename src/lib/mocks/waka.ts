@@ -1,5 +1,5 @@
 /**
- * Mock WakaTime stats until the endpoint exists (koncept.md §9).
+ * Mock WakaTime stats until the endpoint exists (docs/koncept.md §9).
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 

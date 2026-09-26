@@ -1,5 +1,5 @@
 /**
- * Weather in the shape /api/weather returns (Open-Meteo, koncept.md §9), and
+ * Weather in the shape /api/weather returns (Open-Meteo, docs/koncept.md §9), and
  * mocks of it for /dev/tiles.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';

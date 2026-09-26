@@ -1,5 +1,5 @@
 /**
- * Dashboard intro (koncept.md §8), about 1.5 s, on the first visit in a
+ * Dashboard intro (docs/koncept.md §8), about 1.5 s, on the first visit in a
  * session and on every click on Dashboard in the navigation: BaseLayout marks <html data-intro="pending"> before first paint
  * and this script plays it.
  *

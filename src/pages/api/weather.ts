@@ -1,5 +1,5 @@
 /**
- * Current weather in Rzeszów from Open-Meteo, cached 15 min (koncept.md §9).
+ * Current weather in Rzeszów from Open-Meteo, cached 15 min (docs/koncept.md §9).
  * No key, so dev and production call the real source alike.
  */
 import type { APIRoute } from 'astro';

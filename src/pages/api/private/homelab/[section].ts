@@ -1,5 +1,5 @@
 /**
- * The owner's homelab sections for the private dashboard (koncept.md §3.4,
+ * The owner's homelab sections for the private dashboard (docs/koncept.md §3.4,
  * §14): monitors and containers by name and the last backup, from the
  * homelab/private document, cached 30 s. Owner only (src/lib/owner.ts).
  *

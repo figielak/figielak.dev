@@ -1,5 +1,5 @@
 /**
- * Shapes shared by the terminal core and its commands (koncept.md §8).
+ * Shapes shared by the terminal core and its commands (docs/koncept.md §8).
  */
 
 /** How a piece of output reads: the colour roles of the page tokens. */
@@ -35,7 +35,7 @@ export interface TerminalData {
 	dirs: Dir[];
 	/** This page in each language; a Polish-only page has no `en`. */
 	langHrefs: Partial<Record<Lang, string>>;
-	/** Themes that exist so far (koncept.md §12). */
+	/** Themes that exist so far (docs/koncept.md §12). */
 	themes: string[];
 	socials: { name: string; label: string; url: string }[];
 	projects: { name: string; title: string; href: string }[];

@@ -1,5 +1,5 @@
 /**
- * Saves the goal from the private dashboard (koncept.md §3.4): JSON with
+ * Saves the goal from the private dashboard (docs/koncept.md §3.4): JSON with
  * `title` `{ pl, en? }`, an optional `by` date and up to eight `steps`, each
  * `{ title: { pl, en? }, done }`. Owner only (src/lib/owner.ts), JSON only
  * (requireJson in src/lib/server/respond.ts).

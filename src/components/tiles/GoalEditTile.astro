@@ -5,7 +5,7 @@ import { getLangFromUrl, useTranslations } from '../../i18n';
 import { goal, GOAL_MAX_STEPS, GOAL_MAX_TITLE } from '../../lib/goal';
 
 /**
- * Edits the goal (koncept.md §3.4) from the private dashboard: the public
+ * Edits the goal (docs/koncept.md §3.4) from the private dashboard: the public
  * goal tile reads what is saved here, so a change needs no deploy. The name
  * and a due date on the left, the steps on the right — tick one off, add or
  * remove it. Polish is required, English optional (falls back to Polish).
@@ -371,7 +371,7 @@ const fallback = JSON.stringify(goal);
 		display: none;
 	}
 
-	/* A confirmation takes the accent (koncept.md §4); a failure is a problem. */
+	/* A confirmation takes the accent (docs/koncept.md §4); a failure is a problem. */
 	.goal-status[data-state='saved'],
 	.goal-status[data-state='failed'] {
 		color: var(--accent);

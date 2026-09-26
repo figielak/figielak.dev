@@ -1,5 +1,5 @@
 /**
- * In-memory cache for /api/* (koncept.md §9). Cloud Run scales to zero, so a
+ * In-memory cache for /api/* (docs/koncept.md §9). Cloud Run scales to zero, so a
  * cold instance simply fetches again — fine for data that is cheap to get.
  *
  * When a refresh fails, the last good value is served with its old

@@ -1,4 +1,4 @@
-// Layout shared by cv-pl.typ and cv-en.typ (koncept.md §10).
+// Layout shared by cv-pl.typ and cv-en.typ (docs/koncept.md §10).
 // The site's type and accent on paper: Satoshi for text, Geist Mono for
 // labels and dates, one red accent. Light background for print and ATS.
 

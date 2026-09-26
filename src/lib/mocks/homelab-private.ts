@@ -1,5 +1,5 @@
 /**
- * The owner's view of the homelab (koncept.md §3.4, §14): monitors and
+ * The owner's view of the homelab (docs/koncept.md §3.4, §14): monitors and
  * containers by name, and the last backup. The agent pushes these as private
  * sections; they are stored apart from the public reading and only ever
  * served behind the password (/api/private/homelab/*).

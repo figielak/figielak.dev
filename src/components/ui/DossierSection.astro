@@ -4,7 +4,7 @@ import TileLabel from './TileLabel.astro';
 /**
  * One section of the dossier stream: a mono label with an optional ↗ action,
  * then the content, closed by a hairline divider. Sections carry no frame of
- * their own, so the one framed section in a stream stands out (koncept.md §3.1).
+ * their own, so the one framed section in a stream stands out (docs/koncept.md §3.1).
  *
  * Also styles the shared building blocks placed inside: `.rows` / `.row`
  * (period · title + detail, optionally a one-sentence `.row-note`) and `.pills`.
@@ -84,7 +84,7 @@ const { label, action, id, class: className } = Astro.props;
 		font-variant-numeric: tabular-nums;
 	}
 
-	/* Ongoing entry: an active state, so it may take the accent (koncept.md §4). */
+	/* Ongoing entry: an active state, so it may take the accent (docs/koncept.md §4). */
 	.section :global(.row[data-current] .row-period) {
 		color: var(--accent);
 	}

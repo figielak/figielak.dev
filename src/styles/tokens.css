@@ -1,10 +1,10 @@
 /*
  * Design tokens — the single source of colour, radius, spacing and type.
- * See koncept.md §4–§8. Components must never hardcode a hex, rgb or px value
+ * See docs/koncept.md §4–§8. Components must never hardcode a hex, rgb or px value
  * that belongs here.
  *
  * A theme is nothing but a different set of values for these tokens; no
- * component ever knows which theme is active (koncept.md §12).
+ * component ever knows which theme is active (docs/koncept.md §12).
  */
 
 :root,
@@ -32,7 +32,7 @@
 	--text-muted: #8b8b92;
 	--text-subtle: #5c5c63;
 
-	/* Status dots (koncept.md §5): green for up / active, red only for a
+	/* Status dots (docs/koncept.md §5): green for up / active, red only for a
 	   problem — down, stale or missing data. Fresh data stays --text-subtle. */
 	--status-ok: #46a758;
 	/* Status badge on the profile card: tint and edge of --status-ok. */
@@ -55,13 +55,13 @@
 	--accent-foreground-subtle: rgb(14 14 16 / 0.7);
 	--accent-inset: rgb(14 14 16 / 0.14);
 	/* GitHub contribution levels 1–4 in GitHub's own dark-theme greens, so the
-	   chart reads as the real one (koncept.md §5). Level 0 is --surface-inset. */
+	   chart reads as the real one (docs/koncept.md §5). Level 0 is --surface-inset. */
 	--github-level-1: #0e4429;
 	--github-level-2: #006d32;
 	--github-level-3: #26a641;
 	--github-level-4: #39d353;
 
-	/* Blurred accent glow behind the dashboard tiles (koncept.md §4). At its
+	/* Blurred accent glow behind the dashboard tiles (docs/koncept.md §4). At its
 	   peak under --surface-glass, --text-muted keeps 4.6:1; the accent there is
 	   only icons, charts and dots, which need 3:1. */
 	--glow: rgb(229 72 77 / 0.35);
@@ -83,7 +83,7 @@
 	--brand-foreground: #ffffff;
 
 	/* Programming languages in the WakaTime tile: GitHub Linguist's colours,
-	   content colour like a logo (koncept.md §4). Named after the language
+	   content colour like a logo (docs/koncept.md §4). Named after the language
 	   (lower case, `++` → `pp`, `#` → `sharp`); the darkest are lifted so they
 	   show on a tile. Anything else falls back to --lang-other. */
 	--lang-typescript: #3178c6;
@@ -211,7 +211,7 @@
 	--size-number-short: 36px;
 	--tracking-label: 0.08em;
 
-	/* Terminal panel (koncept.md §8): above the navigation and the skip link. */
+	/* Terminal panel (docs/koncept.md §8): above the navigation and the skip link. */
 	--z-terminal: 100;
 	/* Phone navigation pinned to the top: above the page, under the terminal. */
 	--z-nav: 50;

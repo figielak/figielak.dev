@@ -8,7 +8,7 @@ function share(ctx: Context, key: string, blocked: number, queries: number): str
 	return ctx.t(key, { blocked: number(ctx, blocked), queries: number(ctx, queries), percent });
 }
 
-/* Daily and weekly sums only, never hourly (koncept.md §14). */
+/* Daily and weekly sums only, never hourly (docs/koncept.md §14). */
 export default {
 	name: 'adblock',
 	group: 'live',

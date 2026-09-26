@@ -166,7 +166,7 @@ const structuredData =
 
 		<script>
 			/* Phones: the navigation is pinned to the top, slides away while the
-			   reader scrolls down and comes back on the first move up (koncept.md
+			   reader scrolls down and comes back on the first move up (docs/koncept.md
 			   §2). Hidden, it is also inert, so Tab never lands in it unseen. */
 			const topbar = document.querySelector<HTMLElement>('.topbar');
 			const phone = window.matchMedia('(max-width: 639px)');
@@ -229,7 +229,7 @@ const structuredData =
 	}
 
 	/* Phones: pinned to the top on frosted glass; the script above slides it
-	   away while scrolling down. Only the transform moves (koncept.md §8). */
+	   away while scrolling down. Only the transform moves (docs/koncept.md §8). */
 	@media (max-width: 639px) {
 		.topbar {
 			position: sticky;

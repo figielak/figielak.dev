@@ -1,5 +1,5 @@
 /**
- * Contract of the homelab push agent (koncept.md §9): what POST /api/stats
+ * Contract of the homelab push agent (docs/koncept.md §9): what POST /api/stats
  * accepts. The agent lives in the homelab repository and sends every 60 s:
  *
  *   POST /api/stats
@@ -24,7 +24,7 @@
  * goes stale. Sections are validated one by one — a bad one is rejected with
  * a reason, the good ones are still saved. Sizes are GiB, percentages 0–100.
  *
- * The public sections carry only generic kinds (koncept.md §14): no host
+ * The public sections carry only generic kinds (docs/koncept.md §14): no host
  * names, IPs or monitors. The private ones name monitors and containers for
  * the owner; names are plain words (letters, digits, spaces, `-`, `_`), so
  * no host name, domain, URL or IP can pass as one.

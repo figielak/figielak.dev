@@ -1,6 +1,6 @@
 /**
  * How far through the day, month and year we are in Europe/Warsaw
- * (koncept.md §3.4). Shared by the build and the browser script.
+ * (docs/koncept.md §3.4). Shared by the build and the browser script.
  */
 export type ProgressSpan = 'day' | 'month' | 'year';
 

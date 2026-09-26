@@ -1,5 +1,5 @@
 /**
- * GitHub stats for the dashboard tile, cached 1 h (koncept.md §9).
+ * GitHub stats for the dashboard tile, cached 1 h (docs/koncept.md §9).
  * Without GITHUB_TOKEN `astro dev` serves the mock, production answers 503.
  */
 import type { APIRoute } from 'astro';

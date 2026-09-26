@@ -516,7 +516,7 @@ src/
 public/
   fonts/  cv/     # PDF-y CV
 cv/              # źródła Typst i fonty CV
-docs/            # deploy.md — konfiguracja Cloud Run i Cloudflare
+docs/            # koncept.md (ten plik), deploy.md — konfiguracja Cloud Run i Cloudflare
 Dockerfile       # obraz dla Cloud Run
 ```
 
@@ -610,7 +610,7 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 3. 🟡 **Projekty:** content collection, układ „wyróżniony + lista”, karuzela i kafel featured z kolekcji, trasa case study z CSS KaTeX — gotowe. Na liście: figielak.dev i Homelab. Zostało: treści case study, Mermaid, kolejne projekty (filtry od ok. 6).
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`). Na razie ukryte za planszą „W przygotowaniu” (`src/lib/tutoring.ts`, §3.3).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm (`/api/music`), WakaTime (`/api/waka`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Gotowe w kodzie, czekają na deploy: pogoda (`/api/weather`), powietrze (`/api/air`), podgląd utworu w `/api/music` i książki z Hardcover (`/api/books`). Tryb prywatny przebudowany na panel (§3.4): usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu — w kodzie; na żywo po deployu i dodaniu kluczy: deploye (GitHub), wygasa (RDAP, TLS); czekają na konfigurację: Cloudflare Web Analytics, iCal korepetycji. Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm z podglądem utworu (`/api/music`), WakaTime (`/api/waka`), pogoda (`/api/weather`), powietrze (`/api/air`), książki z Hardcover (`/api/books`), cel (`/api/goal`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Tryb prywatny jako panel (§3.4) jest wdrożony: usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu. Zostało: prawdziwe wartości sekretów dla Cloudflare Web Analytics (`cf-analytics-token`, `CF_ACCOUNT_ID`, `CF_WEB_ANALYTICS_SITE_TAG`) i iCal korepetycji (`tutoring-ical-url`), sprawdzenie daty wygaśnięcia tokenu Hardcover w `src/lib/server/expiring.ts` (na razie założona) i rozkład zajęć (`sched`, §17). Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, cel z edycją w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---

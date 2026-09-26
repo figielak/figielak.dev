@@ -1,5 +1,5 @@
 /**
- * Last.fm for the music tile (koncept.md §9): the track playing now (or the
+ * Last.fm for the music tile (docs/koncept.md §9): the track playing now (or the
  * last one) and this week's top artists. LASTFM_API_KEY and LASTFM_USER are
  * read at runtime on the server.
  */

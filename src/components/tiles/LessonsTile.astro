@@ -9,7 +9,7 @@ import { dotState } from '../../lib/live';
 import { LESSONS_PLACEHOLDER, LESSONS_SHOWN, type Lesson, type Lessons } from '../../lib/mocks/lessons';
 
 /**
- * Tutoring from the calendar (koncept.md §3.4): the next lessons, then past
+ * Tutoring from the calendar (docs/koncept.md §3.4): the next lessons, then past
  * ones nobody has paid for yet — red, a real thing to chase (§5), each with
  * a ✓ that marks it paid (/api/private/payments). Student names are private:
  * this tile lives only behind the password.
@@ -239,7 +239,7 @@ const when = (lesson: Lesson) => `${day.format(lesson.start)} ${time.format(less
 		color: var(--text-muted);
 	}
 
-	/* Not paid yet: a real thing to chase (koncept.md §5). */
+	/* Not paid yet: a real thing to chase (docs/koncept.md §5). */
 	.lessons-title-unpaid,
 	.lesson-unpaid .lesson-when {
 		color: var(--status-down);

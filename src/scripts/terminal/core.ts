@@ -1,5 +1,5 @@
 /**
- * The site-wide terminal (koncept.md §8): opened with ` or the >_ button in
+ * The site-wide terminal (docs/koncept.md §8): opened with ` or the >_ button in
  * the navigation. The core runs the prompt only — commands are modules in
  * ./commands, found by index.ts, so adding one never touches this file.
  *

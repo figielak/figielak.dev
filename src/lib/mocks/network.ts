@@ -1,7 +1,7 @@
 /**
  * Homelab network numbers — DNS ad blocking and the homelab's own traffic —
  * as the tiles show them, and mocks for /dev/tiles and `astro dev`. Live data:
- * /api/homelab/dns and /api/homelab/net (koncept.md §9).
+ * /api/homelab/dns and /api/homelab/net (docs/koncept.md §9).
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 

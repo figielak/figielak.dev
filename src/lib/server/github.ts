@@ -1,5 +1,5 @@
 /**
- * GitHub stats for the dashboard from the GraphQL API (koncept.md §9).
+ * GitHub stats for the dashboard from the GraphQL API (docs/koncept.md §9).
  * GITHUB_TOKEN is a server secret read at runtime; it needs no scopes, as
  * only public data is read.
  */

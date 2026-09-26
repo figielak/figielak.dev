@@ -23,7 +23,7 @@ const items = [
 	{ path: '/maths', key: 'nav.maths' },
 ] as const;
 
-/* /maths is Polish-only for now (koncept.md §11), so it never takes a prefix
+/* /maths is Polish-only for now (docs/koncept.md §11), so it never takes a prefix
    and there is no other language to switch to while on it. */
 const polishOnly: string[] = ['/maths'];
 const hrefFor = (path: string) => (polishOnly.includes(path) ? path : localizePath(path, lang));
@@ -95,7 +95,7 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 			)
 		}
 
-		{/* The only way into the terminal on touch screens (koncept.md §8). */}
+		{/* The only way into the terminal on touch screens (docs/koncept.md §8). */}
 		<button
 			class="nav-control"
 			type="button"
@@ -306,7 +306,7 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 		background: var(--surface-hover);
 	}
 
-	/* Only one theme exists so far (koncept.md §12) — the control stays in place
+	/* Only one theme exists so far (docs/koncept.md §12) — the control stays in place
 	   but inert until a second set of token values lands. */
 	.nav-control:disabled {
 		cursor: default;

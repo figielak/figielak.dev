@@ -1,5 +1,5 @@
 /**
- * What expires and when (koncept.md §3.4): the domain, the certificate and
+ * What expires and when (docs/koncept.md §3.4): the domain, the certificate and
  * the API tokens, soonest first. Private dashboard only.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';

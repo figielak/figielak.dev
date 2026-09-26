@@ -1,5 +1,5 @@
 /**
- * Guard for the private dashboard (koncept.md §14): HTTP Basic Auth against
+ * Guard for the private dashboard (docs/koncept.md §14): HTTP Basic Auth against
  * DASHBOARD_PASSWORD, a Secret Manager value that Cloud Run passes in at
  * runtime. The check runs on the server for every request, so it also holds
  * for path variants and the *.run.app address that bypass Cloudflare.

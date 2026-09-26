@@ -1,5 +1,5 @@
 /**
- * Mock GitHub stats until the GraphQL endpoint exists (koncept.md §9).
+ * Mock GitHub stats until the GraphQL endpoint exists (docs/koncept.md §9).
  * Shape matches the future /api/github response.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';

@@ -1,5 +1,5 @@
 /**
- * Push endpoint of the homelab agent (koncept.md §9, contract in
+ * Push endpoint of the homelab agent (docs/koncept.md §9, contract in
  * src/lib/server/homelab.ts). Needs STATS_PUSH_TOKEN, a Secret Manager value
  * read at runtime; without it production refuses everything and `astro dev`
  * accepts any push.

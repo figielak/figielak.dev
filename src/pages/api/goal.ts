@@ -1,5 +1,5 @@
 /**
- * The goal for the public tile (koncept.md §3.4), cached 60 s. Before the
+ * The goal for the public tile (docs/koncept.md §3.4), cached 60 s. Before the
  * first save from the private dashboard `goal` is null and the tile keeps
  * the one from src/lib/goal.ts.
  */

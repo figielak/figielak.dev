@@ -3,7 +3,7 @@ import TileLabel from './TileLabel.astro';
 import Icon, { type IconName } from './Icon.astro';
 
 /**
- * The one building block every tile is made of (koncept.md §4).
+ * The one building block every tile is made of (docs/koncept.md §4).
  * Layout inside a tile is always: label on top, content, detail or action at
  * the bottom. Clickable tiles get the ↗ affordance and the hover treatment.
  */
@@ -11,7 +11,7 @@ interface Props {
 	/** Name of the `grid-template-areas` slot this tile occupies. */
 	area?: string;
 	label?: string;
-	/** Small icon before the label, in the accent (koncept.md §4). */
+	/** Small icon before the label, in the accent (docs/koncept.md §4). */
 	icon?: IconName;
 	href?: string;
 	external?: boolean;

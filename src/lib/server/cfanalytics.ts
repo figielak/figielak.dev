@@ -1,5 +1,5 @@
 /**
- * Cloudflare Web Analytics for the private dashboard (koncept.md §9): the
+ * Cloudflare Web Analytics for the private dashboard (docs/koncept.md §9): the
  * beacon Cloudflare injects on the proxied site counts visits without
  * cookies, and the GraphQL API reads them back. CF_ANALYTICS_TOKEN (Account
  * Analytics: Read) is a server secret, CF_ACCOUNT_ID and

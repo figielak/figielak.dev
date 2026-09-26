@@ -1,5 +1,5 @@
 /**
- * What expires and when, for the private dashboard (koncept.md §3.4, §9).
+ * What expires and when, for the private dashboard (docs/koncept.md §3.4, §9).
  * Read where a source tells: the domain from RDAP, the certificate from the
  * TLS handshake, the GitHub token from an API response header and the
  * Cloudflare token from its verify endpoint. Tokens that tell nobody are

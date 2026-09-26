@@ -1,5 +1,5 @@
 /**
- * What expires and when, for the private dashboard (koncept.md §3.4), cached
+ * What expires and when, for the private dashboard (docs/koncept.md §3.4), cached
  * 6 h. Owner only (src/lib/owner.ts). Needs no key: sources without their
  * token are simply left out.
  */

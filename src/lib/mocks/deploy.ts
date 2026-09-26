@@ -1,5 +1,5 @@
 /**
- * The last deploys of this site (koncept.md §3.4), newest first, as
+ * The last deploys of this site (docs/koncept.md §3.4), newest first, as
  * /api/private/deploys returns them from GitHub Actions. Private dashboard only.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';

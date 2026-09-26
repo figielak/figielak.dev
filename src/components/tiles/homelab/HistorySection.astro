@@ -5,7 +5,7 @@ import { CHART_HEIGHT, CHART_WIDTH, chartEnd, chartTop, seriesPaths, seriesSumma
 import type { History } from '../../../lib/mocks/history';
 
 /**
- * CPU and RAM of the last 24 hours (koncept.md §3.4), for the owner only:
+ * CPU and RAM of the last 24 hours (docs/koncept.md §3.4), for the owner only:
  * two small area charts side by side — two measures, so two charts, never a
  * shared axis — each a single neutral series (§5) with its latest value
  * beside the name. Each scale ends at a round number above its peak, shown
@@ -270,7 +270,7 @@ const summary = (key: 'cpu' | 'ram', name: string) => {
 		overflow: visible;
 	}
 
-	/* One neutral series (koncept.md §5): a 2px line over a faint wash. */
+	/* One neutral series (docs/koncept.md §5): a 2px line over a faint wash. */
 	.chart-line {
 		fill: none;
 		stroke: var(--text-muted);

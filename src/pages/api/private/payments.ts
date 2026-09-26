@@ -1,5 +1,5 @@
 /**
- * Marks a lesson as paid from the private dashboard (koncept.md §3.4):
+ * Marks a lesson as paid from the private dashboard (docs/koncept.md §3.4):
  * JSON `{ key, paid }`, the key as /api/private/lessons gives it. Owner only
  * (src/lib/owner.ts), JSON only (requireJson in src/lib/server/respond.ts).
  */

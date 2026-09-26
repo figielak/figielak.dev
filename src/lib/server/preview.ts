@@ -1,6 +1,6 @@
 /**
  * A 30-second preview of the track for the play button in the music tile
- * (koncept.md §3.4). Last.fm has no audio, so the track is looked up by
+ * (docs/koncept.md §3.4). Last.fm has no audio, so the track is looked up by
  * artist and title in the iTunes Search API (no key). Only a clear match
  * counts: no preview is better than someone else's song.
  */

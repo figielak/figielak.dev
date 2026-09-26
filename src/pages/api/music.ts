@@ -1,5 +1,5 @@
 /**
- * Last.fm for the music tile (koncept.md §9): the current track cached 30 s,
+ * Last.fm for the music tile (docs/koncept.md §9): the current track cached 30 s,
  * the week's top artists 1 h. The track carries a 30-second preview when
  * iTunes has a clear match (src/lib/server/preview.ts). Without
  * LASTFM_API_KEY and LASTFM_USER `astro dev` serves the mock — with a real

@@ -1,5 +1,5 @@
 /**
- * Tutoring lessons from a Google Calendar (koncept.md §3.4, §9): the secret
+ * Tutoring lessons from a Google Calendar (docs/koncept.md §3.4, §9): the secret
  * iCal address of a calendar that holds only lessons, TUTORING_ICAL_URL, a
  * Secret Manager value read at runtime. Recurring lessons (RRULE, with moved
  * or cancelled occurrences) are expanded by ical.js. Which past lessons are

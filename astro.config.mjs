@@ -10,11 +10,11 @@ import { tutoringOpen } from './src/lib/tutoring.ts';
 export default defineConfig({
 	site: 'https://figielak.dev',
 	/* Pages stay prerendered; the Node server on Cloud Run only answers routes
-	   with `prerender = false`, i.e. /api/* (koncept.md §9–§10). */
+	   with `prerender = false`, i.e. /api/* (docs/koncept.md §9–§10). */
 	adapter: node({ mode: 'standalone' }),
 	integrations: [
 		mdx(),
-		/* The private dashboard is password-protected (koncept.md §14); /maths
+		/* The private dashboard is password-protected (docs/koncept.md §14); /maths
 		   stays out while it only says "in preparation" (src/lib/tutoring.ts). */
 		sitemap({
 			filter: (page) => !page.includes('/dashboard/private') && (tutoringOpen || !page.includes('/maths')),

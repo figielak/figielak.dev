@@ -1,11 +1,11 @@
 /**
  * Homelab services for the services bar on the private dashboard
- * (koncept.md §3.4): the ones that really run. They resolve only over
+ * (docs/koncept.md §3.4): the ones that really run. They resolve only over
  * Tailscale. `name` is also the Uptime Kuma monitor name the agent sends,
  * which is how the bar finds each one's status.
  *
  * The domain comes from HOMELAB_DOMAIN at build time: the repository is
- * public and must not reveal homelab host names (koncept.md §14).
+ * public and must not reveal homelab host names (docs/koncept.md §14).
  */
 import type { IconName } from '../components/ui/Icon.astro';
 

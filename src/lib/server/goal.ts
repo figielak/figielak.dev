@@ -1,5 +1,5 @@
 /**
- * The goal in Firestore (site/goal, koncept.md §3.4): read for the public
+ * The goal in Firestore (site/goal, docs/koncept.md §3.4): read for the public
  * tile, written from the private dashboard. Plain text only; English falls
  * back to Polish.
  */

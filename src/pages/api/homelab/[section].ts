@@ -1,5 +1,5 @@
 /**
- * Homelab data for the dashboard tiles (koncept.md §9): the last push of the
+ * Homelab data for the dashboard tiles (docs/koncept.md §9): the last push of the
  * agent, read from Firestore and cached 30 s per instance. One endpoint per
  * tile, so every tile goes stale on its own when its section stops coming.
  *

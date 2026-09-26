@@ -1,11 +1,11 @@
 /**
  * Homelab stats as the lab tile shows them, and mocks for /dev/tiles and
  * `astro dev`. Live data: the push agent → /api/stats → /api/homelab/lab
- * (koncept.md §9). Sizes are GiB.
+ * (docs/koncept.md §9). Sizes are GiB.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
-/** Generic disk roles only — no host or mount names (koncept.md §14). */
+/** Generic disk roles only — no host or mount names (docs/koncept.md §14). */
 export type DiskKind = 'system' | 'data' | 'storage';
 
 export interface Disk {

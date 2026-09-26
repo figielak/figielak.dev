@@ -1,5 +1,5 @@
 /**
- * Air quality in the shape /api/air returns (GIOŚ, koncept.md §9), and mocks
+ * Air quality in the shape /api/air returns (GIOŚ, docs/koncept.md §9), and mocks
  * of it for /dev/tiles. The index has six levels, from very good to very bad.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';

@@ -17,7 +17,7 @@ export default {
 		if (!github) return pending.done(noData(ctx, 'github'));
 
 		/* One character per week: its average level, in green like the
-		   contribution chart (koncept.md §5). */
+		   contribution chart (docs/koncept.md §5). */
 		const chart = github.weeks
 			.slice(-WEEKS)
 			.map((week) => LEVELS[Math.min(4, Math.round(week.reduce<number>((sum, level) => sum + level, 0) / 7))])
