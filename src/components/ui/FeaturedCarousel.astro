@@ -330,9 +330,22 @@ const t = useTranslations(lang);
 		position: relative;
 		grid-column: 2;
 		z-index: 1;
+		container-type: inline-size;
+	}
+
+	/* In a narrow text column the highlights go first, so the sentence and
+	   the tags still fit the fixed height. */
+	@container (max-width: 319px) {
+		.features {
+			display: none;
+		}
 	}
 
 	@media (max-width: 639px) {
+		.track :global(.slide) {
+			height: var(--featured-slide-height-phone);
+		}
+
 		.card {
 			grid-template-columns: minmax(0, 1fr);
 		}

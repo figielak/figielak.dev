@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProjectDetail from '../../../components/views/ProjectDetail.astro';
+import { getProjects, type ProjectEntry } from '../../../lib/projects';
+
+/* English twin of a project's detail page; the case study stays on the Polish one. */
+export async function getStaticPaths() {
+	const projects = await getProjects();
+	return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+
+const { project } = Astro.props as { project: ProjectEntry };
+---
+
+<BaseLayout title={`${project.data.title} — Krystian Figiela`} description={project.data.summary.en}>
+	<ProjectDetail project={project} />
+</BaseLayout>

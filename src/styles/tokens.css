@@ -164,7 +164,10 @@
 	--featured-shot-min: 160px;
 	/* Home featured carousel: one height for every slide, so a project
 	   without a screenshot does not change the card. */
-	--featured-slide-height: 260px;
+	--featured-slide-height: 280px;
+	/* Phones stack the text under the screenshot on a downward scrim; the card
+	   is taller so the sentence and tags sit where the scrim is solid. */
+	--featured-slide-height-phone: 420px;
 	--featured-slide-width: 92%;
 	--size-carousel-control: 36px;
 	/* Scrim over a full-card screenshot: clear for the first third, near-opaque
@@ -185,6 +188,11 @@
 		var(--featured-scrim-solid) 80%
 	);
 	--gallery-column: 460px;
+	/* Project detail page (§3.2): a wider column than a case study's text, the
+	   gallery strip with the next shot peeking in, every shot in the same frame. */
+	--project-detail-width: 960px;
+	--project-slide-width: 88%;
+	--project-shot-ratio: 16 / 10;
 	--size-social-row: 80px;
 	--size-bar: 6px;
 	--size-contrib-gap: 3px;

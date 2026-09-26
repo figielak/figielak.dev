@@ -4,9 +4,9 @@ import { z } from 'astro/zod';
 
 /**
  * Projects (docs/koncept.md §3.2): one MDX file per project. The frontmatter feeds
- * the /projects list, the featured strip on the home page and the featured
- * tile on the dashboard; the body, when there is one, is the case study
- * (Polish) at /projects/<slug>. An empty body means no case study page.
+ * the /projects list, the featured strip on the home page, the featured tile on
+ * the dashboard and each project's detail page (/projects/<slug>, PL and EN);
+ * the body, when there is one, is the case study (Polish) on that page.
  */
 const localized = z.object({ pl: z.string(), en: z.string() });
 
@@ -30,6 +30,10 @@ const projects = defineCollection({
 				})
 				.default({}),
 			cover: image().optional(),
+			/** A few paragraphs for the detail page, separated by a blank line. */
+			description: localized.optional(),
+			/** Screenshots after the cover in the detail page's gallery. */
+			gallery: z.array(z.object({ image: image(), caption: localized })).default([]),
 			/** Featured projects lead /projects and fill the home and dashboard strips. */
 			featured: z.boolean().default(false),
 			/** Lower comes first. */

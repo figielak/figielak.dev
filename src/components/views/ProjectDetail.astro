@@ -1,0 +1,229 @@
+---
+import Pill from '../ui/Pill.astro';
+import TileLabel from '../ui/TileLabel.astro';
+import Icon, { type IconName } from '../ui/Icon.astro';
+import DossierSection from '../ui/DossierSection.astro';
+import ProjectGallery from '../ui/ProjectGallery.astro';
+import { hasCaseStudy, projectLinks, projectYear, type ProjectEntry } from '../../lib/projects';
+import { getLangFromUrl, localizePath, useTranslations } from '../../i18n';
+
+/**
+ * A project's detail page (docs/koncept.md §3.2), shared by PL and EN: the
+ * header with year, name, sentence, tags and links; the gallery (cover, then
+ * the `gallery` shots); the description with highlights; and the case study.
+ * The case study is Polish only — the Polish page passes it in the slot, the
+ * English one links to it.
+ */
+interface Props {
+	project: ProjectEntry;
+}
+
+const { project } = Astro.props;
+const { data } = project;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+const shots = [
+	...(data.cover ? [{ image: data.cover, caption: t('gallery.cover').replace('{name}', data.title) }] : []),
+	...data.gallery.map((item) => ({ image: item.image, caption: item.caption[lang] })),
+];
+const paragraphs = data.description?.[lang].split(/\n\s*\n/).filter((part) => part.trim()) ?? [];
+const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel: 'noopener noreferrer' } : {});
+---
+
+<article class="case">
+	<a class="back" href={localizePath('/projects', lang)}>‹ {t('projects.back')}</a>
+	<header class="case-head">
+		<TileLabel>{projectYear(project, lang)}</TileLabel>
+		<h1 class="case-title">{data.title}</h1>
+		<p class="case-summary">{data.summary[lang]}</p>
+		<ul class="case-tags">
+			{
+				data.tags.map((tag) => (
+					<li>
+						<Pill>{tag}</Pill>
+					</li>
+				))
+			}
+		</ul>
+		<p class="case-links">
+			{
+				projectLinks(project, lang).map((link) => (
+					<a class="button" href={link.href} {...externalAttrs(link.external)}>
+						<Icon name={link.icon} size={16} />
+						{link.label} ↗
+					</a>
+				))
+			}
+		</p>
+	</header>
+
+	<ProjectGallery items={shots} label={`${t('projects.gallery')}: ${data.title}`} />
+
+	{
+		(paragraphs.length > 0 || data.features) && (
+			<DossierSection label={t('projects.about')}>
+				<div class="about">
+					{paragraphs.map((paragraph) => (
+						<p>{paragraph}</p>
+					))}
+					{data.features && (
+						<ul class="features">
+							{data.features.map((feature) => (
+								<li>
+									<Icon name={feature.icon as IconName} size={16} />
+									{feature[lang]}
+								</li>
+							))}
+						</ul>
+					)}
+				</div>
+			</DossierSection>
+		)
+	}
+
+	{
+		hasCaseStudy(project) && (
+			<DossierSection label={t('projects.caseStudy')} id="case-study">
+				{lang === 'pl' ? (
+					<div class="case-body">
+						<slot />
+					</div>
+				) : (
+					<p class="case-note">
+						{t('projects.caseStudyPl')}{' '}
+						<a href={`/projects/${project.id}#case-study`} hreflang="pl">
+							{t('projects.readCaseStudy')} ↗
+						</a>
+					</p>
+				)}
+			</DossierSection>
+		)
+	}
+</article>
+
+<style>
+	.case {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-3xl);
+		max-width: var(--project-detail-width);
+		margin: 0 auto;
+	}
+
+	.back {
+		align-self: flex-start;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+		text-decoration: none;
+	}
+
+	.back:hover {
+		color: var(--accent);
+	}
+
+	.case-head {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+	}
+
+	.case-title {
+		margin: 0;
+		font-size: var(--size-hero);
+		line-height: 1.15;
+	}
+
+	.case-summary {
+		max-width: 68ch;
+		margin: 0;
+		line-height: 1.55;
+		color: var(--text-muted);
+	}
+
+	.case-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.case-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-sm);
+		margin: 0;
+	}
+
+	.case-links .button {
+		gap: var(--space-xs);
+	}
+
+	.about {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-md);
+		max-width: 68ch;
+	}
+
+	.about p,
+	.case-note {
+		margin: 0;
+		line-height: 1.65;
+		color: var(--text-muted);
+	}
+
+	.case-note a {
+		color: var(--text);
+	}
+
+	.case-note a:hover {
+		color: var(--accent);
+	}
+
+	.features {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+		margin: var(--space-xs) 0 0;
+		padding: 0;
+		list-style: none;
+		font-family: var(--font-mono);
+		font-size: var(--size-small);
+		color: var(--text-muted);
+	}
+
+	.features li {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+	}
+
+	.case-body {
+		max-width: 68ch;
+		line-height: 1.65;
+	}
+
+	.case-body > :global(:first-child) {
+		margin-top: 0;
+	}
+
+	.case-body :global(h2) {
+		margin: var(--space-3xl) 0 var(--space-md);
+		font-size: var(--size-title);
+	}
+
+	.case-body :global(p),
+	.case-body :global(li) {
+		color: var(--text-muted);
+	}
+
+	.case-body :global(a) {
+		color: var(--text);
+	}
+</style>

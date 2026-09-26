@@ -1,17 +1,31 @@
 ---
 title: Homelab
-year: 2025
+year: 2026
 ongoing: true
 summary:
-  pl: Serwer domowy na Raspberry Pi — kontenery, DNS z blokadą reklam i monitoring usług; własny agent co minutę wysyła statystyki na dashboard tej strony.
-  en: A home server on a Raspberry Pi — containers, ad-blocking DNS and service monitoring; my own agent pushes its stats to this site's dashboard every minute.
-tags: [Docker, Linux, Raspberry Pi]
+  pl: 'Serwer domowy na Raspberry Pi: usługi w Dockerze za Caddy, DNS z blokadą reklam, dostęp tylko przez Tailscale — całość w repo, gotowa do odbudowy od zera.'
+  en: 'A home server on a Raspberry Pi: Docker services behind Caddy, ad-blocking DNS, access only over Tailscale — all in a repo, ready to rebuild from scratch.'
+tags: [Docker, Caddy, Tailscale]
 links:
+  repo: https://github.com/figielak/homelab
   demo: /dashboard
+cover: ../../assets/projects/homelab.png
+gallery:
+  - image: ../../assets/projects/homelab/dashboard-tile.webp
+    caption: { pl: 'Kafel Homelab na dashboardzie tej strony: maszyna, usługi, transfer i blokada reklam', en: "The Homelab tile on this site's dashboard: machine, services, traffic and ad blocking" }
+description:
+  pl: |
+    Domowy serwer na Raspberry Pi, na którym w kontenerach Dockera działają usługi: multimedia, pliki, DNS z blokadą reklam (AdGuard Home), monitoring (Uptime Kuma) i kopie zapasowe (restic). Ruch do usług idzie przez Caddy, a dostęp z zewnątrz jest tylko przez Tailscale — żaden port nie jest otwarty do internetu.
+
+    Cała konfiguracja jest w repozytorium razem z instrukcją odbudowy, więc serwer da się postawić od zera na nowej karcie. Własny agent co minutę zbiera zużycie maszyny, stan usług, transfer i statystyki DNS i wysyła je na dashboard tej strony — bez nazw hostów i adresów.
+  en: |
+    A home server on a Raspberry Pi running services in Docker containers: media, files, ad-blocking DNS (AdGuard Home), monitoring (Uptime Kuma) and backups (restic). Traffic to the services goes through Caddy, and access from outside is only over Tailscale — no port is open to the internet.
+
+    The whole configuration lives in a repo with rebuild instructions, so the server can be set up from scratch on a fresh card. My own agent collects machine usage, service status, traffic and DNS stats every minute and pushes them to this site's dashboard — without host names or addresses.
 featured: true
 order: 2
 features:
-  - { icon: activity, pl: 'CPU, RAM i dysk co minutę', en: 'CPU, RAM and disk every minute' }
-  - { icon: shield, pl: 'blokada reklam z AdGuarda', en: 'ad blocking from AdGuard' }
-  - { icon: chart-bar, pl: 'uptime usług', en: 'service uptime' }
+  - { icon: lock, pl: 'bez otwartych portów', en: 'no ports open to the internet' }
+  - { icon: notebook, pl: 'dokumentacja w Obsidianie', en: 'docs in Obsidian' }
+  - { icon: activity, pl: 'statystyki na tym dashboardzie', en: 'stats on this dashboard' }
 ---

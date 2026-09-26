@@ -10,6 +10,24 @@ links:
   repo: https://github.com/figielak/figielak.dev
   demo: /dashboard
 cover: ../../assets/projects/figielak-dev.jpg
+gallery:
+  - image: ../../assets/projects/figielak-dev/dashboard-mobile.webp
+    caption: { pl: 'Dashboard na telefonie: dwie kolumny kafli', en: 'The dashboard on a phone: two columns of tiles' }
+  - image: ../../assets/projects/figielak-dev/terminal.webp
+    caption: { pl: 'Terminal na całej stronie, z danymi z tych samych API co kafle', en: 'A site-wide terminal, fed by the same APIs as the tiles' }
+description:
+  pl: |
+    Strona ma kilka widoków dla różnych odbiorców: wizytówkę dla rekruterów, listę projektów i dashboard z danymi na żywo — pogodą, jakością powietrza, GitHubem, WakaTime, muzyką z Last.fm, czytanymi książkami i stanem mojego homelaba. Wszystkie dzielą jeden system wizualny: tokeny, kafle, typografię i jeden czerwony akcent.
+
+    Strony są statyczne (Astro), a dane dociągają małe wyspy w czystym TypeScripcie z własnych endpointów /api/*. Serwer Node działa na Cloud Run za Cloudflare i skaluje się do zera; klucze API zostają po stronie serwera, a każdy kafel ma cztery stany: ładowanie, dane, nieaktualne i błąd.
+
+    Homelab nie jest wystawiony do internetu — agent na Raspberry Pi sam wysyła co minutę zanonimizowane statystyki, które trafiają do Firestore. Za hasłem jest prywatny panel: usługi, backup, deploye, statystyki strony i to, co niedługo wygasa.
+  en: |
+    The site has a few views for different readers: a profile for recruiters, a list of projects and a dashboard with live data — the weather, air quality, GitHub, WakaTime, music from Last.fm, the books I'm reading and the state of my homelab. They all share one visual system: tokens, tiles, typography and a single red accent.
+
+    Pages are static (Astro); small islands in plain TypeScript fetch the data from the site's own /api/* endpoints. The Node server runs on Cloud Run behind Cloudflare and scales to zero; API keys stay on the server, and every tile has four states: loading, data, stale and error.
+
+    The homelab is not exposed to the internet — an agent on a Raspberry Pi pushes anonymised stats every minute, and they land in Firestore. Behind a password there is a private panel: services, backups, deploys, site stats and whatever expires soon.
 featured: true
 order: 1
 features:

@@ -91,7 +91,7 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 
 | Sekcja | Zawartość |
 |---|---|
-| Wyróżniony projekt | jedyna sekcja w ramkach: przewijany w bok pasek kart projektów (`FeaturedCarousel`, kolejna karta wystaje; pod paskiem licznik „1 / 3” i strzałki ‹ ›, które przeskakują o jedną kartę płynnym przewinięciem — bez animacji przy reduced motion — i gasną na końcach; pasek przewijania ukryty, działa też przesunięcie palcem i strzałki klawiatury). Zrzut wypełnia całą kartę, a w prawej kolumnie na gradiencie (przezroczysty do 35%, pełny od 80% — tokeny `--featured-scrim-*`) stoją nazwa ↗, 1 zdanie, kilka funkcji z ikonami i tagi; na telefonie gradient idzie w dół, tekst na dole, bez listy funkcji. Karty mają stałą wysokość, także bez zrzutu. Akcja „Wszystkie projekty ↗” prowadzi do `/projects` |
+| Wyróżniony projekt | jedyna sekcja w ramkach: przewijany w bok pasek kart projektów (`FeaturedCarousel`, kolejna karta wystaje; pod paskiem licznik „1 / 3” i strzałki ‹ ›, które przeskakują o jedną kartę płynnym przewinięciem — bez animacji przy reduced motion — i gasną na końcach; pasek przewijania ukryty, działa też przesunięcie palcem i strzałki klawiatury). Zrzut wypełnia całą kartę, a w prawej kolumnie na gradiencie (przezroczysty do 35%, pełny od 80% — tokeny `--featured-scrim-*`) stoją nazwa ↗, 1 zdanie, kilka funkcji z ikonami i tagi (funkcje znikają, gdy kolumna tekstu ma mniej niż 320 px); na telefonie karta jest wyższa, gradient idzie w dół, tekst na dole, bez listy funkcji. Karty mają stałą wysokość, także bez zrzutu. Akcja „Wszystkie projekty ↗” prowadzi do `/projects` |
 | Doświadczenie | wiersze `okres · stanowisko · firma` (firma w linii tytułu, szara), pod spodem miejsce i czas trwania, a na końcu **jedno** zdanie o tym, co tam robiłem (czynność + technologia, bez listy punktów; o stopień mniejsze, nie ciemniejsze — `--text-subtle` nie ma AA). Ciasno wewnątrz pozycji, duży odstęp między pozycjami, bez linii; okres w mono z `tabular-nums`: miesiące `MM.RRRR–MM.RRRR` dla okresów krótszych niż rok, lata dla dłuższych; akcja „Pełne CV ↗” |
 | Umiejętności | wiersze kategorii (Backend, Automatyzacja, Bazy danych, DevOps, AI, Narzędzia): etykieta mono po lewej w kolumnie okresów z Doświadczenia, pigułki z nazwami technologii po prawej |
 | Języki | jedna linia: „Polski — ojczysty · Angielski — B1” |
@@ -104,13 +104,14 @@ Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama lin
 
 - **Układ: jeden wyróżniony + lista**, na całą szerokość, bez karty profilu. Nie bento: dashboard jest jedyną siatką kafli, a lista wygląda dobrze zarówno z dwoma, jak i z dziesięcioma projektami (w siatce przy kilku projektach widać dziury).
 - Nad wszystkim etykieta mono „Projekty · N”.
-- **Wyróżniony projekt** (pierwszy wpis z `featured: true` wg `order`): jeden `Tile` — zrzut ekranu po lewej od krawędzi do krawędzi, po prawej etykieta „Wyróżniony · rok” w akcencie (jedyny akcent w widoku), nazwa jak nagłówek hero, jedno zdanie, tagi i przyciski linków (Case study / Kod / Na żywo ↗). Poniżej 768px składa się w pionie: zrzut nad tekstem.
-- **Lista** pozostałych w sekcji dossier („Pozostałe projekty”): te same wiersze co Doświadczenie na wizytówce — rok w mono w kolumnie okresów (`2025–obecnie` dla trwających), tytuł, jedno zdanie, tagi, a po prawej ikony linków. Na telefonie rok przechodzi nad tytuł, a wiersze zostają wierszami.
+- **Wyróżniony projekt** (pierwszy wpis z `featured: true` wg `order`): jeden `Tile` — zrzut ekranu po lewej od krawędzi do krawędzi, po prawej etykieta „Wyróżniony · rok” w akcencie (jedyny akcent w widoku), nazwa jak nagłówek hero, jedno zdanie, funkcje z ikonami (`features`), tagi i przyciski (Szczegóły / Kod / Na żywo ↗); nazwa też prowadzi do szczegółów. Poniżej 768px składa się w pionie: zrzut nad tekstem.
+- **Lista** pozostałych w sekcji dossier („Pozostałe projekty”): te same wiersze co Doświadczenie na wizytówce — rok w mono w kolumnie okresów (`2025–obecnie` dla trwających), tytuł ze strzałką ›, jedno zdanie, tagi, a po prawej ikony linków (kod, na żywo). Cały wiersz prowadzi do strony szczegółów (tło `--surface-hover` po najechaniu), ikony zostają osobnymi linkami. Na telefonie rok przechodzi nad tytuł, a wiersze zostają wierszami.
 - **Każda pozycja:** jedno zdanie w schemacie problem → rozwiązanie → efekt, najlepiej z konkretem („używany codziennie”, „3. miejsce na hackathonie”); 2–4 tagi stacku, nie cały stack; linki: kod, demo, opcjonalnie case study.
 - Bez kart „W przygotowaniu” — lepiej mniej, dobrze opisanych projektów. Filtry (Backend, Data / ML…) dopiero od ok. 6 projektów.
-- Każdy projekt to plik MDX w content collection (`src/content/projects/`, schemat w `src/content.config.ts`): tytuł, rok (+ `ongoing`), zdanie PL/EN, tagi, linki (repo, demo — ścieżka na stronie lub URL), okładka, `featured`, `order` i opcjonalne `features` (ikona + krótki tekst, dla karuzeli). Dane dla widoków daje `src/lib/projects.ts`.
-- **Case study** (`/projects/[slug]`) to treść pliku MDX: kontekst, architektura, decyzje, czego się nauczyłem; może zawierać wzory (KaTeX, CSS ładowany tylko tam) i diagramy (Mermaid). Strona powstaje tylko dla wpisu z niepustą treścią. Case study są po polsku — wersja EN listy linkuje do polskiej strony.
-- Wpisy z `featured: true` zasilają karuzelę na wizytówce, kafel `featured` na dashboardzie, a wszystkie wpisy — komendę `open` w terminalu.
+- Każdy projekt to plik MDX w content collection (`src/content/projects/`, schemat w `src/content.config.ts`): tytuł, rok (+ `ongoing`), zdanie PL/EN, tagi, linki (repo, demo — ścieżka na stronie lub URL), okładka, `featured`, `order`, opcjonalne `features` (ikona + krótki tekst, dla karuzeli), opcjonalny `description` PL/EN (kilka akapitów) i `gallery` (zrzuty z podpisem PL/EN; zrzuty z produkcji w WebP w `src/assets/projects/<slug>/`, bez danych osobowych). Dane dla widoków daje `src/lib/projects.ts`.
+- **Strona szczegółów** (`/projects/[slug]` i `/en/projects/[slug]`, `ProjectDetail`) — ma ją każdy projekt: powrót do listy, rok, nazwa, zdanie, tagi, przyciski Kod / Na żywo; **galeria** (`ProjectGallery`: okładka i `gallery` w pasku przewijanym w bok jak karuzela na wizytówce — licznik, ‹ ›, każdy zrzut w tej samej ramce 16:10 z podpisem; klik otwiera lightbox na `<dialog>` z ‹ ›, strzałkami i `Esc`, bez JS link do pełnego pliku); sekcje dossier „O projekcie” (`description` i `features`) oraz „Case study”.
+- **Case study** to treść pliku MDX: kontekst, architektura, decyzje, czego się nauczyłem; może zawierać wzory (KaTeX, CSS ładowany tylko tam) i diagramy (Mermaid). Sekcja jest tylko przy niepustej treści. Case study są po polsku — strona EN pokazuje w tym miejscu link do polskiej.
+- Wpisy z `featured: true` zasilają karuzelę na wizytówce, kafel `featured` na dashboardzie, a wszystkie wpisy — komendę `open` w terminalu; wszystkie te miejsca linkują do strony szczegółów.
 
 ### 3.3 Korepetycje (`/maths`)
 
@@ -161,7 +162,7 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 **W przyszłości:**
 - matura rozszerzona w ofercie;
 - sekcje: opinie uczniów, FAQ;
-- tygodniowa dostępność i rezerwacja online (np. Cal.com, embed lub API);
+- tygodniowa dostępność i rezerwacja online przez Cal.com (embed lub API, decyzja §17);
 - opcjonalna sekcja „Zadanie tygodnia” ze wzorem w KaTeX.
 
 ### 3.4 Dashboard (`/dashboard`)
@@ -478,7 +479,7 @@ Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na 
 - **Tailwind v4:** tokeny w `@theme`, zgodnie z sekcją 5.
 - **Fontsource** dla Geist Mono; Satoshi hostowany lokalnie.
 - **Sätteri (`@astrojs/markdown-satteri`) + KaTeX:** wzory w projektach i na `/maths`. Sätteri parsuje matematykę (`features: { math: true }`), a własny plugin `src/plugins/katex.js` renderuje ją KaTeX-em przy buildzie. CSS KaTeX ładuję tylko na stronach, które go używają.
-- **rehype-mermaid** (jeszcze niezainstalowany, przyjdzie z krokiem 3 w §16): diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright. Build idzie w GitHub Actions (obraz Dockera dostaje gotowy `dist/`), więc wystarczy doinstalować tam przeglądarkę; w razie problemów przechodzę na renderowanie po stronie klienta.
+- **rehype-mermaid** (jeszcze niezainstalowany, instaluję go razem z pierwszym case study, które ma diagram — krok 3 w §16): diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright. Build idzie w GitHub Actions (obraz Dockera dostaje gotowy `dist/`), więc wystarczy doinstalować tam przeglądarkę; w razie problemów przechodzę na renderowanie po stronie klienta.
 - **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`, wspólny układ w `cv/template.typ`), kompilowane lokalnie (`npm run cv`) do PDF w `public/cv/`; PDF-y są w repo, więc CI nie potrzebuje Typsta. Jedna strona A4, jasne tło (druk, ATS), Satoshi i Geist Mono (statyczne OTF w `cv/fonts/`, bo Typst nie czyta woff2), jeden czerwony akcent, klauzula RODO w stopce. Treść to kopia wizytówki — zmieniając doświadczenie lub umiejętności, poprawiam oba miejsca.
 - **Hosting:** **Google Cloud Run** (`europe-west1`, skalowanie do zera) za **Cloudflare**.
   - Cloud Run uruchamia kontener z `Dockerfile`: prerenderowane strony + serwer Node dla `/api/*`.
@@ -495,7 +496,7 @@ src/
   assets/        # avatar, okładki książek, loga marek, zrzuty projektów
   components/
     ui/          # Tile, TileLabel, LiveDot, Pill, IconLink, Nav, BentoLayout,
-                 # Dossier, ProfileCard, FeaturedCarousel, Terminal…
+                 # Dossier, ProfileCard, FeaturedCarousel, ProjectGallery, Terminal…
     tiles/       # każdy kafel jako osobny komponent (homelab/ — jego sekcje)
     views/       # treść widoków, wspólna dla PL i EN
   layouts/       # BaseLayout
@@ -504,8 +505,8 @@ src/
     server/      # klienci API, cache, Firestore, kontrakt homelaba
   pages/
     index.astro  maths.astro  dashboard.astro  dashboard/private.astro
-    projects/    # index.astro, [slug].astro (case study, tylko PL)
-    en/          # te same widoki po angielsku (bez /maths)
+    projects/    # index.astro, [slug].astro (szczegóły projektu, case study tylko PL)
+    en/          # te same widoki po angielsku (bez /maths), też projects/[slug]
     dev/         # galeria stanów kafli /dev/tiles (tylko w dev)
     api/         # endpointy danych na żywo
   content/projects/*.mdx   # schemat w src/content.config.ts
@@ -607,18 +608,17 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 1. ✅ **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
 2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie (prawdziwe pozycje), edukacja, umiejętności, języki, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z kolekcji projektów, ta sama lista co na dashboardzie), zajawka dashboardu (pogoda i muzyka na żywo) — gotowe. Zostało:
    - CV z Typst jest gotowe (`cv/` → `public/cv/`, PL i EN); zostało dopisać do niego więcej konkretów (punkty z liczbami, projekty), gdy przybędzie treści.
-3. 🟡 **Projekty:** content collection, układ „wyróżniony + lista”, karuzela i kafel featured z kolekcji, trasa case study z CSS KaTeX — gotowe. Na liście: figielak.dev i Homelab. Zostało: treści case study, Mermaid, kolejne projekty (filtry od ok. 6).
+3. 🟡 **Projekty:** content collection, układ „wyróżniony + lista”, karuzela i kafel featured z kolekcji, trasa case study z CSS KaTeX — gotowe. Na liście: figielak.dev i Homelab. Zostało: treści case study (rehype-mermaid dochodzi razem z pierwszym diagramem), kolejne projekty (filtry od ok. 6).
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`). Na razie ukryte za planszą „W przygotowaniu” (`src/lib/tutoring.ts`, §3.3).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm z podglądem utworu (`/api/music`), WakaTime (`/api/waka`), pogoda (`/api/weather`), powietrze (`/api/air`), książki z Hardcover (`/api/books`), cel (`/api/goal`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Tryb prywatny jako panel (§3.4) jest wdrożony: usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu. Zostało: prawdziwe wartości sekretów dla Cloudflare Web Analytics (`cf-analytics-token`, `CF_ACCOUNT_ID`, `CF_WEB_ANALYTICS_SITE_TAG`) i iCal korepetycji (`tutoring-ical-url`), sprawdzenie daty wygaśnięcia tokenu Hardcover w `src/lib/server/expiring.ts` (na razie założona) i rozkład zajęć (`sched`, §17). Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
-7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, cel z edycją w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths`, reszta kafli z §13 (zdjęcia, Snake, Konami code).
+6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm z podglądem utworu (`/api/music`), WakaTime (`/api/waka`), pogoda (`/api/weather`), powietrze (`/api/air`), książki z Hardcover (`/api/books`), cel (`/api/goal`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Tryb prywatny jako panel (§3.4) jest wdrożony: usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu. Sekrety i zmienne Cloudflare Web Analytics (`cf-analytics-token`, `CF_ACCOUNT_ID`, `CF_WEB_ANALYTICS_SITE_TAG`) i iCal korepetycji (`tutoring-ical-url`) są ustawione. Zostało: sprawdzenie daty wygaśnięcia tokenu Hardcover w `src/lib/server/expiring.ts` (na razie założona) i rozkład zajęć (`sched`, §17). Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
+7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, cel z edycją w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths` (Cal.com), reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---
 
 ## 17. Otwarte decyzje
 
 - [ ] Źródło rozkładu zajęć i poziom szczegółowości publicznie
-- [ ] Narzędzie do rezerwacji korepetycji (Cal.com / własne)
 - [ ] Framework wysp: na razie czysty TS w `<script>` wystarcza; Preact dopiero, gdy potrzebny stan
 
 Podjęte (2026-09-25):
@@ -629,5 +629,6 @@ Podjęte (2026-09-25):
 - [x] Analityka: Cloudflare Web Analytics (nie Umami ani Plausible)
 - [x] Źródło deployów: GitHub Actions API
 - [x] Korepetycje: Google Calendar (iCal) + znacznik płatności w kaflu
+- [x] Rezerwacja korepetycji: Cal.com (decyzja 2026-09-26)
 - [x] Cel edytowany w trybie prywatnym (zamiast kafla „Teraz”, który usunięto)
 - [x] Treść kafli bez wypełniaczy: wydarzenia w `src/lib/events.ts`, książki z Hardcover, kroki celu ustawiane w trybie prywatnym (`src/lib/goal.ts` to tylko wartość sprzed pierwszego zapisu)

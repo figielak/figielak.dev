@@ -6,7 +6,7 @@
 import type { ImageMetadata } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import type { IconName } from '../components/ui/Icon.astro';
-import { localizePath, type Lang } from '../i18n';
+import { localizePath, useTranslations, type Lang } from '../i18n';
 
 export type ProjectEntry = CollectionEntry<'projects'>;
 
@@ -25,15 +25,41 @@ export interface FeaturedProject {
 /** A project has a case study page when its MDX body is not empty. */
 export const hasCaseStudy = (project: ProjectEntry) => Boolean(project.body?.trim());
 
-/* Case studies are written in Polish only, so both languages link to the
-   Polish page; without one, the link points at the project's row. */
+/** Every project has a detail page in both languages (the case study on it is Polish only). */
 export function projectHref(project: ProjectEntry, lang: Lang): string {
-	return hasCaseStudy(project) ? `/projects/${project.id}` : `${localizePath('/projects', lang)}#${project.id}`;
+	return localizePath(`/projects/${project.id}`, lang);
 }
 
 /** Demo links may be paths on this site, which follow the page language. */
 export function localizeLink(href: string, lang: Lang): string {
 	return href.startsWith('/') ? localizePath(href, lang) : href;
+}
+
+export interface ProjectLink {
+	label: string;
+	icon: IconName;
+	href: string;
+	external: boolean;
+}
+
+/** Code and live — whichever the project has. */
+export function projectLinks(project: ProjectEntry, lang: Lang): ProjectLink[] {
+	const t = useTranslations(lang);
+	const list: ProjectLink[] = [];
+	if (project.data.links.repo) {
+		list.push({ label: t('projects.code'), icon: 'github', href: project.data.links.repo, external: true });
+	}
+	if (project.data.links.demo) {
+		const href = localizeLink(project.data.links.demo, lang);
+		list.push({ label: t('projects.live'), icon: 'world', href, external: !href.startsWith('/') });
+	}
+	return list;
+}
+
+/** "2026" or "2026–now" for a project still going on. */
+export function projectYear(project: ProjectEntry, lang: Lang): string {
+	const { year, ongoing } = project.data;
+	return ongoing ? `${year}–${useTranslations(lang)('edu.present')}` : String(year);
 }
 
 export async function getProjects(): Promise<ProjectEntry[]> {
