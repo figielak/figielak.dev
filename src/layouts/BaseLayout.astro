@@ -3,6 +3,8 @@ import '@fontsource-variable/geist-mono';
 import '../styles/global.css';
 import Nav from '../components/ui/Nav.astro';
 import Terminal from '../components/ui/Terminal.astro';
+import AccentPicker from '../components/dev/AccentPicker.astro';
+import { ACCENT_LAB_LIVE } from '../lib/dev/accents';
 import { getLangFromUrl, localizePath, stripLang, useTranslations } from '../i18n';
 import { githubUrl, linkedinUrl } from '../lib/contact';
 
@@ -141,6 +143,9 @@ const structuredData =
 	</head>
 
 	<body class:list={[glow && 'has-glow']}>
+		{/* Accent candidates (/dev/accent): dev only, unless ACCENT_LAB_LIVE. */}
+		{(import.meta.env.DEV || ACCENT_LAB_LIVE) && <AccentPicker />}
+
 		{
 			glow && (
 				<div class="page-glow" aria-hidden="true">

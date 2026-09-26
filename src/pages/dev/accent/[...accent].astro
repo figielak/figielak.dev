@@ -1,0 +1,284 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Tile from '../../../components/ui/Tile.astro';
+import TileLabel from '../../../components/ui/TileLabel.astro';
+import LiveDot from '../../../components/ui/LiveDot.astro';
+import StatBar from '../../../components/ui/StatBar.astro';
+import { ACCENTS, ACCENT_LAB_LIVE, BACKGROUNDS, accentVars, contrast, styleOf } from '../../../lib/dev/accents';
+
+/**
+ * Dev-only accent lab: every candidate from src/lib/dev/accents.ts side by side
+ * on the same samples, with its WCAG contrast. "Use on the site" switches the
+ * floating picker, so the candidate can be checked on the real views.
+ * getStaticPaths returns nothing in a build unless ACCENT_LAB_LIVE is on.
+ */
+export function getStaticPaths() {
+	return import.meta.env.DEV || ACCENT_LAB_LIVE ? [{ params: { accent: undefined } }] : [];
+}
+
+const AA = 4.5;
+const candidates = ACCENTS.map((candidate) => ({
+	...candidate,
+	style: styleOf(accentVars(candidate)),
+	checks: [
+		{ label: 'tekst na --bg', ratio: contrast(candidate.accent, BACKGROUNDS.bg) },
+		{ label: 'tekst na --surface', ratio: contrast(candidate.accent, BACKGROUNDS.surface) },
+		{ label: 'grafit na akcencie', ratio: contrast(BACKGROUNDS.graphite, candidate.accent) },
+		{ label: 'biały na akcencie', ratio: contrast(BACKGROUNDS.white, candidate.accent) },
+	],
+}));
+---
+
+<BaseLayout title="Accent — dev" description="Accent candidates" wide noindex>
+	<div class="lab">
+		<TileLabel>Akcent · {candidates.length} kandydatów · przełącznik w lewym dolnym rogu działa na każdej stronie</TileLabel>
+
+		<div class="columns">
+			{
+				candidates.map((candidate) => (
+					<section class="candidate" style={candidate.style}>
+						<header class="head">
+							<span class="swatch" aria-hidden="true" />
+							<div>
+								<h2 class="name">{candidate.name}</h2>
+								<code class="hex">{candidate.accent}</code>
+							</div>
+						</header>
+						<p class="note">{candidate.note}</p>
+						<button type="button" class="button" data-use-accent={candidate.id}>
+							Ustaw na stronie
+						</button>
+
+						<table class="checks">
+							{candidate.checks.map((check) => (
+								<tr>
+									<th scope="row">{check.label}</th>
+									<td data-pass={check.ratio >= AA ? '' : undefined}>
+										{check.ratio.toFixed(2)} {check.ratio >= AA ? '✓' : check.ratio >= 3 ? '≥3' : '✗'}
+									</td>
+								</tr>
+							))}
+						</table>
+
+						<Tile label="GitHub" icon="github">
+							<p class="copy">
+								Stonowany tekst z <span class="hit">jednym wyróżnieniem</span>, a pod nim
+								potwierdzenie.
+							</p>
+							<p class="hit mono">Skopiowano ✓ · obecnie</p>
+							<div class="actions">
+								<a class="button button-primary" href="#">Napisz</a>
+								<a class="button" href="#">CV</a>
+							</div>
+						</Tile>
+
+						<div class="nav-sample" aria-hidden="true">
+							<span class="nav-item nav-item-active">Wizytówka</span>
+							<span class="nav-item">Projekty</span>
+							<span class="nav-item">Dashboard</span>
+						</div>
+
+						<Tile label="Homelab" icon="server">
+							<div class="dots">
+								<span><LiveDot state="up" pulse /> działa</span>
+								<span><LiveDot state="down" /> awaria</span>
+								<span><LiveDot state="stale" /> nieaktualne</span>
+							</div>
+							<StatBar label="Dysk" value={91} alertAt={85} />
+							<StatBar label="RAM" value={42} alertAt={85} />
+							<span class="focus-sample">focus ring</span>
+						</Tile>
+
+						<Tile accent label="CV">
+							<p class="accent-title">Pobierz CV</p>
+							<p class="accent-copy">Kafel z pełnym akcentem, grafitowy tekst.</p>
+						</Tile>
+
+						<div class="glow-sample">
+							<div class="glow-blob" aria-hidden="true" />
+							<div class="glass">
+								<TileLabel>Poświata</TileLabel>
+								<p class="copy">--text-muted na szkle nad poświatą.</p>
+							</div>
+						</div>
+					</section>
+				))
+			}
+		</div>
+	</div>
+</BaseLayout>
+
+<style>
+	.lab {
+		display: grid;
+		gap: var(--space-lg);
+		padding-bottom: var(--space-3xl);
+	}
+
+	.columns {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: var(--space-lg);
+		align-items: start;
+	}
+
+	.candidate {
+		display: grid;
+		gap: var(--space-md);
+	}
+
+	.head {
+		display: flex;
+		align-items: center;
+		gap: var(--space-md);
+	}
+
+	.swatch {
+		width: var(--size-icon-button);
+		height: var(--size-icon-button);
+		flex: none;
+		border-radius: var(--radius-inset);
+		background: var(--accent);
+	}
+
+	.name {
+		font-size: var(--size-title);
+		font-weight: 500;
+	}
+
+	.hex {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
+	}
+
+	.note,
+	.copy {
+		font-size: var(--size-small);
+		color: var(--text-muted);
+	}
+
+	.note {
+		min-height: 5lh;
+	}
+
+	.checks {
+		width: 100%;
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		font-variant-numeric: tabular-nums;
+		border-collapse: collapse;
+	}
+
+	.checks th {
+		text-align: left;
+		font-weight: 400;
+		color: var(--text-muted);
+		padding-block: var(--space-3xs);
+	}
+
+	.checks td {
+		text-align: right;
+		color: var(--status-down);
+	}
+
+	.checks td[data-pass] {
+		color: var(--status-ok);
+	}
+
+	.hit {
+		color: var(--accent);
+	}
+
+	.mono {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		margin-top: var(--space-sm);
+	}
+
+	.actions {
+		display: flex;
+		gap: var(--space-sm);
+		margin-top: var(--space-md);
+	}
+
+	.nav-sample {
+		display: flex;
+		gap: var(--space-2xs);
+		padding: var(--space-2xs);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-pill);
+		background: var(--surface);
+		font-size: var(--size-small);
+	}
+
+	.nav-item {
+		padding: var(--space-xs) var(--space-md);
+		border-radius: var(--radius-pill);
+		color: var(--text-muted);
+	}
+
+	.nav-item-active {
+		background: var(--nav-active);
+		color: var(--text);
+	}
+
+	.dots {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-md);
+		margin-bottom: var(--space-md);
+		font-size: var(--size-small);
+		color: var(--text-muted);
+	}
+
+	.dots span {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+	}
+
+	.focus-sample {
+		display: inline-block;
+		margin-top: var(--space-md);
+		padding: var(--space-2xs) var(--space-sm);
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+		border-radius: 2px;
+		font-size: var(--size-small);
+	}
+
+	.accent-title {
+		font-size: var(--size-title);
+		font-weight: 700;
+	}
+
+	.accent-copy {
+		font-size: var(--size-small);
+	}
+
+	.glow-sample {
+		position: relative;
+		overflow: hidden;
+		padding: var(--space-2xl) var(--space-lg);
+		border-radius: var(--radius-tile);
+		background: var(--bg);
+		border: 1px solid var(--border);
+	}
+
+	.glow-blob {
+		position: absolute;
+		inset: -50%;
+		background: radial-gradient(circle, var(--glow), transparent 60%);
+		filter: blur(var(--space-2xl));
+	}
+
+	.glass {
+		position: relative;
+		padding: var(--space-lg);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-tile);
+		background: var(--surface-glass);
+		backdrop-filter: blur(var(--glass-blur));
+	}
+</style>

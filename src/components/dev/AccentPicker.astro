@@ -1,0 +1,126 @@
+---
+import { ACCENTS, accentVars } from '../../lib/dev/accents';
+
+/**
+ * Floating accent switcher: overrides the accent tokens on <html> so every
+ * real view can be checked with each candidate (/dev/accent compares them side
+ * by side). BaseLayout renders it under `astro dev`, or everywhere while
+ * ACCENT_LAB_LIVE is on; the choice is kept in localStorage and applied before
+ * the page paints.
+ */
+const candidates = ACCENTS.map((candidate) => ({
+	id: candidate.id,
+	name: candidate.name,
+	accent: candidate.accent,
+	vars: accentVars(candidate),
+}));
+---
+
+<script is:inline define:vars={{ candidates }}>
+	window.__accents = candidates;
+	window.__applyAccent = (id) => {
+		const root = document.documentElement;
+		const candidate = candidates.find((c) => c.id === id) ?? candidates[0];
+		for (const [name, value] of Object.entries(candidate.vars)) root.style.setProperty(name, value);
+		root.dataset.devAccent = candidate.id;
+		return candidate;
+	};
+	try {
+		window.__applyAccent(localStorage.getItem('dev-accent') ?? 'current');
+	} catch {
+		window.__applyAccent('current');
+	}
+</script>
+
+<div class="accent-picker" role="group" aria-label="Accent (dev)">
+	<span class="accent-picker-name" data-accent-name></span>
+	<div class="accent-picker-swatches">
+		{
+			candidates.map((candidate) => (
+				<button
+					type="button"
+					class="accent-picker-swatch"
+					data-accent-id={candidate.id}
+					style={`--swatch: ${candidate.accent}`}
+					title={`${candidate.name} · ${candidate.accent}`}
+					aria-label={`${candidate.name} ${candidate.accent}`}
+				/>
+			))
+		}
+	</div>
+</div>
+
+<script>
+	type Candidate = { id: string; name: string; accent: string };
+	const w = window as unknown as {
+		__accents: Candidate[];
+		__applyAccent: (id: string) => Candidate;
+	};
+
+	const name = document.querySelector<HTMLElement>('[data-accent-name]');
+	const swatches = document.querySelectorAll<HTMLButtonElement>('[data-accent-id]');
+
+	const select = (id: string) => {
+		const candidate = w.__applyAccent(id);
+		try {
+			localStorage.setItem('dev-accent', candidate.id);
+		} catch {}
+		if (name) name.textContent = `${candidate.name} · ${candidate.accent}`;
+		swatches.forEach((swatch) => swatch.setAttribute('aria-pressed', String(swatch.dataset.accentId === id)));
+		document.dispatchEvent(new CustomEvent('dev-accent', { detail: candidate.id }));
+	};
+
+	swatches.forEach((swatch) => swatch.addEventListener('click', () => select(swatch.dataset.accentId!)));
+	/* Buttons on /dev/accent ask for a candidate too. */
+	document.addEventListener('click', (event) => {
+		const trigger = (event.target as Element).closest<HTMLElement>('[data-use-accent]');
+		if (trigger) select(trigger.dataset.useAccent!);
+	});
+	select(document.documentElement.dataset.devAccent ?? 'current');
+</script>
+
+<style>
+	.accent-picker {
+		position: fixed;
+		left: var(--space-md);
+		bottom: var(--space-md);
+		z-index: var(--z-nav);
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		padding: var(--space-xs) var(--space-sm) var(--space-xs) var(--space-md);
+		border: 1px solid var(--border-hover);
+		border-radius: var(--radius-pill);
+		background: var(--nav-glass);
+		backdrop-filter: blur(var(--glass-blur));
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
+		box-shadow: var(--shadow-tile);
+	}
+
+	.accent-picker-swatches {
+		display: flex;
+		gap: var(--space-2xs);
+	}
+
+	.accent-picker-swatch {
+		width: var(--space-xl);
+		height: var(--space-xl);
+		padding: var(--space-3xs);
+		border: 1px solid transparent;
+		border-radius: var(--radius-pill);
+		background: var(--swatch) content-box;
+		cursor: pointer;
+	}
+
+	.accent-picker-swatch[aria-pressed='true'] {
+		border-color: var(--text);
+	}
+
+	@media (max-width: 639px) {
+		.accent-picker-name {
+			display: none;
+		}
+	}
+</style>

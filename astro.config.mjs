@@ -17,7 +17,10 @@ export default defineConfig({
 		/* The private dashboard is password-protected (docs/koncept.md §14); /maths
 		   stays out while it only says "in preparation" (src/lib/tutoring.ts). */
 		sitemap({
-			filter: (page) => !page.includes('/dashboard/private') && (tutoringOpen || !page.includes('/maths')),
+			filter: (page) =>
+				!page.includes('/dashboard/private') &&
+				!page.includes('/dev/') &&
+				(tutoringOpen || !page.includes('/maths')),
 		}),
 	],
 	markdown: {
