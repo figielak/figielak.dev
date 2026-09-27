@@ -300,6 +300,12 @@ const progress = t('goal.progress').replace('{done}', String(done)).replace('{to
 			gap: var(--space-sm);
 		}
 
+		/* One line for the name, so all the steps still fit (a long EN name). */
+		.goal-title {
+			-webkit-line-clamp: 1;
+			line-clamp: 1;
+		}
+
 		.goal-progress {
 			display: none;
 		}
