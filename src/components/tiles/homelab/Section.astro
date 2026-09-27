@@ -11,7 +11,8 @@ import type { Live } from '../../../lib/live';
  * (src/scripts/live.ts); the tile's dot joins the states of all sections.
  */
 interface Props {
-	title: string;
+	/** Left out where the content names itself (the machine: its hardware line). */
+	title?: string;
 	live: Live<object>;
 	class?: string;
 	[key: string]: unknown;
@@ -23,7 +24,7 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 
 <section class:list={['hl-section', className]} {...rest}>
 	<header class="hl-heading">
-		<span class="hl-title">{title}</span>
+		{title && <span class="hl-title">{title}</span>}
 		<slot name="meta" />
 		<LiveFooter live={live} staleOnly />
 	</header>

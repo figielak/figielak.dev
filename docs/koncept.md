@@ -64,9 +64,9 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 │  Figiela     │  └────────────────┘└──  │
 │  Student ·   │  ──────────────────────  │
 │  Data & SW   │  DOŚWIADCZENIE           │
-│  · Rzeszów   │  2024 —  Firma · rola    │
-│ [● Otwarty   │  ──────────────────────  │
-│   na staż]   │  UMIEJĘTNOŚCI            │
+│ [● Otwarty   │  2024 —  Firma · rola    │
+│   na staż]   │  ──────────────────────  │
+│  Rzeszów     │  UMIEJĘTNOŚCI            │
 │  bio         │  [Python] [SQL] …        │
 │ [Napisz][CV] │  ──────────────────────  │
 │   [gh] [li]  │  EDUKACJA                │
@@ -81,7 +81,8 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 | Element | Zawartość |
 |---|---|
 | avatar | zdjęcie lub inicjał, zaokrąglony kwadrat; zdjęcie na ciemnym tle, żeby nie odstawało od motywu |
-| imię i rola | nagłówek hero + rola pod spodem, z miastem na końcu („Student · Data & Software Developer · Rzeszów”); człony się nie łamią, a kropka zaczyna następny człon, więc linia nigdy nie kończy się kropką |
+| imię i rola | nagłówek hero + rola pod spodem („Student · Data & Software Developer”); człony się nie łamią, a kropka zaczyna następny człon, więc linia nigdy nie kończy się kropką |
+| lokalizacja | „Rzeszów” w osobnej linii pod statusem (`ProfileCard location`, jak na `/maths`) — na końcu roli łamała się na osierocone „· Rzeszów” |
 | status | plakietka (pigułka w tle `--status-ok-soft` z obwódką `--status-ok-border`): zielona kropka z pulsowaniem + konkretnie, czego szukam: „Otwarty na staż (Data / Backend)” |
 | bio | 2 krótkie zdania o mnie |
 | akcje | „Napisz” (pełny akcent) i „Pobierz CV” (EN: „Contact”, „CV” — krótko, żeby zmieściły się w rzędzie z ikonami; PDF z Typst, PL/EN zgodnie z językiem); **kopiowanie e-maila jednym kliknięciem** z potwierdzeniem „Skopiowano ✓” — adres widoczny w całości, obok sam przycisk z ikoną kopiowania (etykieta w `aria-label` i dymku; na `/maths` z napisem „Kopiuj”) |
@@ -91,12 +92,12 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 
 | Sekcja | Zawartość |
 |---|---|
-| Wyróżniony projekt | jedyna sekcja w ramkach: przewijany w bok pasek kart projektów (`FeaturedCarousel`, kolejna karta wystaje; pod paskiem licznik „1 / 3” i strzałki ‹ ›, które przeskakują o jedną kartę płynnym przewinięciem — bez animacji przy reduced motion — i gasną na końcach; pasek przewijania ukryty, działa też przesunięcie palcem i strzałki klawiatury). Zrzut wypełnia całą kartę, a w prawej kolumnie na gradiencie (przezroczysty do 35%, pełny od 80% — tokeny `--featured-scrim-*`) stoją nazwa ↗, 1 zdanie, kilka funkcji z ikonami i tagi (funkcje znikają, gdy kolumna tekstu ma mniej niż 320 px); na telefonie karta jest wyższa, gradient idzie w dół, tekst na dole, bez listy funkcji. Karty mają stałą wysokość, także bez zrzutu. Akcja „Wszystkie projekty ↗” prowadzi do `/projects` |
-| Doświadczenie | wiersze `okres · stanowisko · firma` (firma w linii tytułu, szara), pod spodem miejsce i czas trwania, a na końcu **jedno** zdanie o tym, co tam robiłem (czynność + technologia, bez listy punktów; o stopień mniejsze, nie ciemniejsze — `--text-subtle` nie ma AA). Ciasno wewnątrz pozycji, duży odstęp między pozycjami, bez linii; okres w mono z `tabular-nums`: miesiące `MM.RRRR–MM.RRRR` dla okresów krótszych niż rok, lata dla dłuższych; akcja „Pełne CV ↗” |
-| Umiejętności | wiersze kategorii (Backend, Automatyzacja, Bazy danych, DevOps, AI, Narzędzia): etykieta mono po lewej w kolumnie okresów z Doświadczenia, pigułki z nazwami technologii po prawej |
+| Wyróżniony projekt | jedyna sekcja w ramkach: przewijany w bok pasek kart projektów (`FeaturedCarousel`, kolejna karta wystaje; pod paskiem licznik „1 / 3” i strzałki ‹ ›, które przeskakują o jedną kartę płynnym przewinięciem — bez animacji przy reduced motion — i gasną na końcach; pasek przewijania ukryty, działa też przesunięcie palcem i strzałki klawiatury). Zrzut wypełnia całą kartę, a w prawej kolumnie na gradiencie (przezroczysty do 35%, pełny od 80% — tokeny `--featured-scrim-*`) stoją nazwa →, 1 zdanie, kilka funkcji z ikonami i tagi (funkcje znikają, gdy kolumna tekstu ma mniej niż 320 px); na telefonie karta jest wyższa, gradient idzie w dół, tekst na dole, bez listy funkcji. Karty mają stałą wysokość, także bez zrzutu. Akcja „Wszystkie projekty →” prowadzi do `/projects` |
+| Doświadczenie | wiersze `okres · stanowisko · firma` (firma w linii tytułu, szara), pod spodem miejsce i czas trwania (tylko gdy nie widać go z okresu — przy miesiącach wystarczy zakres), a na końcu **jedno** zdanie o tym, co tam robiłem (czynność + technologia, bez listy punktów; o stopień mniejsze, nie ciemniejsze — `--text-subtle` nie ma AA). Ciasno wewnątrz pozycji, duży odstęp między pozycjami, bez linii; okres w mono z `tabular-nums`: miesiące `MM.RRRR–MM.RRRR` dla okresów krótszych niż rok, lata dla dłuższych; akcja „Pełne CV ↗” |
+| Umiejętności | wiersze kategorii (Data / ML, Backend, Automatyzacja, Bazy danych, DevOps, Narzędzia): etykieta mono po lewej w kolumnie okresów z Doświadczenia, pigułki z nazwami technologii po prawej |
 | Języki | jedna linia: „Polski — ojczysty · Angielski — B1” |
 | Edukacja | uczelnia, kierunek, lata — ten sam format wierszy |
-| Zajawka dashboardu | mały kafel na dole: godzina, pogoda i utwór z Last.fm („teraz gra” / „ostatnio”, na żywo z `/api/music`, 4 stany) — dowód, że dashboard naprawdę działa; stopka „Zobacz dashboard na żywo ↗” |
+| Zajawka dashboardu | mały kafel na dole: godzina, pogoda i utwór z Last.fm („teraz gra” / „ostatnio”, na żywo z `/api/music`, 4 stany) — dowód, że dashboard naprawdę działa; stopka „Zobacz dashboard na żywo →” |
 
 Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama linia. Dzięki temu w prawej kolumnie widać hierarchię, a nie rząd równorzędnych pudełek.
 
@@ -104,8 +105,8 @@ Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama lin
 
 - **Układ: jeden wyróżniony + lista**, na całą szerokość, bez karty profilu. Nie bento: dashboard jest jedyną siatką kafli, a lista wygląda dobrze zarówno z dwoma, jak i z dziesięcioma projektami (w siatce przy kilku projektach widać dziury).
 - Nad wszystkim etykieta mono „Projekty · N”.
-- **Wyróżniony projekt** (pierwszy wpis z `featured: true` wg `order`): jeden `Tile` — zrzut ekranu po lewej od krawędzi do krawędzi, po prawej etykieta „Wyróżniony · rok” w akcencie (jedyny akcent w widoku), nazwa jak nagłówek hero, jedno zdanie, funkcje z ikonami (`features`), tagi i przyciski (Szczegóły / Kod / Na żywo ↗); nazwa też prowadzi do szczegółów. Poniżej 768px składa się w pionie: zrzut nad tekstem.
-- **Lista** pozostałych w sekcji dossier („Pozostałe projekty”): te same wiersze co Doświadczenie na wizytówce — rok w mono w kolumnie okresów (`2025–obecnie` dla trwających), tytuł ze strzałką ›, jedno zdanie, tagi, a po prawej ikony linków (kod, na żywo). Cały wiersz prowadzi do strony szczegółów (tło `--surface-hover` po najechaniu), ikony zostają osobnymi linkami. Na telefonie rok przechodzi nad tytuł, a wiersze zostają wierszami.
+- **Wyróżniony projekt** (pierwszy wpis z `featured: true` wg `order`): jeden `Tile` — zrzut ekranu po lewej od krawędzi do krawędzi, po prawej etykieta „Wyróżniony · rok” w akcencie (jedyny akcent w widoku), nazwa jak nagłówek hero, jedno zdanie, funkcje z ikonami (`features`), tagi i przyciski (Szczegóły / Kod ↗ / Na żywo — → albo ↗, zależnie od tego, dokąd prowadzi); nazwa też prowadzi do szczegółów. Poniżej 768px składa się w pionie: zrzut nad tekstem.
+- **Lista** pozostałych w sekcji dossier („Pozostałe projekty”): te same wiersze co Doświadczenie na wizytówce — rok w mono w kolumnie okresów (`2025–obecnie` dla trwających), tytuł ze strzałką ›, jedno zdanie, tagi, a po prawej miniatura okładki (192 px, 16:10, cały obraz bez kadrowania) i ikony linków (kod, na żywo). Cały wiersz prowadzi do strony szczegółów (tło `--surface-hover` po najechaniu), ikony zostają osobnymi linkami. Na telefonie rok przechodzi nad tytuł, miniatura pod tagi na całą szerokość, a wiersze zostają wierszami.
 - **Każda pozycja:** jedno zdanie w schemacie problem → rozwiązanie → efekt, najlepiej z konkretem („używany codziennie”, „3. miejsce na hackathonie”); 2–4 tagi stacku, nie cały stack; linki: kod, demo, opcjonalnie case study.
 - Bez kart „W przygotowaniu” — lepiej mniej, dobrze opisanych projektów. Filtry (Backend, Data / ML…) dopiero od ok. 6 projektów.
 - Każdy projekt to plik MDX w content collection (`src/content/projects/`, schemat w `src/content.config.ts`): tytuł, rok (+ `ongoing`), zdanie PL/EN, tagi, linki (repo, demo — ścieżka na stronie lub URL), okładka, `featured`, `order`, opcjonalne `features` (ikona + krótki tekst, dla karuzeli), opcjonalny `description` PL/EN (kilka akapitów) i `gallery` (zrzuty z podpisem PL/EN; zrzuty z produkcji w WebP w `src/assets/projects/<slug>/`, bez danych osobowych). Dane dla widoków daje `src/lib/projects.ts`.
@@ -181,10 +182,10 @@ Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłó
 - to, co opisuje jedną rzecz, jest jedną kartą: czas, słońce i postęp to „Dzień”, pogoda i powietrze to „Pogoda”, a maszyna, usługi, transfer i blokada reklam to jeden „Homelab”;
 - kształt wynika z treści: GitHub jest szeroki i niski, bo wykres kontrybucji to długi pasek; muzyka jest wysoka i wąska jak okładka; homelab jest duży, bo ma najwięcej danych;
 - wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, połowa wysokości), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
-- sociale (Discord, Instagram, GitHub, LinkedIn) to cztery małe kafle 2×2: cały kafel jest przyciskiem w kolorach marki (gradient z tokenów `--brand-*`, biały tekst z kontrastem AA), z białym logo (Simple Icons) nad nazwą wersalikami, bez ↗;
+- sociale (Discord, Instagram, GitHub, LinkedIn) to cztery małe kafle 2×2: cały kafel jest przyciskiem w kolorach marki (gradient z tokenów `--brand-*`, biały tekst z kontrastem AA), z białym logo (Simple Icons) nad nazwą wersalikami, bez strzałki;
 - Muzyka, Czytam i projekt przełamują ścianę tekstu obrazem; WakaTime ma dwie kolumny na wykres tygodnia i pasek języków;
 - pojedyncza liczba (odliczanie) dostaje mały kafel — na desktopie o wysokości półrzędu, jak sociale;
-- cel (nazwa, pasek kroków, następny krok) to wąska karta na jedną kolumnę, po lewej od GitHuba.
+- cel (nazwa, pasek kroków i lista kroków z odhaczonymi) to wąska karta na jedną kolumnę, po lewej od GitHuba.
 
 Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od reszty.
 
@@ -212,14 +213,14 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 | `day` | lokalne | czas Europe/Warsaw co sekundę i data; wschód i zachód słońca, długość dnia; paski % dnia, miesiąca i roku — wszystko liczone lokalnie, bez API i bez kropki |
 | `weather` | lokalne | dwie sekcje z własnymi stanami: pogoda w Rzeszowie (`/api/weather`, Open-Meteo: temperatura, opis, miasto) i jakość powietrza (`/api/air`, GIOŚ, stacja Al. Piłsudskiego: poziom słownie, skala 6 stopni; PM2.5/PM10 tylko na telefonie i tablecie); jedna stopka pokazuje gorszą z sekcji. Ta sama pogoda jest w zajawce na wizytówce i w komendzie `weather` terminala |
 | `github` | praca | liczba kontrybucji, streak, repozytoria, legenda i „X min temu” w jednym rzędzie; pod nimi wykres roku na całą szerokość |
-| `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz ↗”; kilka projektów w karuzeli (wpisy z `featured: true` z kolekcji projektów, §3.2) |
+| `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz →”; kilka projektów w karuzeli (wpisy z `featured: true` z kolekcji projektów, §3.2) |
 | `dc` `ig` `gh` `li` | kontakt | linki do profili: kafel w kolorach marki, białe logo i nazwa |
-| `waka` | praca | WakaTime, ciemny jak inne kafle, w kolejności ważności: czas dziś (duża liczba) i porównanie ze średnią dni tygodnia; 7 słupków pon–ndz z dzisiejszym w akcencie; pasek języków w kolorach GitHub Linguist (`--lang-*`) z 3 nazwami; suma tygodnia w stopce. W wąskim kaflu najpierw znika porównanie, potem nazwy języków |
-| `lab` | homelab | cztery sekcje: **maszyna** (CPU, RAM, każdy dysk osobnym paskiem i GPU, jeśli jest — w %, czerwone od 85% — kontenery, temperatura CPU), **usługi** (uptime hosta; usługi pod ogólnymi nazwami: Media, Pliki, DNS, Kopie — up/down, dostępność z 30 dni jako liczba i pasek od 90%, średni czas odpowiedzi; usługi bez danych zebrane w jedną linię „Brak danych: …”), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
+| `waka` | praca | WakaTime, ciemny jak inne kafle, w kolejności ważności: suma tygodnia (duża liczba); 7 słupków pon–ndz z dzisiejszym w akcencie; pasek języków w kolorach GitHub Linguist (`--lang-*`) z 3 nazwami — bez Markdownu (to notatki i dokumentacja, nie kod), udziały liczone z samego kodu; czas dziś w stopce. Bez porównania ze średnią — spokojna niedziela to nie wiadomość. W wąskim kaflu najpierw znika trzeci język, potem nazwy |
+| `lab` | homelab | cztery sekcje: **maszyna** (w nagłówku sprzęt i liczba kontenerów — „Raspberry Pi 4 · ARM64 · kontenery: 11”; kolumna na CPU, RAM, każdy dysk i GPU, jeśli jest: duża wartość w %, pasek czerwony od 85% i pod nim temperatura CPU albo GB zajęte z całości; tylko bieżący odczyt, bez historii — §14), **usługi** (uptime hosta w nagłówku; aplikacje z `src/lib/services.ts` jako pigułki z ikoną i kropką up/down z Uptime Kumy, szara bez monitora — publicznie tylko nazwa i stan, bez adresów i czasów odpowiedzi), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
 | `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole. Obok utworu okrągły przycisk ▶/❚❚ puszcza 30-sekundowy podgląd (iTunes Search API, bez klucza — Last.fm nie ma audio); serwer szuka po wykonawcy i tytule i bierze tylko wyraźne dopasowanie, a bez podglądu przycisku nie ma. Dźwięk ładuje się z CDN Apple dopiero po kliknięciu |
-| `books` | życie | aktualnie czytane książki z okładkami, na żywo z Hardcover (`/api/books`, półka „Currently Reading”, 4 stany; tytuł i okładka z wybranego wydania); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast ↗; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
+| `books` | życie | aktualnie czytane książki z okładkami, na żywo z Hardcover (`/api/books`, półka „Currently Reading”, 4 stany; tytuł i okładka z wybranego wydania); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast strzałki; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
 | `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
-| `goal` | życie | aktualny cel, edytowany w trybie prywatnym i czytany z Firestore (`/api/goal`) bez deployu; przed pierwszym zapisem `src/lib/goal.ts`: nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i następny krok; w niskim kaflu nazwa i pasek dzielą linię, a następny krok znika pierwszy |
+| `goal` | życie | aktualny cel, edytowany w trybie prywatnym i czytany z Firestore (`/api/goal`) bez deployu; przed pierwszym zapisem `src/lib/goal.ts`: nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i lista kroków (wykonane odhaczone i przekreślone, następny w kolorze tekstu); gdy brakuje miejsca, najpierw znika pasek (1440×900), potem lista ustępuje linii „Dalej: …”; w niskim kaflu nazwa i pasek dzielą linię, a następny krok znika pierwszy |
 
 **Tryb prywatny** — panel do zarządzania, tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne, a w prywatnym dochodzą do nich nazwy usług i kontenerów oraz backup. Jeden ekran od 1280×720; rzędy w połówkach, pasek usług ma jedną.
 
@@ -247,8 +248,6 @@ Każdy kafel czyta własny `/api/private/*` za tym samym strażnikiem co strona 
 | `expire` | co i kiedy wygasa, od najbliższego: domena (RDAP), certyfikat (TLS), tokeny GitHuba (nagłówek API) i Cloudflare (verify), ręczne daty (np. Hardcover) w `src/lib/server/expiring.ts`; ≤ 30 dni lub po terminie na czerwono |
 | `goal` | edycja celu: nazwa i termin po lewej, kroki po prawej (odhaczanie, dodawanie, usuwanie, do 8, przewijane w kaflu); przełącznik PL/EN i mały „Zapisz” w nagłówku, potwierdzenie „Zapisano ✓”; EN wraca do PL |
 
-Na później: `sched` (rozkład zajęć, patrz §14), `visits` i inne z sekcji 13.
-
 ---
 
 ## 4. Zasady stylu bento
@@ -262,7 +261,7 @@ Na później: `sched` (rozkład zajęć, patrz §14), `visits` i inne z sekcji 1
   - etykieta (mono, uppercase, szara) u góry;
   - treść lub duża liczba;
   - detal lub akcja na dole.
-- **Klikalne kafle** mają ikonę ↗ w prawym górnym albo dolnym rogu. Wyjątek: kafle sociali, które w całości są przyciskiem marki (§3.4).
+- **Klikalne kafle** mają strzałkę w prawym górnym albo dolnym rogu. **Strzałki w linkach:** ↗ prowadzi poza stronę (inna domena, plik jak PDF CV), → na inną podstronę tej witryny. Wyjątek: kafle sociali, które w całości są przyciskiem marki (§3.4).
 - **Hierarchia przez rozmiar:** najważniejsze treści dostają największe kafle.
 - **Akcent jest rzadki**, bo czerwień czyta się jak „błąd” — im rzadziej występuje, tym mocniej się wyróżnia. Używam go do:
   - głównych CTA;
@@ -440,7 +439,6 @@ Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło prz
 | Historia CPU i RAM (prywatne) | zbierana przez stronę z pushy agenta: każdy odczyt `lab` wpada do 5-minutowego kubełka jako średnia, 24 h w dokumencie `homelab/history` (jeden odczyt i zapis Firestore na push) | cache 60 s |
 | Homelab | model **push**, opisany niżej | co 1–5 min |
 | Uptime usług | Uptime Kuma (`/metrics`: status, dostępność i czas odpowiedzi z 30 dni) przez push-agenta | przez push |
-| Rozkład zajęć | plik iCal (np. eksport z USOS, jeśli uczelnia go udostępnia) | cache 1h |
 | Teraz słucham / top artyści | Last.fm API | cache 30 s / 1h |
 | Podgląd utworu (30 s) | iTunes Search API (bez klucza), razem z utworem z Last.fm | ostatnie wyszukiwanie do zmiany utworu |
 | WakaTime | WakaTime API | cache 1h |
@@ -452,7 +450,7 @@ Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło prz
 - Agent na homelabie (kontener Dockera w osobnym repo homelaba, `network_mode: host`) co 60 s zbiera dane z `/proc`, AdGuarda i Uptime Kumy i wysyła zanonimizowany JSON:
   - metodą POST na `/api/stats`, z tokenem `Authorization: Bearer` (`STATS_PUSH_TOKEN`);
   - w sekcjach publicznych tylko liczby i ogólne rodzaje (`dns`, `media`…) — nazwy hostów, domeny, IP i nazwy monitorów zostają na Pi;
-  - sekcje prywatne (`monitors`, `containers`, `backup`) niosą nazwy monitorów i kontenerów — same słowa, bez kropek, dwukropków i ukośników, więc nie przejdzie przez nie host, domena, URL ani IP; trafiają do osobnego dokumentu `homelab/private`, czytanego tylko przez `/api/private/homelab/*`;
+  - sekcje prywatne (`monitors`, `containers`, `backup`) niosą nazwy monitorów i kontenerów — same słowa, bez kropek, dwukropków i ukośników, więc nie przejdzie przez nie host, domena, URL ani IP; trafiają do osobnego dokumentu `homelab/private`, czytanego przez `/api/private/homelab/*`; publiczny `/api/homelab/uptime` bierze z niego tylko nazwę i stan (up/down) aplikacji z listy w `src/lib/services.ts`;
   - kontrakt (v1) opisuje `src/lib/server/homelab.ts`.
 - Sekcje (`lab`, `dns`, `traffic`, `services`) są niezależne: agent pomija tę, której źródło nie odpowiedziało, a endpoint odrzuca tylko błędną sekcję. Każda ma własny czas, więc przy awarii jednego źródła szarzeje tylko jego kafel.
 - Endpoint zapisuje ostatni odczyt w **Firestore** (jeden dokument, REST bez biblioteki klienta). Kafle czytają go przez `/api/homelab/{lab,dns,net,uptime}` (cache 30 s) i odświeżają się co około minutę.
@@ -573,8 +571,7 @@ Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
   - wartości potrzebne przy buildzie czytam ze zmiennych środowiskowych: lokalnie z `.env` (poza gitem), w CI z GitHub Secrets; lista kluczy jest w `.env.example`, a kod ma neutralne wypełniacze, żeby build działał bez nich;
   - sekrety serwera (`/api/*`) są w Secret Manager, nie w repo i nie w GitHub Variables;
   - zanim zrobię commit, sprawdzam diff pod kątem powyższych danych; jeśli coś wycieknie, przepisuję historię i od razu zmieniam ujawniony sekret.
-- **Rozkład zajęć** zdradza, gdzie i kiedy jestem, a strona z korepetycjami jest publiczna. Publicznie pokazuję tylko ogólną formę (np. „zajęcia do 14:00” lub „dziś wolne”) albo ukrywam kafel.
-- **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu, uptime i ruch DNS** są publiczne: to serwer, który działa cały czas, więc nie zdradzają mojej obecności. Pokazuję tylko liczby i ogólne nazwy usług, a DNS jako sumy dzienne i tygodniowe — bez wykresu godzinowego, z którego widać, kiedy jestem w domu.
+- **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu, uptime i ruch DNS** są publiczne: to serwer, który działa cały czas, więc nie zdradzają mojej obecności. Pokazuję liczby, nazwy aplikacji z ich stanem (decyzja 2026-09-27: nazwy i tak są publiczne na schemacie Homelaba, a stan nie zdradza obecności) — bez adresów i czasów odpowiedzi — a DNS jako sumy dzienne i tygodniowe — bez wykresu godzinowego, z którego widać, kiedy jestem w domu.
 - **Prywatny dashboard** (`/dashboard/private` i `/en/dashboard/private`) chroni **hasło sprawdzane na serwerze** (HTTP Basic Auth, `src/lib/owner.ts`). Cloudflare Zero Trust (Access) nie jest dostępny.
   - Strony prywatne renderuje serwer (`prerender = false`), a nie plik statyczny. Dzięki temu sprawdzenie obejmuje każdą odmianę ścieżki i adres `*.run.app`, który omija Cloudflare.
   - Hasło (`DASHBOARD_PASSWORD`) jest w Secret Manager i trafia do Cloud Run jako zmienna środowiskowa przy starcie, nie przy buildzie. Bez hasła serwer odmawia wszystkim (poza `astro dev`).
@@ -583,7 +580,7 @@ Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
   - Ten sam strażnik chroni prywatne endpointy (`/api/private/*`), a ich odpowiedzi też mają `private, no-store`. Zapisy (`POST`) przyjmują tylko `application/json`, więc obca strona nie wyśle ich ani formularzem, ani `fetch` bez preflightu CORS.
   - Imiona uczniów z kalendarza pojawiają się tylko w tych odpowiedziach.
   - Historia CPU i RAM jest tylko prywatna: z jej rytmu widać, kiedy ktoś korzysta z serwera w domu — z tego samego powodu co brak godzinowego wykresu DNS.
-- **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym pokazuję ogólne etykiety.
+- **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym aplikacje są pigułkami bez linków.
 - **Tokeny i klucze** trzymam wyłącznie w zmiennych środowiskowych po stronie serwera. Endpoint `/api/stats`:
   - wymaga tokenu (`STATS_PUSH_TOKEN`, porównanie w stałym czasie);
   - ma limit żądań (reguła w Cloudflare, docs/deploy.md);
@@ -611,14 +608,13 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 3. 🟡 **Projekty:** content collection, układ „wyróżniony + lista”, karuzela i kafel featured z kolekcji, trasa case study z CSS KaTeX — gotowe. Na liście: figielak.dev i Homelab. Zostało: treści case study (rehype-mermaid dochodzi razem z pierwszym diagramem), kolejne projekty (filtry od ok. 6).
 4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`). Na razie ukryte za planszą „W przygotowaniu” (`src/lib/tutoring.ts`, §3.3).
 5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. 🟡 **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm z podglądem utworu (`/api/music`), WakaTime (`/api/waka`), pogoda (`/api/weather`), powietrze (`/api/air`), książki z Hardcover (`/api/books`), cel (`/api/goal`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Tryb prywatny jako panel (§3.4) jest wdrożony: usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu. Sekrety i zmienne Cloudflare Web Analytics (`cf-analytics-token`, `CF_ACCOUNT_ID`, `CF_WEB_ANALYTICS_SITE_TAG`) i iCal korepetycji (`tutoring-ical-url`) są ustawione. Zostało: sprawdzenie daty wygaśnięcia tokenu Hardcover w `src/lib/server/expiring.ts` (na razie założona) i rozkład zajęć (`sched`, §17). Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
+6. ✅ **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm z podglądem utworu (`/api/music`), WakaTime (`/api/waka`), pogoda (`/api/weather`), powietrze (`/api/air`), książki z Hardcover (`/api/books`), cel (`/api/goal`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Tryb prywatny jako panel (§3.4) jest wdrożony: usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu. Sekrety i zmienne Cloudflare Web Analytics (`cf-analytics-token`, `CF_ACCOUNT_ID`, `CF_WEB_ANALYTICS_SITE_TAG`) i iCal korepetycji (`tutoring-ical-url`) są ustawione. Data wygaśnięcia tokenu Hardcover (25.09.2027) w `src/lib/server/expiring.ts` jest potwierdzona. Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
 7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, cel z edycją w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths` (Cal.com), reszta kafli z §13 (zdjęcia, Snake, Konami code).
 
 ---
 
 ## 17. Otwarte decyzje
 
-- [ ] Źródło rozkładu zajęć i poziom szczegółowości publicznie
 - [ ] Framework wysp: na razie czysty TS w `<script>` wystarcza; Preact dopiero, gdy potrzebny stan
 
 Podjęte (2026-09-25):

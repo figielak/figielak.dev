@@ -51,7 +51,7 @@ const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel
 				projectLinks(project, lang).map((link) => (
 					<a class="button" href={link.href} {...externalAttrs(link.external)}>
 						<Icon name={link.icon} size={16} />
-						{link.label} ↗
+						{link.label} {link.external ? '↗' : '→'}
 					</a>
 				))
 			}
@@ -93,7 +93,7 @@ const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel
 					<p class="case-note">
 						{t('projects.caseStudyPl')}{' '}
 						<a href={`/projects/${project.id}#case-study`} hreflang="pl">
-							{t('projects.readCaseStudy')} ↗
+							{t('projects.readCaseStudy')} →
 						</a>
 					</p>
 				)}

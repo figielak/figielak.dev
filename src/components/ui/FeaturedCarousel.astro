@@ -50,7 +50,7 @@ const t = useTranslations(lang);
 							)}
 						</div>
 						<div class="text">
-							<p class="title">{project.title} ↗</p>
+							<p class="title">{project.title} →</p>
 							<p class="summary">{project.summary[lang]}</p>
 							{project.features && (
 								<ul class="features">
@@ -239,7 +239,9 @@ const t = useTranslations(lang);
 		display: block;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
+		/* The whole shot, pinned top left: the text column and the scrim cover
+		   the rest, and a crop would cut the tiles in half. */
+		object-fit: contain;
 		object-position: top left;
 	}
 

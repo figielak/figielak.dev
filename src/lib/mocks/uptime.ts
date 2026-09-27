@@ -21,10 +21,21 @@ export interface ServiceStatus {
  * Only the kinds that exist are listed; the tile shows the rest as "—",
  * not as down.
  */
+/**
+ * One homelab app by name (src/lib/services.ts) and whether Uptime Kuma sees it
+ * up; null when it has no monitor. Only the name and the state are public —
+ * no addresses or response times (docs/koncept.md §14).
+ */
+export interface AppStatus {
+	name: string;
+	up: boolean | null;
+}
+
 export type Uptime = Live<{
 	/** Host uptime; fractional. */
 	uptimeDays: number;
 	services: ServiceStatus[];
+	apps?: AppStatus[];
 }>;
 
 export const UPTIME_PLACEHOLDER: NonNullable<Uptime['data']> = {
@@ -43,6 +54,16 @@ export function mockUptime(state: LiveState = 'ok'): Uptime {
 			services: [
 				{ kind: 'dns', up: true, uptime30d: 99.98, avgMs: 3 },
 				{ kind: 'media', up: false, uptime30d: 99.9, avgMs: 45 },
+			],
+			apps: [
+				{ name: 'Mealie', up: true },
+				{ name: 'AdGuard', up: true },
+				{ name: 'Uptime Kuma', up: true },
+				{ name: 'Beszel', up: false },
+				{ name: 'Calibre-Web', up: true },
+				{ name: 'MeTube', up: true },
+				{ name: 'Opengist', up: true },
+				{ name: 'Quartz', up: null },
 			],
 			updatedAt: mockUpdatedAt(state),
 		},

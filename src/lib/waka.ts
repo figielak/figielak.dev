@@ -21,14 +21,6 @@ export function weekBars(days: number[]): WeekBar[] {
 	}));
 }
 
-/** Today against the average of the week's earlier days, in minutes; null on a Monday. */
-export function vsAverage(days: number[]): number | null {
-	const earlier = days.slice(0, -1);
-	if (!earlier.length) return null;
-	const average = earlier.reduce((sum, m) => sum + m, 0) / earlier.length;
-	return Math.round((days.at(-1) ?? 0) - average);
-}
-
 /** The colour token of a language: `TypeScript` → `--lang-typescript`, `C++` → `--lang-cpp`. */
 export function languageColor(name: string): string {
 	const slug = name

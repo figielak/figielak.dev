@@ -146,6 +146,46 @@ body {
 	}
 }
 
+/* Tooltip for icon-only controls: `data-tip` names the control, on hover
+   and on keyboard focus (a native `title` shows neither promptly). The
+   element keeps its own `aria-label`. Anchored to the right edge, since
+   these controls sit at the right of their row. */
+[data-tip] {
+	position: relative;
+}
+
+[data-tip]::after {
+	content: attr(data-tip);
+	position: absolute;
+	top: calc(100% + var(--space-xs));
+	right: 0;
+	z-index: var(--z-nav);
+	padding: var(--space-2xs) var(--space-sm);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-inset);
+	background: var(--surface);
+	box-shadow: var(--shadow-tile);
+	font-family: var(--font-mono);
+	font-size: var(--size-label);
+	letter-spacing: normal;
+	text-transform: none;
+	color: var(--text);
+	white-space: nowrap;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity var(--duration-hover) var(--ease-out);
+}
+
+[data-tip]:focus-visible::after {
+	opacity: 1;
+}
+
+@media (hover: hover) {
+	[data-tip]:hover::after {
+		opacity: 1;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

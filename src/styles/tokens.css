@@ -158,6 +158,10 @@
 	--dashboard-row-min: 84px;
 	--launcher-min: 140px;
 	--project-lead-min: 320px;
+	/* Cover thumbnail in a project row (16:10). */
+	--project-thumb-width: 192px;
+	/* Tick circle beside a goal step. */
+	--size-goal-mark: 16px;
 	--size-teaser: 44px;
 	--size-book-cover: 72px;
 	--size-book-cover-small: 48px;

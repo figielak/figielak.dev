@@ -14,7 +14,7 @@ const t = useTranslations(lang);
 /*
  * One featured project on top, the rest as rows like Experience on the home
  * page: year in mono on the left, title, one sentence, a few tags, links
- * (docs/koncept.md §3.2). The name of each leads to its detail page. Not a bento grid — the dashboard is the one grid of
+ * and the cover as a thumbnail (docs/koncept.md §3.2). The name of each leads to its detail page. Not a bento grid — the dashboard is the one grid of
  * tiles, and a list reads well with two projects as with ten.
  */
 const projects = await getProjects();
@@ -22,6 +22,7 @@ const lead = projects.find((project) => project.data.featured);
 const rest = projects.filter((project) => project !== lead);
 
 const SHOT_WIDTHS = [480, 720, 960, 1440];
+const THUMB_WIDTHS = [384, 720];
 
 const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel: 'noopener noreferrer' } : {});
 ---
@@ -85,7 +86,7 @@ const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel
 							{projectLinks(lead, lang).map((link) => (
 								<a class="button" href={link.href} {...externalAttrs(link.external)}>
 									<Icon name={link.icon} size={16} />
-									{link.label} ↗
+									{link.label} {link.external ? '↗' : '→'}
 								</a>
 							))}
 						</div>
@@ -120,13 +121,23 @@ const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel
 									))}
 								</ul>
 							</span>
+							{project.data.cover && (
+								<Image
+									class="row-thumb"
+									src={project.data.cover}
+									alt=""
+									widths={THUMB_WIDTHS}
+									sizes="(min-width: 640px) 192px, 100vw"
+									loading="lazy"
+								/>
+							)}
 							<span class="row-links">
 								{projectLinks(project, lang).map((link) => (
 									<a
 										class="icon-link"
 										href={link.href}
 										aria-label={`${link.label}: ${project.data.title}`}
-										title={link.label}
+										data-tip={link.tip}
 										{...externalAttrs(link.external)}
 									>
 										<Icon name={link.icon} size={18} />
@@ -277,10 +288,27 @@ const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel
 		}
 	}
 
-	/* Rows share the Experience grid (DossierSection), plus a column of link icons. */
+	/* Rows share the Experience grid (DossierSection), plus the cover as a
+	   thumbnail and a column of link icons. */
 	.projects :global(.project-row) {
-		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr) auto;
+		grid-template-columns: var(--dossier-period-width) minmax(0, 1fr) auto auto;
+		column-gap: var(--space-lg);
+		align-items: start;
 		scroll-margin-top: var(--grid-gap);
+	}
+
+	/* The whole cover, not a crop: covers are diagrams and screenshots whose
+	   point is the whole picture. Decorative — the title next to it names it. */
+	.projects :global(.row-thumb) {
+		display: block;
+		width: var(--project-thumb-width);
+		height: auto;
+		aspect-ratio: 16 / 10;
+		object-fit: contain;
+		object-position: top left;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
 	}
 
 	/* On phones the year goes above the title, so the sentence gets the full width. */
@@ -294,6 +322,12 @@ const externalAttrs = (external: boolean) => (external ? { target: '_blank', rel
 		.projects :global(.project-row .row-main) {
 			grid-column: 1 / -1;
 			grid-row: 2;
+		}
+
+		.projects :global(.row-thumb) {
+			grid-column: 1 / -1;
+			grid-row: 3;
+			width: 100%;
 		}
 	}
 

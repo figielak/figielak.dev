@@ -26,7 +26,7 @@
 
 #section[Doświadczenie][
   #entry("02.2026–05.2026", [Młodszy konsultant wdrożeniowy], org: [BMM],
-    meta: [Głogów Małopolski · 4 miesiące])[
+    meta: [Głogów Małopolski])[
     Analizowałem procesy w szpitalach, konfigurowałem pod nie ścieżki obiegu i akceptacji
     dokumentów, a po wdrożeniu szkoliłem i wspierałem personel.
   ]
@@ -54,12 +54,12 @@
 ]
 
 #section[Umiejętności][
-  #row("Backend", pills(("Python", "FastAPI", "Flask", "Pandas")))
+  #row("Data / ML", pills(("Pandas", "NumPy", "scikit-learn", "Jupyter", "Matplotlib")))
+  #row("Backend", pills(("Python", "FastAPI", "Flask")))
   #row("Automatyzacja", pills(("GitHub Actions",)))
   #row("Bazy danych", pills(("SQL", "Firestore")))
   #row("DevOps", pills(("Docker", "Linux", "Google Cloud Run", "Cloudflare")))
-  #row("AI", pills(("Claude", "Copilot")))
-  #row("Narzędzia", pills(("Git",)))
+  #row("Narzędzia", pills(("Git", "Claude", "Copilot")))
 ]
 
 #section[Edukacja][

@@ -5,7 +5,8 @@ import Icon, { type IconName } from './Icon.astro';
 /**
  * The one building block every tile is made of (docs/koncept.md §4).
  * Layout inside a tile is always: label on top, content, detail or action at
- * the bottom. Clickable tiles get the ↗ affordance and the hover treatment.
+ * the bottom. Clickable tiles get an arrow (↗ leaves the site, → stays on it)
+ * and the hover treatment.
  */
 interface Props {
 	/** Name of the `grid-template-areas` slot this tile occupies. */
@@ -15,9 +16,9 @@ interface Props {
 	icon?: IconName;
 	href?: string;
 	external?: boolean;
-	/** Clickable without a link — a button inside covers the tile: the hover, no ↗. */
+	/** Clickable without a link — a button inside covers the tile: the hover, no arrow. */
 	interactive?: boolean;
-	/** The ↗ of a clickable tile; off for tiles that are one big button (social). */
+	/** The arrow of a clickable tile; off for tiles that are one big button (social). */
 	arrow?: boolean;
 	/** Full accent background — at most one or two tiles per view. */
 	accent?: boolean;
@@ -79,7 +80,7 @@ const externalAttrs = external ? { target: '_blank', rel: 'noopener noreferrer' 
 							stroke-linejoin="round"
 							aria-hidden="true"
 						>
-							<path d="M7 17 17 7M9 7h8v8" />
+							<path d={external ? 'M7 17 17 7M9 7h8v8' : 'M5 12h14M13 6l6 6-6 6'} />
 						</svg>
 					)}
 				</span>

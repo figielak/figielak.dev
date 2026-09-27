@@ -102,7 +102,8 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 			data-terminal-toggle
 			aria-expanded="false"
 			aria-label={t('term.open')}
-			title={t('term.open')}
+			aria-keyshortcuts="`"
+			data-tip={t('term.tip')}
 		>
 			<Icon name="terminal" size={16} />
 		</button>
@@ -304,6 +305,12 @@ const otherLangs = (Object.keys(languages) as Lang[]).filter((code) => code !== 
 	.nav-control:hover:not(:disabled) {
 		color: var(--text);
 		background: var(--surface-hover);
+	}
+
+	/* The tooltip itself lives in global.css (`[data-tip]`); an open terminal
+	   needs no hint. */
+	.nav-control[aria-expanded='true']::after {
+		opacity: 0;
 	}
 
 	/* Only one theme exists so far (docs/koncept.md §12) — the control stays in place

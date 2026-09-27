@@ -7,8 +7,9 @@
  */
 import type { APIRoute } from 'astro';
 import { cached } from '../../../lib/server/cache';
-import { readSections } from '../../../lib/server/firestore';
-import type { StoredSections } from '../../../lib/server/homelab';
+import { readPrivateSections, readSections } from '../../../lib/server/firestore';
+import type { StoredPrivateSections, StoredSections } from '../../../lib/server/homelab';
+import { services } from '../../../lib/services';
 import { liveJson, unavailable } from '../../../lib/server/respond';
 import { mockLab } from '../../../lib/mocks/stats';
 import { mockDns, mockTraffic } from '../../../lib/mocks/network';
@@ -21,8 +22,17 @@ const TTL_MS = import.meta.env.DEV ? 0 : 30_000;
 
 type Tile = 'lab' | 'dns' | 'net' | 'uptime';
 
+/**
+ * The apps by name with Kuma's up or down — nothing else from the private
+ * monitors leaves this function: no addresses, no response times (§14).
+ */
+function apps(p: StoredPrivateSections) {
+	const byName = new Map((p.monitors?.monitors ?? []).map((monitor) => [monitor.name, monitor.up]));
+	return services.map(({ name }) => ({ name, up: byName.get(name) ?? null }));
+}
+
 /** The tile's data, or null when its sections have not arrived yet. */
-function forTile(tile: Tile, s: StoredSections): object | null {
+function forTile(tile: Tile, s: StoredSections, p: StoredPrivateSections): object | null {
 	switch (tile) {
 		case 'lab':
 			return s.lab ?? null;
@@ -34,7 +44,7 @@ function forTile(tile: Tile, s: StoredSections): object | null {
 			if (!s.lab || !s.services) return null;
 			/* Built from two sections — the older time decides freshness. */
 			const updatedAt = s.lab.updatedAt < s.services.updatedAt ? s.lab.updatedAt : s.services.updatedAt;
-			return { uptimeDays: s.lab.uptimeDays, services: s.services.services, updatedAt };
+			return { uptimeDays: s.lab.uptimeDays, services: s.services.services, apps: apps(p), updatedAt };
 		}
 	}
 }
@@ -52,7 +62,15 @@ export const GET: APIRoute = async ({ params }) => {
 
 	try {
 		const { value } = await cached('homelab', TTL_MS, readSections);
-		const data = forTile(tile, value);
+		/* The apps' states are extra: without them the section still shows. */
+		const privateValue =
+			tile === 'uptime'
+				? await cached('homelab:private', TTL_MS, readPrivateSections).then(
+						(result) => result.value,
+						() => ({}),
+					)
+				: {};
+		const data = forTile(tile, value, privateValue);
 		if (data) return liveJson(data, 30);
 		if (import.meta.env.DEV) return liveJson(MOCKS[tile]().data!, 30);
 		return unavailable(`homelab: no ${tile} data yet`);

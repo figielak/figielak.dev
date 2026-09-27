@@ -48,7 +48,24 @@ interface Measurements {
 }
 
 interface Index {
-	AqIndex: { 'Wartość indeksu': number | null };
+	AqIndex: Record<string, unknown>;
+}
+
+const OVERALL = 'Wartość indeksu';
+const PER_POLLUTANT = 'Wartość indeksu dla wskaźnika ';
+
+/**
+ * The station's index level (0–5). GIOŚ sometimes publishes the overall one
+ * as -1 ("Brak indeksu") while the per-pollutant ones are there — the overall
+ * index is the worst of those, so it is worked out from them.
+ */
+export function indexLevel(index: Record<string, unknown>): number | undefined {
+	const valid = (value: unknown) => typeof value === 'number' && value >= 0 && value < AIR_LEVELS.length;
+	if (valid(index[OVERALL])) return index[OVERALL] as number;
+	const parts = Object.entries(index)
+		.filter(([key, value]) => key.startsWith(PER_POLLUTANT) && valid(value))
+		.map(([, value]) => value as number);
+	return parts.length ? Math.max(...parts) : undefined;
 }
 
 /** The newest hour with a value — the latest one is often still empty. */
@@ -65,7 +82,7 @@ export async function fetchAir(): Promise<AirData> {
 		get<Record<string, unknown>>(`/station/sensors/${STATION_ID}`),
 	]);
 
-	const level = AIR_LEVELS[index.AqIndex['Wartość indeksu'] ?? -1];
+	const level = AIR_LEVELS[indexLevel(index.AqIndex) ?? -1];
 	if (!level) throw new Error('GIOŚ: no air quality index');
 
 	/* The list sits under a long Polish key; it is the one array in the body. */

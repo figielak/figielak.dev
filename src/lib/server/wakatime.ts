@@ -8,6 +8,7 @@ import type { Waka } from '../mocks/waka';
 export type WakaData = Omit<NonNullable<Waka['data']>, 'updatedAt'>;
 
 const TIME_ZONE = 'Europe/Warsaw';
+const NOT_CODE = ['Other', 'Markdown'];
 
 export const wakatimeKey = () => process.env.WAKATIME_API_KEY ?? '';
 
@@ -51,12 +52,15 @@ export async function fetchWaka(): Promise<WakaData> {
 			byLanguage.set(name, (byLanguage.get(name) ?? 0) + total_seconds);
 		}
 	}
-	/* "Other" is WakaTime's bucket for files it could not recognise, not a language. */
-	byLanguage.delete('Other');
+	/* "Other" is WakaTime's bucket for files it could not recognise, not a
+	   language; Markdown is prose (notes, docs), not code. The shares are of
+	   the code that is left. */
+	for (const name of NOT_CODE) byLanguage.delete(name);
+	const codeSeconds = [...byLanguage.values()].reduce((sum, seconds) => sum + seconds, 0);
 	const languages = [...byLanguage]
 		.sort((a, b) => b[1] - a[1])
 		.slice(0, 5)
-		.map(([name, seconds]) => ({ name, percent: weekSeconds ? Math.round((seconds / weekSeconds) * 100) : 0 }));
+		.map(([name, seconds]) => ({ name, percent: codeSeconds ? Math.round((seconds / codeSeconds) * 100) : 0 }));
 
 	return {
 		todayMin: minutes(days.at(-1)?.grand_total.total_seconds ?? 0),

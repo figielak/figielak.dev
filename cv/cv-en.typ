@@ -26,7 +26,7 @@
 
 #section[Experience][
   #entry("02.2026–05.2026", [Junior Implementation Consultant], org: [BMM],
-    meta: [Głogów Małopolski · 4 months])[
+    meta: [Głogów Małopolski])[
     I analysed hospital processes, configured document workflow and approval paths to match them,
     and trained and supported staff after go-live.
   ]
@@ -54,12 +54,12 @@
 ]
 
 #section[Skills][
-  #row("Backend", pills(("Python", "FastAPI", "Flask", "Pandas")))
+  #row("Data / ML", pills(("Pandas", "NumPy", "scikit-learn", "Jupyter", "Matplotlib")))
+  #row("Backend", pills(("Python", "FastAPI", "Flask")))
   #row("Automation", pills(("GitHub Actions",)))
   #row("Database", pills(("SQL", "Firestore")))
   #row("DevOps", pills(("Docker", "Linux", "Google Cloud Run", "Cloudflare")))
-  #row("AI", pills(("Claude", "Copilot")))
-  #row("Tools", pills(("Git",)))
+  #row("Tools", pills(("Git", "Claude", "Copilot")))
 ]
 
 #section[Education][

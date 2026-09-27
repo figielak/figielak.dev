@@ -2,15 +2,17 @@
 import Tile from '../ui/Tile.astro';
 import LiveDot from '../ui/LiveDot.astro';
 import LiveBody from '../ui/LiveBody.astro';
+import Icon from '../ui/Icon.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { goal as defaultGoal, goalProgress, type LiveGoal } from '../../lib/goal';
 
 /**
  * The goal I am working towards now (docs/koncept.md §3.4): its name, a neutral
- * bar of the steps done (§5) and the next step, one under another in a
- * narrow card; in a low tile the name and the bar share a line and the next
- * step gives way first.
+ * bar of the steps done (§5) and the steps themselves, ticked off or not,
+ * one under another in a narrow card. Where the list does not fit only the
+ * next step shows; in a low tile the name and the bar share a line and the
+ * next step gives way first.
  *
  * Edited on the private dashboard (GoalEditTile) and read from /api/goal, so
  * a change needs no deploy; until the first save it shows src/lib/goal.ts.
@@ -70,6 +72,14 @@ const progress = t('goal.progress').replace('{done}', String(done)).replace('{to
 					<span class="goal-track"><span class="goal-fill" style={`width: ${percent}%`}></span></span>
 					<span class="goal-count" aria-hidden="true">{done}/{total}</span>
 				</span>
+				<ol class="goal-steps" aria-label={progress}>
+					{goal.steps.map((step) => (
+						<li class="goal-step" data-done={step.done ? '' : undefined} data-next={step === next ? '' : undefined}>
+							<span class="goal-mark" aria-hidden="true"><Icon name="check" size={12} /></span>
+							<span class="goal-step-title">{step.title[lang]}</span>
+						</li>
+					))}
+				</ol>
 				<span class="goal-next" data-skeleton>
 					{next ? `${t('goal.next')}: ${next.title[lang]}` : t('goal.done')}
 				</span>
@@ -106,6 +116,22 @@ const progress = t('goal.progress').replace('{done}', String(done)).replace('{to
 				tile.querySelector<HTMLElement>('.goal-fill')!.style.width = `${percent}%`;
 				setText(tile.querySelector('.goal-count'), `${done}/${total}`);
 				setText(tile.querySelector('.goal-next'), next ? `${d.next}: ${next.title[lang]}` : (d.allDone ?? ''));
+
+				/* One row per step, cloned from the first rendered one. */
+				const list = tile.querySelector<HTMLElement>('.goal-steps')!;
+				const template = list.querySelector('.goal-step');
+				list.setAttribute('aria-label', progress);
+				if (template) {
+					list.replaceChildren(
+						...goal.steps.map((step) => {
+							const row = template.cloneNode(true) as HTMLElement;
+							row.toggleAttribute('data-done', step.done);
+							row.toggleAttribute('data-next', step === next);
+							row.querySelector('.goal-step-title')!.textContent = step.title[lang];
+							return row;
+						}),
+					);
+				}
 			},
 			5 * 60_000,
 		);
@@ -159,11 +185,73 @@ const progress = t('goal.progress').replace('{done}', String(done)).replace('{to
 	}
 
 	.goal-next {
+		display: none;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		color: var(--text-muted);
 	}
+
+	/* The steps: done ones ticked and quieter, the next one in full text colour. */
+	.goal-steps {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-xs);
+		min-height: 0;
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		list-style: none;
+		font-size: var(--size-small);
+		color: var(--text-muted);
+	}
+
+	.goal-step {
+		display: flex;
+		align-items: center;
+		gap: var(--space-sm);
+		min-width: 0;
+	}
+
+	.goal-step-title {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.goal-step[data-done] .goal-step-title {
+		text-decoration: line-through;
+	}
+
+	.goal-step[data-next] {
+		color: var(--text);
+	}
+
+	.goal-mark {
+		display: inline-flex;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		width: var(--size-goal-mark);
+		height: var(--size-goal-mark);
+		border: 1px solid var(--border-hover);
+		border-radius: var(--radius-pill);
+	}
+
+	.goal-mark :global(svg) {
+		visibility: hidden;
+	}
+
+	.goal-step[data-done] .goal-mark {
+		border-color: var(--text-muted);
+		background: var(--text-muted);
+		color: var(--surface);
+	}
+
+	.goal-step[data-done] .goal-mark :global(svg) {
+		visibility: visible;
+	}
+
 
 	.goal-progress {
 		display: flex;
@@ -204,6 +292,36 @@ const progress = t('goal.progress').replace('{done}', String(done)).replace('{to
 		font-size: var(--size-label);
 		font-variant-numeric: tabular-nums;
 		color: var(--text);
+	}
+
+	/* A little short (1440×900): the ticks show the progress, so the bar goes. */
+	@container (max-height: 150px) {
+		.goal {
+			gap: var(--space-sm);
+		}
+
+		.goal-progress {
+			display: none;
+		}
+
+		.goal-steps {
+			gap: var(--space-2xs);
+		}
+	}
+
+	/* No room for the list: the bar and only the next step. */
+	@container (max-height: 115px) {
+		.goal-progress {
+			display: flex;
+		}
+
+		.goal-steps {
+			display: none;
+		}
+
+		.goal-next {
+			display: block;
+		}
 	}
 
 	/* Low tile: the name and the bar share a line, the next step under them. */

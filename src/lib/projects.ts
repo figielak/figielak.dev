@@ -40,6 +40,8 @@ export interface ProjectLink {
 	icon: IconName;
 	href: string;
 	external: boolean;
+	/** Tooltip for the icon-only form: the kind of link and where it goes. */
+	tip: string;
 }
 
 /** Code and live — whichever the project has. */
@@ -47,11 +49,14 @@ export function projectLinks(project: ProjectEntry, lang: Lang): ProjectLink[] {
 	const t = useTranslations(lang);
 	const list: ProjectLink[] = [];
 	if (project.data.links.repo) {
-		list.push({ label: t('projects.code'), icon: 'github', href: project.data.links.repo, external: true });
+		const href = project.data.links.repo;
+		list.push({ label: t('projects.code'), icon: 'github', href, external: true, tip: `${t('projects.code')} · ${new URL(href).hostname}` });
 	}
 	if (project.data.links.demo) {
 		const href = localizeLink(project.data.links.demo, lang);
-		list.push({ label: t('projects.live'), icon: 'world', href, external: !href.startsWith('/') });
+		const external = !href.startsWith('/');
+		const where = external ? new URL(href).hostname : href;
+		list.push({ label: t('projects.live'), icon: 'world', href, external, tip: `${t('projects.live')} · ${where}` });
 	}
 	return list;
 }

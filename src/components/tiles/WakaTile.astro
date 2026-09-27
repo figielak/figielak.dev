@@ -7,14 +7,15 @@ import BigNumber from '../ui/BigNumber.astro';
 import { getLangFromUrl, useTranslations } from '../../i18n';
 import { dotState } from '../../lib/live';
 import { WAKA_PLACEHOLDER, type Waka } from '../../lib/mocks/waka';
-import { languageSegments, vsAverage, weekBars } from '../../lib/waka';
+import { languageSegments, weekBars } from '../../lib/waka';
 
 /**
- * Coding time from WakaTime, cached 1 h (docs/koncept.md §9), by priority: today
- * as the big number (and against the week's average), the week as seven bars
- * with today in the accent, then the week's languages as one bar in their
- * own colours (like GitHub's) with the top three named under it. A narrow
- * tile drops the comparison first, then the language names.
+ * Coding time from WakaTime, cached 1 h (docs/koncept.md §9), by priority: the
+ * week so far as the big number, the week as seven bars with today in the
+ * accent, then the week's languages as one bar in their own colours (like
+ * GitHub's) with the top three named under it; today's time in the footer.
+ * No comparison with other days — a quiet Sunday is not news. A narrow tile
+ * drops the third language, then the names and the footer detail.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser; without it, it shows `waka` as given (mocks in /dev/tiles).
@@ -38,14 +39,11 @@ const fill = (template: string, h: number, m: number) =>
 	template.replace('{h}', String(h)).replace('{m}', String(m));
 const hm = (min: number) => fill(t('duration.hm'), Math.floor(min / 60), min % 60);
 const short = (min: number) =>
-	min >= 60 ? fill(t('duration.short'), Math.floor(min / 60), min % 60) : fill(t('duration.shortMin'), 0, min);
-const signed = (min: number) => {
-	const size = Math.abs(min);
-	return `${min < 0 ? '−' : '+'}${size >= 60 ? short(size) : fill(t('duration.min'), 0, size)}`;
-};
-
-const diff = vsAverage(d.days);
-const compare = diff === null ? '' : t('waka.vsAvg').replace('{d}', signed(diff));
+	min < 60
+		? fill(t('duration.shortMin'), 0, min)
+		: min % 60
+			? fill(t('duration.short'), Math.floor(min / 60), min % 60)
+			: fill(t('duration.shortHours'), Math.floor(min / 60), 0);
 const bars = weekBars(d.days);
 const segments = languageSegments(d.languages, t('waka.other'));
 
@@ -63,12 +61,11 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 	class="waka-tile"
 	data-endpoint={endpoint}
 	data-stale-after={STALE_AFTER_MIN}
-	data-week={t('waka.week')}
+	data-today={t('waka.todayFooter')}
 	data-hm={t('duration.hm')}
 	data-short={t('duration.short')}
 	data-short-min={t('duration.shortMin')}
-	data-min={t('duration.min')}
-	data-vs={t('waka.vsAvg')}
+	data-short-hours={t('duration.shortHours')}
 	data-other={t('waka.other')}
 	data-week-aria={t('waka.weekAria')}
 >
@@ -76,11 +73,10 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 
 	<LiveBody state={waka.state} errorText={t('waka.unavailable')}>
 		<div class="waka">
-			<div class="waka-today">
-				<BigNumber value={short(d.todayMin)} />
+			<div class="waka-total">
+				<BigNumber value={short(d.weekMin)} />
 				<span class="waka-caption" data-skeleton>
-					{t('waka.today')}
-					<span class="waka-compare" hidden={!compare}>{compare}</span>
+					{t('waka.weekCaption')}
 				</span>
 			</div>
 
@@ -118,24 +114,23 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 		</div>
 	</LiveBody>
 
-	<LiveFooter slot="footer" live={waka}>{t('waka.week').replace('{t}', hm(d.weekMin))}</LiveFooter>
+	<LiveFooter slot="footer" live={waka}>{t('waka.todayFooter').replace('{t}', hm(d.todayMin))}</LiveFooter>
 </Tile>
 
 <script>
 	import { setText, watchLive } from '../../scripts/live';
-	import { languageSegments, vsAverage, weekBars } from '../../lib/waka';
+	import { languageSegments, weekBars } from '../../lib/waka';
 	import type { WakaData } from '../../lib/server/wakatime';
 
 	const LEGEND = 3;
 
 	for (const tile of document.querySelectorAll<HTMLElement>('.waka-tile[data-endpoint]')) {
 		const {
-			week = '{t}',
+			today = '{t}',
 			hm: hmTemplate = '{h}:{m}',
 			short: shortTemplate = '{h}h {m}m',
 			shortMin = '{m}m',
-			min: minTemplate = '{m} min',
-			vs = '{d}',
+			shortHours = '{h}h',
 			other = 'other',
 			weekAria = '{days}',
 		} = tile.dataset;
@@ -143,19 +138,15 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 		const fill = (template: string, h: number, m: number) =>
 			template.replace('{h}', String(h)).replace('{m}', String(m));
 		const hm = (m: number) => fill(hmTemplate, Math.floor(m / 60), m % 60);
-		const short = (m: number) => (m >= 60 ? fill(shortTemplate, Math.floor(m / 60), m % 60) : fill(shortMin, 0, m));
-		const signed = (m: number) =>
-			`${m < 0 ? '−' : '+'}${Math.abs(m) >= 60 ? short(Math.abs(m)) : fill(minTemplate, 0, Math.abs(m))}`;
+		const short = (m: number) =>
+			m < 60
+				? fill(shortMin, 0, m)
+				: m % 60
+					? fill(shortTemplate, Math.floor(m / 60), m % 60)
+					: fill(shortHours, Math.floor(m / 60), 0);
 
 		watchLive<WakaData>(tile, (data) => {
-			setText(tile.querySelector('.big-value'), short(data.todayMin));
-
-			const compare = tile.querySelector<HTMLElement>('.waka-compare');
-			const diff = vsAverage(data.days);
-			if (compare) {
-				compare.hidden = diff === null;
-				setText(compare, diff === null ? '' : vs.replace('{d}', signed(diff)));
-			}
+			setText(tile.querySelector('.big-value'), short(data.weekMin));
 
 			const bars = weekBars(data.days);
 			tile.querySelectorAll<HTMLElement>('.waka-day').forEach((day, i) => {
@@ -183,7 +174,7 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 				setText(row.querySelector('.waka-percent'), `${s.percent}%`);
 			});
 
-			setText(tile.querySelector('.live-footer-detail'), week.replace('{t}', hm(data.weekMin)));
+			setText(tile.querySelector('.live-footer-detail'), today.replace('{t}', hm(data.todayMin)));
 		});
 	}
 </script>
@@ -207,7 +198,7 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 		height: 100%;
 	}
 
-	.waka-today {
+	.waka-total {
 		grid-area: today;
 		display: flex;
 		flex-direction: column;
@@ -218,24 +209,16 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 
 	/* A little smaller than elsewhere, so the caption fits under it in a
 	   two-half-row tile. */
-	.waka-today :global(.big-value) {
+	.waka-total :global(.big-value) {
 		font-size: min(var(--size-number-short), 26cqi);
 	}
 
-	/* "coding today" and, on the same line, today against the average. */
+	/* "coding this week". */
 	.waka-caption {
 		overflow: hidden;
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		color: var(--text-muted);
-	}
-
-	.waka-compare {
-		margin-left: var(--space-xs);
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
-		font-variant-numeric: tabular-nums;
-		color: var(--text);
 	}
 
 	/* Seven slim bars, Monday to Sunday; today in the accent. */
@@ -381,7 +364,6 @@ const weekAria = t('waka.weekAria').replace('{days}', d.days.map(hm).join(', '))
 	}
 
 	@container (max-width: 360px) {
-		.waka-compare,
 		.waka-language:nth-child(n + 3) {
 			display: none;
 		}

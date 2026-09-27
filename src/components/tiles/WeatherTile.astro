@@ -70,6 +70,7 @@ const levels = JSON.stringify(Object.fromEntries(AIR_LEVELS.map((l) => [l, t(`ai
 			data-endpoint={endpoints?.air}
 			data-stale-after={AIR_STALE_AFTER_MIN}
 			data-levels={levels}
+			data-footer-name={t('tile.air')}
 		>
 			<LiveBody state={air.state} errorText={t('air.unavailable')}>
 				<div class="air">
@@ -106,7 +107,8 @@ const levels = JSON.stringify(Object.fromEntries(AIR_LEVELS.map((l) => [l, t(`ai
 
 	/* The tile has one footer for two sources: it follows the worse section,
 	   as the dot does (src/scripts/live.ts only updates a footer inside the
-	   section it loads). */
+	   section it loads). When that is air quality, the footer names it — a bare
+	   "5 h ago" under the temperature reads as old weather. */
 	function syncFooter(tile: HTMLElement) {
 		const sections = [...tile.querySelectorAll<HTMLElement>('.weather-section')];
 		const stateOf = (section: HTMLElement) =>
@@ -120,7 +122,8 @@ const levels = JSON.stringify(Object.fromEntries(AIR_LEVELS.map((l) => [l, t(`ai
 		const updated = footer.querySelector<HTMLElement>('.live-footer-updated');
 		if (updated && source?.dataset.updatedAt) {
 			const minutes = minutesSince(new Date(source.dataset.updatedAt));
-			setText(updated, (updated.dataset.template ?? '{n}').replace('{n}', String(minutes)));
+			const ago = (updated.dataset.template ?? '{n}').replace('{n}', String(minutes));
+			setText(updated, source.dataset.footerName ? `${source.dataset.footerName} · ${ago}` : ago);
 		}
 	}
 
