@@ -4,7 +4,7 @@
 #let bg = rgb("#0E0E10")
 #let text-main = rgb("#EDEDEF")
 #let muted = rgb("#8B8B92")
-#let accent = rgb("#E5484D")
+#let accent = rgb("#FF2445")
 #let border = rgb(255, 255, 255, 20)
 
 #set page(width: 640pt, height: 320pt, margin: 0pt, fill: bg)

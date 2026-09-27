@@ -42,13 +42,13 @@
 
 	/* Accent — used sparingly: progress bars, primary CTAs, active states,
 	   single inline highlights. */
-	--accent: #e5484d;
-	--accent-hover: #ec5d5e;
-	--accent-soft: rgb(229 72 77 / 0.12);
+	--accent: #ff2445;
+	--accent-hover: #ff4560;
+	--accent-soft: rgb(255 36 69 / 0.12);
 	/* Current page in the navigation: the accent, see-through. */
-	--nav-active: rgb(229 72 77 / 0.22);
-	/* Text on a full accent background. White on --accent is only 3.9:1, so
-	   the graphite reads on it instead (4.8:1, AA at body size). */
+	--nav-active: rgb(255 36 69 / 0.22);
+	/* Text on a full accent background. White on --accent is only 3.8:1, so
+	   the graphite reads on it instead (5.1:1, AA at body size). */
 	--accent-foreground: #0e0e10;
 	/* On a full accent tile: secondary text and dots, and inset elements
 	   (skeletons, empty bars). The subtle one is for non-essential detail. */
@@ -64,9 +64,9 @@
 	/* Blurred accent glow behind the dashboard tiles (docs/koncept.md §4). At its
 	   peak under --surface-glass, --text-muted keeps 4.6:1; the accent there is
 	   only icons, charts and dots, which need 3:1. */
-	--glow: rgb(229 72 77 / 0.35);
+	--glow: rgb(255 36 69 / 0.28);
 	/* Light on the tile edges around the cursor (dashboard). */
-	--spotlight: rgb(229 72 77 / 0.6);
+	--spotlight: rgb(255 36 69 / 0.6);
 	/* Sheen sweeping over a tile that waits for its data. */
 	--shimmer: rgb(255 255 255 / 0.05);
 

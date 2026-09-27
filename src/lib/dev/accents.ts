@@ -4,9 +4,9 @@
  * tokens from src/styles/tokens.css on <html>.
  */
 
-/* Temporarily on in production too, so the candidates can be shown to others.
-   Set to false and the picker and /dev/accent are dev-only again. */
-export const ACCENT_LAB_LIVE = true;
+/* true puts the picker and /dev/accent in production too, e.g. to show the
+   candidates to someone; false keeps them dev-only. */
+export const ACCENT_LAB_LIVE = false;
 
 export interface AccentCandidate {
 	id: string;
@@ -25,7 +25,16 @@ export const ACCENTS: AccentCandidate[] = [
 	{
 		id: 'current',
 		name: 'Obecny',
-		note: 'Stonowana czerwień (Radix Red) — to, co jest teraz w tokens.css.',
+		note: 'Żywa czerwień — to, co jest teraz w tokens.css (wybrana 2026-09-26). AA wszędzie z zapasem.',
+		accent: '#ff2445',
+		hover: '#ff4560',
+		rgb: '255 36 69',
+		glowAlpha: 0.28,
+	},
+	{
+		id: 'previous',
+		name: 'Poprzedni',
+		note: 'Stonowana czerwień (Radix Red) — akcent do 2026-09-26.',
 		accent: '#e5484d',
 		hover: '#ec5d5e',
 		rgb: '229 72 77',
@@ -39,15 +48,6 @@ export const ACCENTS: AccentCandidate[] = [
 		hover: '#ff2150',
 		rgb: '232 0 58',
 		glowAlpha: 0.3,
-	},
-	{
-		id: 'red',
-		name: 'Żywa czerwień',
-		note: 'Obecny odcień, tylko żywszy. AA wszędzie z zapasem.',
-		accent: '#ff2445',
-		hover: '#ff4560',
-		rgb: '255 36 69',
-		glowAlpha: 0.28,
 	},
 	{
 		id: 'raspberry',

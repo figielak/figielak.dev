@@ -306,22 +306,22 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--text` | `#EDEDEF` | tekst główny |
 | `--text-muted` | `#8B8B92` | opisy, etykiety |
 | `--text-subtle` | `#5C5C63` | najmniej ważne detale |
-| `--accent` | `#E5484D` | akcent: stonowana czerwień, kontrast AA na tle |
-| `--accent-hover` | `#EC5D5E` | akcent po najechaniu |
-| `--accent-soft` | `rgb(229 72 77 / 0.12)` | tła wyróżnień, poświaty |
-| `--accent-foreground` | `#0E0E10` | tekst i ikony na pełnym tle akcentu (biały miałby tylko 3,9:1) |
+| `--accent` | `#FF2445` | akcent: żywa czerwień, kontrast AA na tle (5,1:1 na `--bg`, 4,8:1 na `--surface`) |
+| `--accent-hover` | `#FF4560` | akcent po najechaniu |
+| `--accent-soft` | `rgb(255 36 69 / 0.12)` | tła wyróżnień, poświaty |
+| `--accent-foreground` | `#0E0E10` | tekst i ikony na pełnym tle akcentu (biały miałby tylko 3,8:1) |
 | `--status-ok` / `--status-down` | `#46A758` / `--accent` | kropki stanu: działa / problem |
 | `--status-ok-soft` / `--status-ok-border` | `--status-ok` z przezroczystością 0.1 / 0.3 | plakietka statusu w karcie profilu |
 | `--github-level-1…4` | zielenie GitHuba (ciemny motyw) | wykres kontrybucji; poziom 0 to `--surface-inset` |
 | `--brand-*` | gradienty w kolorach marek | kafle sociali (Discord, Instagram, GitHub, LinkedIn), biały tekst `--brand-foreground` z AA |
 | `--lang-*` | kolory GitHub Linguist | języki w kaflu WakaTime — kolor treści jak loga (§4); najciemniejsze rozjaśnione |
-| `--nav-active` | `rgb(229 72 77 / 0.22)` | tło aktywnej zakładki w nawigacji |
+| `--nav-active` | `rgb(255 36 69 / 0.22)` | tło aktywnej zakładki w nawigacji |
 | `--nav-glass` | `rgb(14 14 16 / 0.9)` | tło przyklejonej nawigacji na telefonie (§2) |
 | `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
-| `--spotlight` | `rgb(229 72 77 / 0.6)` | światło na ramkach kafli wokół kursora (dashboard) |
+| `--spotlight` | `rgb(255 36 69 / 0.6)` | światło na ramkach kafli wokół kursora (dashboard) |
 | `--scrim` / `--scrim-soft` | `rgb(0 0 0 / 0.85)` / `rgb(0 0 0 / 0.5)` | gradient pod tekstem na okładkach (np. muzyka) |
 | `--featured-scrim-soft` / `--featured-scrim-solid` | `rgb(15 15 17 / 0.85)` / `rgb(15 15 17)` | gradient pod tekstem na zrzutach projektów; gotowe gradienty `--featured-scrim-side` (z boku) i `--featured-scrim-down` (w dół), §4 |
-| `--glow` | `rgb(229 72 77 / 0.35)` | rozmyta poświata pod kaflami dashboardu (tekst `--text-muted` na szkle zostaje ≥ 4,6:1) |
+| `--glow` | `rgb(255 36 69 / 0.28)` | rozmyta poświata pod kaflami dashboardu (tekst `--text-muted` na szkle zostaje ≥ 4,6:1) |
 
 Zasady:
 - **Kropki stanu: czerwień tylko przy problemie.** Czerwień czyta się jak „awaria”, więc gdyby świeciła wszędzie, prawdziwy problem zginąłby w tłumie.
@@ -623,7 +623,7 @@ Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
 
 Podjęte (2026-09-25):
 - [x] Domyślny język wizytówki: polski (`/`), angielski pod `/en/`
-- [x] Akcent zostaje `#E5484D`
+- [x] Akcent: `#FF2445` (decyzja 2026-09-26, zamiast `#E5484D` — żywszy przy tym samym odcieniu, AA z zapasem; porównanie kandydatów na `/dev/accent`)
 - [x] Mono: Geist Mono
 - [x] Miasto w kaflu pogody: Rzeszów
 - [x] Analityka: Cloudflare Web Analytics (nie Umami ani Plausible)

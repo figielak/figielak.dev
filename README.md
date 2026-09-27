@@ -18,10 +18,10 @@
 
 <p>
   <a href="https://github.com/figielak/figielak.dev/actions/workflows/deploy.yml"><img alt="Deploy" src="https://img.shields.io/github/actions/workflow/status/figielak/figielak.dev/deploy.yml?branch=master&style=flat-square&label=deploy&labelColor=161618"></a>
-  <img alt="Astro 7" src="https://img.shields.io/badge/Astro-7-E5484D?style=flat-square&logo=astro&logoColor=white&labelColor=161618">
-  <img alt="Tailwind CSS v4" src="https://img.shields.io/badge/Tailwind-v4-E5484D?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=161618">
-  <img alt="Google Cloud Run" src="https://img.shields.io/badge/Cloud%20Run-europe--west1-E5484D?style=flat-square&logo=googlecloud&logoColor=white&labelColor=161618">
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-E5484D?style=flat-square&labelColor=161618"></a>
+  <img alt="Astro 7" src="https://img.shields.io/badge/Astro-7-FF2445?style=flat-square&logo=astro&logoColor=white&labelColor=161618">
+  <img alt="Tailwind CSS v4" src="https://img.shields.io/badge/Tailwind-v4-FF2445?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=161618">
+  <img alt="Google Cloud Run" src="https://img.shields.io/badge/Cloud%20Run-europe--west1-FF2445?style=flat-square&logo=googlecloud&logoColor=white&labelColor=161618">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-FF2445?style=flat-square&labelColor=161618"></a>
 </p>
 
 <a href="https://figielak.dev/en/dashboard">

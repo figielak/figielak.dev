@@ -5,7 +5,7 @@
 #let ink = rgb("#0E0E10")
 #let muted = rgb("#5C5C63")
 #let rule = rgb("#DCDCE0")
-#let accent = rgb("#E5484D")
+#let accent = rgb("#FF2445")
 
 #let period-width = 30mm
 

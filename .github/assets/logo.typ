@@ -5,4 +5,4 @@
 #set page(width: auto, height: auto, margin: (x: 2pt, y: 0pt), fill: none)
 #set text(font: "Satoshi", weight: "bold", size: 48pt, fill: ink, tracking: -0.02em,
   top-edge: "ascender", bottom-edge: "descender")
-figielak#text(fill: rgb("#E5484D"))[\_]
+figielak#text(fill: rgb("#FF2445"))[\_]
