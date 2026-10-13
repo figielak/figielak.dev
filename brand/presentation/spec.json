@@ -1,0 +1,37 @@
+{
+  "brand": "figielak",
+  "tagline": "Data & Software Developer",
+  "brief": "Osobista strona figielak.dev: wizytówka, projekty i dashboard z danymi na żywo. Grafitowy interfejs, zaokrąglone kafle, jeden czerwony akcent i terminal dostępny na każdej stronie. Nick zawsze małą literą.",
+  "adjectives": ["profesjonalny", "techniczny", "z lekkim luzem", "konkretny"],
+  "criteria": "Czytelny w 16 px, działa w jednym kolorze i na ciemnym tle, spójny z napisem figielak_ w nawigacji.",
+  "industry": "software",
+  "mockups": ["favicon-tab", "readme", "terminal", "app-icon", "social", "sticker"],
+  "nav": ["Wizytówka", "Projekty", "Dashboard"],
+  "brand_color": "#FF2445",
+  "tile_color": "#0E0E10",
+  "greyscale": false,
+  "final": true,
+  "designer": "figielak.dev",
+  "concepts": [
+    {
+      "name": "f_",
+      "symbol": "../svg/figielak-symbol-color.svg",
+      "lockup": "../svg/figielak-horizontal-color.svg",
+      "stacked": "../svg/figielak-stacked-color.svg",
+      "avatar": "../web/app-icon.svg",
+      "symbol_on_tile": "../svg/figielak-symbol-reversed.svg",
+      "stacked_on_tile": "../svg/figielak-stacked-reversed.svg",
+      "symbol_on_dark": "../svg/figielak-symbol-reversed.svg",
+      "lockup_on_dark": "../svg/figielak-horizontal-reversed.svg",
+      "stacked_on_dark": "../svg/figielak-stacked-reversed.svg",
+      "idea": "Mała litera f i kursor terminala: napis figielak_ zwinięty do pierwszej litery.",
+      "rationale": [
+        "Mała litera, bo nick pisze się figielak, nie Figielak",
+        "Czerwony kursor to ten sam znak, który miga w nawigacji i otwiera terminal",
+        "Dwa kształty i dwa kolory: czytelny w 16 px, w jednym kolorze i na ciemnym tle"
+      ]
+    }
+  ],
+  "recommendation": "Symbol f_ do faviconu, avatara i README; napis figielak_ zostaje w nawigacji.",
+  "next_steps": ["Podmiana faviconu i grafik README", "Avatar na GitHubie i LinkedInie"]
+}

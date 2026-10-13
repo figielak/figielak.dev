@@ -2,8 +2,8 @@
 
 <a href="https://figielak.dev">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.svg">
-    <img src=".github/assets/logo-light.svg" alt="figielak_" height="56">
+    <source media="(prefers-color-scheme: dark)" srcset="brand/svg/figielak-horizontal-reversed.svg">
+    <img src="brand/svg/figielak-horizontal-color.svg" alt="figielak" height="96">
   </picture>
 </a>
 
@@ -142,14 +142,16 @@ src/
   scripts/     # live tiles, dashboard intro, spotlight, terminal
   i18n/        # pl.json, en.json
   styles/      # tokens.css, global.css
+brand/         # logo: SVG, PNG, favicons, usage rules
 cv/            # CV sources in Typst and fonts (PDFs in public/cv/)
 docs/          # koncept.md, deploy.md
 .github/       # deploy workflow and README assets
 Dockerfile     # Cloud Run image (packs the prebuilt dist/)
 ```
 
-The logo and the social preview are generated with Typst — the command is at the top of each
-`.typ` file in [`.github/assets/`](.github/assets).
+The logo lives in [`brand/`](brand) (SVG, PNG, favicons and usage rules in its README). The social
+preview is generated with Typst: the command is at the top of the `.typ` file in
+[`.github/assets/`](.github/assets).
 
 </details>
 
