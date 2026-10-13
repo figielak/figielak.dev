@@ -23,7 +23,7 @@ rehype-mermaid, Typst (CV). Hosting: Google Cloud Run za Cloudflare
 ## Praca w repo
 
 - CV: źródła Typst w `cv/`, PDF-y w `public/cv/` (commitowane) — po zmianie `npm run cv` (wymaga `typst`).
-- README (po angielsku) i jego grafiki: `.github/assets/` — logo i social preview z Typsta (polecenie w nagłówku `.typ`), zrzuty z produkcji w WebP. Na zrzutach nie może być danych osobowych (e-mail rozmyty).
+- Logo: `brand/` (SVG, PNG, zasady użycia w `brand/README.md`); favicony i ikony w `public/` to kopie z `brand/web/`. README (po angielsku) bierze logo z `brand/svg/`, a reszta jego grafik jest w `.github/assets/` — social preview z Typsta (polecenie w nagłówku `.typ`), zrzuty z produkcji w WebP. `logo-dark.svg` zostaje jako źródło obrysów dla `brand/build.py`. Na zrzutach nie może być danych osobowych (e-mail rozmyty).
 - Podgląd: `npm run dev -- --host` (też w LAN). Galeria stanów kafli: `/dev/tiles` (tylko w dev).
 - Weryfikacja zmian: `npm run build` (typy nie są sprawdzane — `@astrojs/check` nie jest zainstalowany). Wygląd sprawdzaj na buildzie (`npm run preview` lub `node dist/server/entry.mjs`), bo dev potrafi serwować nieaktualne style; widoki bento w 1280×720, 1440×900, 800 px i 390 px.
 - Formatowanie: projekt nie ma konfiguracji Prettiera — nie uruchamiaj `prettier --write` (domyślny styl przepisze pliki). Styl: taby, apostrofy, średniki, linie do ok. 100–120 znaków.
