@@ -2,7 +2,7 @@
 id: 01-03
 title: Simplify the GitHub activity tile
 type: code
-status: approved    # draft | approved | in-progress | done | blocked | reverted
+status: done        # draft | approved | in-progress | done | blocked | reverted
 critical: false
 effort: normal      # normal | hard
 depends: ["01-01"]
@@ -49,11 +49,15 @@ Make GitHub a restrained activity summary with a profile link, a contribution to
 - Adjust token-based spacing for the planned compact area and compare gallery states and intercepted responses.
 
 ## Acceptance
-- [ ] all listed tests pass
-- [ ] `npm run build` → exit 0
-- [ ] The tile reads as supporting activity context and preserves its external profile link.
-- [ ] No API, cache, terminal payload or shared watchLive behavior changes.
+- [x] all listed tests pass
+- [x] `npm run build` → exit 0
+- [x] The tile reads as supporting activity context and preserves its external profile link.
+- [x] No API, cache, terminal payload or shared watchLive behavior changes.
 
 ## Result
 <!-- filled by do: 3–5 lines (audit: ≤ 10, findings + proposed follow-ups)
      last line always: "Deviations: none" or "Deviations: path — why" -->
+Replaced three counters with a period-qualified contribution total, full 53-week map and localized accessible summary updated by the live renderer; preserved the external profile link and API contract.
+RED: Built-gallery checks found three counters, no chart summary and only 27 visible mobile weeks. GREEN: 21 focused browser checks passed, plus four current-dashboard layout checks; PL/EN at 1280×720, 1440×900, 800, 390 and 320 px.
+Verified zero activity, equal 174px gallery footprints, initial failure, fresh/stale responses, reduced motion and retained data after a failed refresh (QA-only optional polling harness). Error-text contrast is 5.34:1; stale mock is four hours old; build exit 0, production gallery excluded and telos accept 01-03 PASS.
+Deviations: src/components/tiles/CurrentWorkTile.astro, src/components/tiles/ExperimentTile.astro, src/lib/dev-log.ts — pre-existing uncommitted 01-02 work preserved, with no 01-03 edits; temporary browser artifacts removed from the work tree.

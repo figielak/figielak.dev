@@ -2,7 +2,7 @@
 id: 01-07
 title: Align references and verify the complete Dev Log
 type: code
-status: approved    # draft | approved | in-progress | done | blocked | reverted
+status: done        # draft | approved | in-progress | done | blocked | reverted
 critical: false
 effort: normal      # normal | hard
 depends: ["01-06"]
@@ -61,12 +61,16 @@ Align navigation, metadata, the home CTA and project descriptions with the shipp
 - Smoke-check private routes with synthetic auth and mocked data, plus home teaser and terminal navigation; record checks and any unavailable evidence in Result.
 
 ## Acceptance
-- [ ] all listed tests pass
-- [ ] `npm run build` → exit 0
-- [ ] Built PL/EN screenshots at 1280×720, 1440×900, 800 px and 390 px demonstrate the agreed layout.
-- [ ] No public page prose claims removed widgets exist; project, home and private links remain coherent.
-- [ ] Diff contains no credentials, private data, dependency changes or unrelated edits.
+- [x] all listed tests pass
+- [x] `npm run build` → exit 0
+- [x] Built PL/EN screenshots at 1280×720, 1440×900, 800 px and 390 px demonstrate the agreed layout.
+- [x] No public page prose claims removed widgets exist; project, home and private links remain coherent.
+- [x] Diff contains no credentials, private data, dependency changes or unrelated edits.
 
 ## Result
 <!-- filled by do: 3–5 lines (audit: ≤ 10, findings + proposed follow-ups)
      last line always: "Deviations: none" or "Deviations: path — why" -->
+Aligned home/teaser labels, the goal editor hint/comment, project prose/features and README with Dev Log. Removed the Homelab telemetry demo and moved outdated project covers into explicitly historical galleries; preserved all image files and labelled README production captures historical.
+RED: Seven native checks caught old labels, the publishing hint, telemetry demo and unlabelled screenshots. GREEN: 7 native checks and 21 browser checks passed: 2 bilingual navigation/project/home flows, 11 private-access cases and 8 four-state viewport/screenshot cases. Existing 01-06 layout/motion proof remains valid; 17 source hashes and the goal implementation are unchanged.
+Inspected eight mocked local-build screenshots in PL/EN at 1280×720, 1440×900, 800 and 390 px; sampled text contrast is at least 4.94:1. Verified language switching, visible focus, cd dashboard, retained home sources, stored-goal loading/language controls, 401 for missing/wrong auth, 503 without configuration and authorized noindex/private,no-store. No writes or production credentials were used; captures are in /tmp/devlog-01-07-screenshots, not production assets. Security review and dependency/API/asset/CV checks passed; build exit 0, production gallery excluded and telos accept 01-07 PASS.
+Deviations: src/components/tiles/CurrentWorkTile.astro, src/components/tiles/ExperimentTile.astro, src/components/tiles/GithubTile.astro, src/components/tiles/WakaTile.astro, src/components/tiles/MusicTile.astro, src/components/views/Dashboard.astro, src/pages/dashboard.astro, src/pages/en/dashboard.astro, src/lib/dev-log.ts, src/lib/mocks/github.ts, src/lib/mocks/waka.ts, src/lib/mocks/music.ts, src/lib/waka.ts, src/pages/dev/[gallery].astro — pre-existing uncommitted 01-02 through 01-06 work preserved without 01-07 edits; temporary verification artifacts stay outside the work tree.

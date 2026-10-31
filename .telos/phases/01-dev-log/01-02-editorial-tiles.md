@@ -2,7 +2,7 @@
 id: 01-02
 title: Add current-work and experiment tiles
 type: code
-status: approved    # draft | approved | in-progress | done | blocked | reverted
+status: done        # draft | approved | in-progress | done | blocked | reverted
 critical: false
 effort: normal      # normal | hard
 depends: ["01-01"]
@@ -53,11 +53,14 @@ Add a manually maintained current-work tile and a small learning-oriented experi
 - Add static gallery examples, including absent optional link and long-title cases; inspect at narrow widths.
 
 ## Acceptance
-- [ ] all listed tests pass
-- [ ] `npm run build` → exit 0
-- [ ] Each new tile is a separate component on Tile; all UI prose has both language keys.
-- [ ] One small configuration and its named i18n keys are sufficient for the next manual content update.
+- [x] all listed tests pass
+- [x] `npm run build` → exit 0
+- [x] Each new tile is a separate component on Tile; all UI prose has both language keys.
+- [x] One small configuration and its named i18n keys are sufficient for the next manual content update.
 
 ## Result
-<!-- filled by do: 3–5 lines (audit: ≤ 10, findings + proposed follow-ups)
-     last line always: "Deviations: none" or "Deviations: path — why" -->
+Added CurrentWorkTile and ExperimentTile on Tile, a small typed editorial configuration and five matching PL/EN copy keys; reused Pill and localized project links.
+Added bilingual gallery fixtures for normal content, absent links and long unbroken titles/tags; kept the gallery dev-only and the public composition unchanged.
+RED: the pre-implementation browser test failed because the current-work tile was absent. GREEN: 11 browser checks passed without JavaScript on a built QA copy at 1280×720, 1440×900, 800, 390 and 320 px.
+telos accept 01-02 PASS; build exit 0; visual QA passed. Moved the experiment arrow to its footer to keep the narrow label readable; removed temporary browser artifacts from the work tree.
+Deviations: none
