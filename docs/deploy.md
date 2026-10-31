@@ -1,6 +1,6 @@
 # Deploy: Google Cloud Run za Cloudflare
 
-Architektura i powody: docs/koncept.md §10. Ten plik to jednorazowa konfiguracja.
+Architektura i powody: docs/architecture.md §1. Ten plik to jednorazowa konfiguracja.
 Po niej każdy push na `master` wdraża stronę sam (`.github/workflows/deploy.yml`):
 build w GitHub Actions (z sekretami), potem obraz z gotowym `dist/` na Cloud Run.
 
@@ -29,7 +29,7 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com \
 
 ### Hasło do prywatnego dashboardu
 
-Serwer wpuszcza na `/dashboard/private` tylko z tym hasłem (docs/koncept.md §14). Workflow
+Serwer wpuszcza na `/dashboard/private` tylko z tym hasłem (docs/security.md). Workflow
 podpina je do Cloud Run (`--set-secrets`), więc sekret musi istnieć przed deployem.
 
 ```bash
@@ -48,7 +48,7 @@ ponowny deploy (Actions → Deploy → *Run workflow*).
 ### Klucze do danych na żywo
 
 Kafle GitHub, Last.fm i WakaTime na `/dashboard` pobierają dane przez `/api/github`, `/api/music` i `/api/waka`
-(docs/koncept.md §9). Klucze są sekretami serwera — tak jak hasło, workflow podpina je do
+(docs/architecture.md §3). Klucze są sekretami serwera — tak jak hasło, workflow podpina je do
 Cloud Run, więc **muszą istnieć przed deployem**, inaczej krok *Deploy* się wywali.
 
 - **GitHub:** Settings → Developer settings → Personal access tokens → *Tokens (classic)*,
@@ -79,7 +79,7 @@ Nowy token: `… | gcloud secrets versions add github-token --data-file=-` i pon
 ### Homelab: Firestore i token agenta
 
 Agent na homelabie (osobne repo, kontener Dockera) co 60 s wysyła `POST /api/stats` z tokenem;
-endpoint zapisuje odczyt w Firestore, a kafle czytają go przez `/api/homelab/*` (docs/koncept.md §9,
+endpoint zapisuje odczyt w Firestore, a kafle czytają go przez `/api/homelab/*` (docs/architecture.md §3,
 kontrakt w `src/lib/server/homelab.ts`). Serwer rozmawia z Firestore przez REST jako konto
 Cloud Run, bez kluczy. Workflow podpina token do Cloud Run, więc **sekret, baza i rola muszą
 istnieć przed deployem**.
@@ -188,7 +188,7 @@ Repo → Settings → Secrets and variables → Actions:
 - **Variables** (identyfikatory, nie sekrety): `GCP_PROJECT_ID`, `GCP_WIF_PROVIDER`,
   `GCP_SERVICE_ACCOUNT` — wartości z końca kroku 1; `LASTFM_USER` — nazwa konta Last.fm;
   `CF_ACCOUNT_ID` i `CF_WEB_ANALYTICS_SITE_TAG` — z Cloudflare Web Analytics (krok 1).
-- **Secrets** (dane, których nie ma w publicznym repo — docs/koncept.md §14, `.env.example`):
+- **Secrets** (dane, których nie ma w publicznym repo — docs/security.md, `.env.example`):
   `CONTACT_EMAIL`, `CONTACT_PHONE`, `HOMELAB_DOMAIN`. Workflow wstawia je przy buildzie.
 
 Albo z terminala: `gh variable set …` / `gh secret set …`.

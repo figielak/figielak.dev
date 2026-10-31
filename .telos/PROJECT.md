@@ -13,7 +13,7 @@ Wizytówka, projekty, korepetycje i dashboard z danymi na żywo; PL/EN.
 - Mobile w widokach bento: 2 kolumny; wyjątek to dossier (wizytówka, korepetycje).
 - Teksty UI przez i18n; prefers-reduced-motion i kontrast AA.
 - Prywatne trasy i `/api/private/*`: `ownerGate` i `prerender = false`.
-- Nowa zależność lub zmiana sprzeczna z `docs/koncept.md` — najpierw pytanie.
+- Nowa zależność lub zmiana sprzeczna z `docs/` (koncept, design, architecture, security) — najpierw pytanie.
 - Commit, push i force push tylko na wyraźną prośbę.
 
 ## Conventions

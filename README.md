@@ -144,7 +144,7 @@ src/
   styles/      # tokens.css, global.css
 brand/         # logo: SVG, PNG, favicons, usage rules
 cv/            # CV sources in Typst and fonts (PDFs in public/cv/)
-docs/          # koncept.md, deploy.md
+docs/          # concept, design, architecture, security, decisions, deploy
 .github/       # deploy workflow and README assets
 Dockerfile     # Cloud Run image (packs the prebuilt dist/)
 ```
@@ -164,8 +164,10 @@ serves it at `figielak.dev`. One-time setup and troubleshooting: [docs/deploy.md
 
 </details>
 
-The project docs are in Polish: [docs/koncept.md](docs/koncept.md) is the source of truth for the
-design, views and rules, [AGENTS.md](AGENTS.md) covers working in the repo.
+The project docs are in Polish: [docs/koncept.md](docs/koncept.md) (vision and views),
+[design.md](docs/design.md), [architecture.md](docs/architecture.md),
+[security.md](docs/security.md) and [decisions.md](docs/decisions.md) are the source of truth;
+[AGENTS.md](AGENTS.md) covers working in the repo.
 
 ## License
 

@@ -1,4 +1,4 @@
-<!-- telos-map: commit e574dce7464ea340f46a6374db98ea26a445e105 · 2026-10-31 · files 250 -->
+<!-- telos-map: commit 7678742812a8ed4f611bc8965305f159ad208ccf · 2026-10-31 · files 250 -->
 # Map
 
 ## Structure
@@ -10,7 +10,7 @@
 - `src/scripts/` — skrypty przeglądarki: `live.ts`, `intro.ts`, `spotlight.ts`, `terminal/`
 - `src/content/projects/` — projekty w MDX, schemat w `src/content.config.ts`
 - `src/i18n/` — `pl.json`, `en.json`; `src/styles/` — `tokens.css`, `global.css`
-- `cv/` → `public/cv/` (Typst); `brand/` — logo; `docs/` — `koncept.md`, `deploy.md`
+- `cv/` → `public/cv/` (Typst); `brand/` — logo; `docs/` — `koncept.md`, `design.md`, `architecture.md`, `security.md`, `decisions.md`, `deploy.md`
 - `.github/workflows/deploy.yml` — deploy na Cloud Run
 
 ## Entry points
@@ -66,4 +66,4 @@
 - Nowy projekt → `src/content/projects/`
 - Sekrety i zmienne środowiskowe → `.env.example`
 - Konfiguracja deployu → `docs/deploy.md`, `.github/workflows/deploy.yml`
-- Wizja i zasady → `docs/koncept.md`
+- Wizja i widoki → `docs/koncept.md`; styl → `docs/design.md`; dane i stack → `docs/architecture.md`; prywatność → `docs/security.md`; decyzje → `docs/decisions.md`
