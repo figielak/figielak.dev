@@ -1,111 +1,136 @@
 ---
 import BentoLayout from '../ui/BentoLayout.astro';
 import DashboardSwitch from '../ui/DashboardSwitch.astro';
-import DayTile from '../tiles/DayTile.astro';
-import WeatherTile from '../tiles/WeatherTile.astro';
+import CurrentWorkTile from '../tiles/CurrentWorkTile.astro';
 import GithubTile from '../tiles/GithubTile.astro';
 import WakaTile from '../tiles/WakaTile.astro';
-import HomelabTile from '../tiles/HomelabTile.astro';
+import ExperimentTile from '../tiles/ExperimentTile.astro';
 import MusicTile from '../tiles/MusicTile.astro';
-import BooksTile from '../tiles/BooksTile.astro';
-import EventTile from '../tiles/EventTile.astro';
-import FeaturedTile from '../tiles/FeaturedTile.astro';
-import SocialTile from '../tiles/SocialTile.astro';
-import GoalTile from '../tiles/GoalTile.astro';
+import { getLangFromUrl, useTranslations } from '../../i18n';
 
-/*
- * Public dashboard (docs/koncept.md §3.4): cards in different shapes — the bento
- * rhythm. The day and the weather top left, GitHub wide and low under them,
- * music tall and narrow like a cover, the homelab big because it holds the
- * most; the featured project is the biggest, as the one card that sells
- * something. WakaTime is two columns wide for its week chart and language bar.
- * The countdown is one number, so it gets a half-height tile like the socials.
- * The goal is a name, a bar and the next step: a narrow card left of GitHub.
- * Homelab numbers are public: it is a server, so they do not tell when I am at
- * the computer (§14).
- *
- * Rows are half-height units, so the social tiles can be half as tall as the
- * rest: one screen from 1440×900 (§7), a little scroll on 1280×720.
- */
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+
+/* Reading and keyboard order match the explicit areas at every breakpoint. */
 const lg = [
-	'day      day      weather  music    lab      lab',
-	'day      day      weather  music    lab      lab',
-	'goal     github   github   music    lab      lab',
-	'goal     github   github   music    lab      lab',
-	'featured featured featured dc       ig       books',
-	'featured featured featured gh       li       books',
-	'featured featured featured waka     waka     books',
-	'featured featured featured waka     waka     event',
+	'build build build build waka waka',
+	'github github github github github github',
+	'experiment experiment experiment music music music',
 ];
-
 const md = [
-	'day      day      weather  music',
-	'goal     github   github   music',
-	'featured featured featured featured',
-	'featured featured featured featured',
-	'dc       ig       gh       li',
-	'lab      lab      lab      lab',
-	'lab      lab      lab      lab',
-	'event    event    books    books',
-	'waka     waka     books    books',
+	'build build build build',
+	'waka waka waka waka',
+	'github github github github',
+	'experiment experiment music music',
 ];
-
-/* Wide cards take the row, small ones go in pairs — never one column. */
 const base = [
-	'day      day',
-	'weather  music',
-	'goal     goal',
-	'github   github',
-	'featured featured',
-	'dc       ig',
-	'gh       li',
-	'lab      lab',
-	'waka     waka',
-	'event    books',
+	'build build',
+	'waka waka',
+	'github github',
+	'experiment music',
 ];
 ---
 
-<BentoLayout
-	alive
-	fill
-	tall
-	dense
-	base={{ areas: base, columns: 2 }}
-	md={{ areas: md, columns: 4 }}
-	lg={{ areas: lg, columns: 6 }}
-	xl={{ areas: lg, columns: 6, rowSize: 'minmax(auto, 1fr)' }}
->
-	<DayTile area="day" />
-	<WeatherTile
-		area="weather"
-		weather={{ state: 'loading' }}
-		air={{ state: 'loading' }}
-		endpoints={{ weather: '/api/weather', air: '/api/air' }}
-	/>
-	<GithubTile area="github" github={{ state: 'loading' }} endpoint="/api/github" />
-	<MusicTile area="music" music={{ state: 'loading' }} endpoint="/api/music" />
-	<HomelabTile
-		area="lab"
-		stats={{ state: 'loading' }}
-		uptime={{ state: 'loading' }}
-		traffic={{ state: 'loading' }}
-		dns={{ state: 'loading' }}
-		endpoints={{
-			lab: '/api/homelab/lab',
-			uptime: '/api/homelab/uptime',
-			net: '/api/homelab/net',
-			dns: '/api/homelab/dns',
-		}}
-	/>
-	<FeaturedTile area="featured" />
-	<SocialTile area="dc" brand="discord" />
-	<SocialTile area="ig" brand="instagram" />
-	<SocialTile area="gh" brand="github" />
-	<SocialTile area="li" brand="linkedin" />
-	<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
-	<BooksTile area="books" books={{ state: 'loading' }} endpoint="/api/books" />
-	<EventTile area="event" />
-	<GoalTile area="goal" goal={{ state: 'loading' }} endpoint="/api/goal" />
-</BentoLayout>
+<section class="dev-log" aria-labelledby="dev-log-title">
+	<header class="dev-log-intro">
+		<p class="dev-log-label">{t('devLog.label')}</p>
+		<h1 id="dev-log-title">{t('devLog.title')}</h1>
+		<p class="dev-log-subtitle">{t('devLog.subtitle')}</p>
+		<p class="dev-log-updated" data-template={t('devLog.updated')} data-lang={lang}>&nbsp;</p>
+	</header>
 
-<DashboardSwitch to="private" />
+	<BentoLayout
+		alive
+		base={{ areas: base, columns: 2 }}
+		md={{ areas: md, columns: 4 }}
+		lg={{ areas: lg, columns: 6 }}
+	>
+		<CurrentWorkTile area="build" endpoint="/api/github" />
+		<WakaTile area="waka" waka={{ state: 'loading' }} endpoint="/api/waka" />
+		<GithubTile area="github" github={{ state: 'loading' }} endpoint="/api/github" />
+		<ExperimentTile area="experiment" />
+		<MusicTile area="music" music={{ state: 'loading' }} endpoint="/api/music" />
+	</BentoLayout>
+	<DashboardSwitch to="private" />
+</section>
+
+<script>
+	import { timeAgo } from '../../lib/live';
+
+	/* One "updated …" for the page, from the newest answer of any card; a card
+	   whose own data goes stale still says so itself. */
+	for (const line of document.querySelectorAll<HTMLElement>('.dev-log-updated')) {
+		const { template = '{t}', lang = 'pl' } = line.dataset;
+		let newest: Date | undefined;
+		const show = () => {
+			if (newest) line.textContent = template.replace('{t}', timeAgo(newest, lang));
+		};
+		line.closest('.dev-log')?.addEventListener('live:updated', (event) => {
+			const date = (event as CustomEvent<Date>).detail;
+			if (!newest || date > newest) newest = date;
+			show();
+		});
+		setInterval(show, 60_000);
+	}
+</script>
+
+<style>
+	.dev-log-intro {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-lg);
+		margin-block: var(--space-3xl);
+	}
+
+	.dev-log-label,
+	.dev-log-updated {
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		color: var(--text-muted);
+	}
+
+	.dev-log-updated {
+		text-transform: uppercase;
+	}
+
+	h1 {
+		font-size: var(--size-hero);
+		font-weight: 700;
+		line-height: 1.1;
+	}
+
+	.dev-log-subtitle {
+		color: var(--text-muted);
+	}
+
+	/* Flat, opaque cards like the rest of the site (no glass over a glow);
+	   the cursor light on the edges stays. */
+	.dev-log :global(.tile) {
+		container-type: inline-size;
+		background: var(--surface);
+		backdrop-filter: none;
+	}
+
+	.dev-log :global(.tile[data-interactive]:hover) {
+		background: var(--surface-hover);
+	}
+
+	/* The public composition uses the roomier Tile padding; private density
+	   and the reusable live components keep their existing defaults. */
+	.dev-log :global(.tile[data-dense]) {
+		padding: var(--tile-padding);
+		gap: var(--space-lg);
+	}
+
+	/* A card's dot speaks only when there is a problem: stale or missing data. */
+	.dev-log :global(.tile-header .live-dot[data-state='live']) {
+		visibility: hidden;
+	}
+
+	.dev-log :global(.switch-link),
+	.dev-log :global(.live-error),
+	.dev-log :global(.live-footer) {
+		color: var(--text-muted);
+	}
+</style>

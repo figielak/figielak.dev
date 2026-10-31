@@ -6,6 +6,6 @@ import { getLangFromUrl, useTranslations } from '../../i18n';
 const t = useTranslations(getLangFromUrl(Astro.url));
 ---
 
-<BaseLayout title={t('meta.dashboard.title')} description={t('meta.dashboard.description')} wide glow>
+<BaseLayout title={t('meta.dashboard.title')} description={t('meta.dashboard.description')}>
 	<Dashboard />
 </BaseLayout>

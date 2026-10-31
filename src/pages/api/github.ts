@@ -1,9 +1,10 @@
 /**
- * GitHub stats for the dashboard tile, cached 1 h (docs/koncept.md §9).
+ * GitHub stats for the dashboard tile, cached 1 h (docs/architecture.md §3).
  * Without GITHUB_TOKEN `astro dev` serves the mock, production answers 503.
  */
 import type { APIRoute } from 'astro';
 import { githubUser } from '../../lib/contact';
+import { currentWork } from '../../lib/dev-log';
 import { cached } from '../../lib/server/cache';
 import { fetchGithub, githubToken } from '../../lib/server/github';
 import { mockGithub } from '../../lib/mocks/github';
@@ -19,7 +20,7 @@ export const GET: APIRoute = async () => {
 	}
 
 	try {
-		const { value, updatedAt } = await cached('github', HOUR, () => fetchGithub(githubUser));
+		const { value, updatedAt } = await cached('github', HOUR, () => fetchGithub(githubUser, currentWork.repo));
 		return liveJson({ ...value, updatedAt }, 600);
 	} catch (error) {
 		return unavailable(error);

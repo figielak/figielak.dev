@@ -1,25 +1,35 @@
 # figielak.dev – koncept
 
-> Ten plik opisuje wizję strony. Jest źródłem prawdy dla wyglądu, struktury i zachowania.
-> Jeśli coś w kodzie jest z nim sprzeczne, pytaj, zanim zmienisz którekolwiek z nich.
+> Ten plik opisuje wizję strony: widoki, odbiorców i to, co pokazuje każdy widok.
+> Razem z plikami obok jest źródłem prawdy dla wyglądu, struktury i zachowania.
+> Jeśli coś w kodzie jest z nimi sprzeczne, pytaj, zanim zmienisz którekolwiek z nich.
+
+| Plik | Zawartość |
+|---|---|
+| [koncept.md](koncept.md) | wizja, widoki i odbiorcy, specyfikacja widoków i kafli, co dalej |
+| [design.md](design.md) | system wizualny: kafle, kolory, typografia, siatka, interakcje, stany kafli, motywy, dostępność |
+| [architecture.md](architecture.md) | stack, struktura katalogów, dane na żywo i źródła, model push homelaba, i18n, wydajność |
+| [security.md](security.md) | publiczne repo, co jest publiczne, a co prywatne, prywatny dashboard, tokeny |
+| [decisions.md](decisions.md) | otwarte i podjęte decyzje z datą i powodem |
+| [deploy.md](deploy.md) | jednorazowa konfiguracja Cloud Run, Cloudflare i GitHub Actions |
 
 ---
 
 ## 1. Wizja w skrócie
 
-Osobista strona w stylu **bento grid**: ciemne, grafitowe tło, zaokrąglone kafle, jeden czerwony akcent w interfejsie. **Treść może być kolorowa** — prawdziwe loga, okładki, zdjęcia i grafiki dodają stronie życia (patrz §4 „Kolor w treści”).
+Osobista strona w stylu **bento grid**: ciemne, grafitowe tło, zaokrąglone kafle, jeden czerwony akcent w interfejsie. **Treść może być kolorowa** — prawdziwe loga, okładki, zdjęcia i grafiki dodają stronie życia (patrz design.md §1 „Kolor w treści”).
 Strona składa się z kilku **widoków** dla różnych odbiorców. Wszystkie dzielą ten sam **system wizualny** (tokeny, kafle, typografia, akcent), ale nie ten sam układ.
 
-- **Bento grid** to układ dashboardu.
-- **Projekty to lista** — jeden wyróżniony projekt i wiersze pod nim (3.2). Druga siatka kafli zlewałaby się z dashboardem, a projekt potrzebuje więcej tekstu, niż mieści kafel.
+- **Bento grid** to układ publicznego Dev Logu i prywatnego dashboardu. Dev Log ma wyraźną hierarchię: bieżąca praca jest najważniejsza, pozostałe kafle ją uzupełniają.
+- **Projekty to lista** — jeden wyróżniony projekt i wiersze pod nim (3.2). Druga siatka kafli zlewałaby się z Dev Logiem, a projekt potrzebuje więcej tekstu, niż mieści kafel.
 - **Wizytówka i korepetycje są świadomym wyjątkiem** — dwukolumnowe „dossier” opisane w 3.1 (korepetycje: 3.3). Powód: bento dobrze pokazuje *wiele równorzędnych* rzeczy naraz, a wizytówka ma jedną rzecz najważniejszą (kto to jest i jak się skontaktować) i resztę jako uzupełnienie. Siatka równych kafli spłaszczała tę hierarchię.
 
 System wizualny obowiązuje w obu układach: te same tokeny, ten sam `Tile`, te same etykiety mono i ten sam akcent.
 
 Charakter: **profesjonalnie, ale z lekkim luzem.** Konkretne informacje podane czytelnie, z drobnymi elementami osobowości (dane na żywo, easter eggi).
 
-Główna inspiracja: gęsty „żywy dashboard” w stylu lucashdo (kafle z danymi na żywo, etykiety uppercase, kropki LIVE, duże liczby).
-Wizytówka i korepetycje są spokojniejsze i mniej gęste. Dashboard jest pełną wersją tego stylu.
+Główna inspiracja wizualna: „żywy dashboard” w stylu lucashdo (kafle z danymi na żywo, etykiety uppercase, duże liczby).
+Publiczny **Dev Log** uzupełnia CV i projekty: pokazuje bieżącą pracę, aktywność, naukę i mały osobisty akcent. Jest spokojniejszy, z pięcioma kartami i większą ilością oddechu. Gęsty panel operacyjny zostaje w trybie prywatnym. Wizytówka i korepetycje zachowują układ dossier.
 
 ---
 
@@ -30,15 +40,16 @@ Wizytówka i korepetycje są spokojniejsze i mniej gęste. Dashboard jest pełn�
 | Wizytówka | `figielak.dev` | rekruterzy, potencjalni współpracownicy | w kilka sekund: kim jestem, co umiem, jak się skontaktować |
 | Projekty | `figielak.dev/projects` | rekruterzy, ciekawscy | lista projektów i opisy (case studies) w MDX |
 | Korepetycje | `figielak.dev/maths` | uczniowie, rodzice | kim jestem, jak wyglądam, gdzie studiuję, szybki kontakt; w przyszłości dostępność i rezerwacja online |
-| Dashboard | `figielak.dev/dashboard` | głównie ja, a także osoby chcące wiedzieć więcej | dane na żywo: pogoda, czas, GitHub, homelab, muzyka; prywatnie panel: usługi i serwer, backup, deploye, statystyki strony, korepetycje, wygasające rzeczy i edycja celu |
+| Dev Log | `/dashboard`, `/en/dashboard` | rekruterzy, współpracownicy i ciekawscy | nad czym pracuję, czego się uczę i co dzieje się poza CV; pięć uporządkowanych kafli |
+| Dashboard prywatny | `/dashboard/private`, `/en/dashboard/private` | ja | panel operacyjny: usługi i serwer, backup, deploye, statystyki strony, korepetycje, wygasające rzeczy i edycja celu |
 
 **Decyzja:** główną strukturą są **ścieżki** (jeden projekt Astro, wspólne komponenty, jedna domena dla SEO).
 Subdomeny `maths.figielak.dev` i `dashboard.figielak.dev` działają jako **przekierowania 301** na ścieżki (reguły przekierowań w Cloudflare), co daje krótkie adresy do wysyłania ludziom.
 
 Nawigacja: górny pasek w formie pigułki, wspólny dla wszystkich widoków.
 - Po lewej: logo `figielak_` — nazwa i migający czerwony kursor `_` jak w terminalu (bez migania przy reduced motion)
-- Na środku: Wizytówka · Projekty · Dashboard · Korepetycje (dopóki korepetycje są zamknięte — wyszarzone, nie są linkiem, z dopiskiem „wkrótce” od 640 px; §3.3)
-- Po prawej: PL/EN, przycisk terminala `>_` (§8) i przełącznik motywu (nieaktywny, dopóki jest jeden motyw — §12); na `/maths` przełącznik języka jest wyłączony, bo widok jest tylko po polsku
+- Na środku: Wizytówka · Projekty · Dev Log · Korepetycje; nazwa Dev Log jest wspólna dla PL i EN. Dopóki korepetycje są zamknięte — wyszarzone, nie są linkiem, z dopiskiem „wkrótce” od 640 px (§3.3).
+- Po prawej: PL/EN, przycisk terminala `>_` (design.md §5) i przełącznik motywu (nieaktywny, dopóki jest jeden motyw — design.md §7); na `/maths` przełącznik języka jest wyłączony, bo widok jest tylko po polsku
 - Na telefonie (<640px) logo i przyciski dzielą górny rząd, a pigułka z linkami zajmuje rząd pod nimi
 - Na telefonie (<640px) pasek jest przyklejony do góry ekranu na prawie kryjącym tle (`--nav-glass`, rozmycie `--glass-blur`): chowa się przy przewijaniu w dół i wraca przy pierwszym ruchu w górę (próg 8 px, żeby nie migał), a przy samej górze strony jest zawsze widoczny. Schowany jest `inert`, a fokus w nim go pokazuje. Na desktopie pasek przewija się razem ze stroną.
 
@@ -53,7 +64,7 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 
 - **Ton:** najbardziej profesjonalny widok, luz tylko w detalach (np. zajawka dashboardu z aktualną godziną i pogodą).
 - **Układ:** **dwukolumnowe dossier**, nie bento. Lewa kolumna to przyklejona karta tożsamości, prawa to strumień sekcji. Czyta się jak dobre CV.
-- **Scroll:** ten widok **może scrollować** i to jest celowe — na tym polega przyklejona lewa kolumna. Wyjątek od reguły „mieści się na jednym ekranie” z sekcji 7.
+- **Scroll:** ten widok **może scrollować** i to jest celowe — na tym polega przyklejona lewa kolumna (design.md §4).
 - **Proporcje:** lewa kolumna 320px, prawa resztę. Poniżej 1024px kolumny się składają, a karta przestaje być przyklejona.
 
 ```
@@ -97,13 +108,13 @@ Wizytówka nie używa siatki obszarów — jej układ opisany jest słowami w 3.
 | Umiejętności | wiersze kategorii (Data / ML, Backend, Automatyzacja, Bazy danych, DevOps, Narzędzia): etykieta mono po lewej w kolumnie okresów z Doświadczenia, pigułki z nazwami technologii po prawej |
 | Języki | jedna linia: „Polski — ojczysty · Angielski — B1” |
 | Edukacja | uczelnia, kierunek, lata — ten sam format wierszy |
-| Zajawka dashboardu | mały kafel na dole: godzina, pogoda i utwór z Last.fm („teraz gra” / „ostatnio”, na żywo z `/api/music`, 4 stany) — dowód, że dashboard naprawdę działa; stopka „Zobacz dashboard na żywo →” |
+| Zajawka Dev Logu | mały kafel na dole: godzina, pogoda i utwór z Last.fm („teraz gra” / „ostatnio”, na żywo z `/api/music`, 4 stany); stopka prowadzi do Dev Logu. Zajawka zachowuje własne dane i zachowanie, również pogodę usuniętą z publicznej siatki |
 
 Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama linia. Dzięki temu w prawej kolumnie widać hierarchię, a nie rząd równorzędnych pudełek.
 
 ### 3.2 Projekty (`/projects`)
 
-- **Układ: jeden wyróżniony + lista**, na całą szerokość, bez karty profilu. Nie bento: dashboard jest jedyną siatką kafli, a lista wygląda dobrze zarówno z dwoma, jak i z dziesięcioma projektami (w siatce przy kilku projektach widać dziury).
+- **Układ: jeden wyróżniony + lista**, na całą szerokość, bez karty profilu. Nie bento: Dev Log i prywatny dashboard korzystają z siatki kafli, a lista wygląda dobrze zarówno z dwoma, jak i z dziesięcioma projektami (w siatce przy kilku projektach widać dziury).
 - Nad wszystkim etykieta mono „Projekty · N”.
 - **Wyróżniony projekt** (pierwszy wpis z `featured: true` wg `order`): jeden `Tile` — zrzut ekranu po lewej od krawędzi do krawędzi, po prawej etykieta „Wyróżniony · rok” w akcencie (jedyny akcent w widoku), nazwa jak nagłówek hero, jedno zdanie, funkcje z ikonami (`features`), tagi i przyciski (Szczegóły / Kod ↗ / Na żywo — → albo ↗, zależnie od tego, dokąd prowadzi); nazwa też prowadzi do szczegółów. Poniżej 768px składa się w pionie: zrzut nad tekstem.
 - **Lista** pozostałych w sekcji dossier („Pozostałe projekty”): te same wiersze co Doświadczenie na wizytówce — rok w mono w kolumnie okresów (`2025–obecnie` dla trwających), tytuł ze strzałką ›, jedno zdanie, tagi, a po prawej miniatura okładki (192 px, 16:10, cały obraz bez kadrowania) i ikony linków (kod, na żywo). Cały wiersz prowadzi do strony szczegółów (tło `--surface-hover` po najechaniu), ikony zostają osobnymi linkami. Na telefonie rok przechodzi nad tytuł, miniatura pod tagi na całą szerokość, a wiersze zostają wierszami.
@@ -112,7 +123,7 @@ Sekcje inne niż wyróżniony projekt **nie mają ramek** — dzieli je sama lin
 - Każdy projekt to plik MDX w content collection (`src/content/projects/`, schemat w `src/content.config.ts`): tytuł, rok (+ `ongoing`), zdanie PL/EN, tagi, linki (repo, demo — ścieżka na stronie lub URL), okładka, `featured`, `order`, opcjonalne `features` (ikona + krótki tekst, dla karuzeli), opcjonalny `description` PL/EN (kilka akapitów) i `gallery` (zrzuty z podpisem PL/EN; zrzuty z produkcji w WebP w `src/assets/projects/<slug>/`, bez danych osobowych). Dane dla widoków daje `src/lib/projects.ts`.
 - **Strona szczegółów** (`/projects/[slug]` i `/en/projects/[slug]`, `ProjectDetail`) — ma ją każdy projekt: powrót do listy, rok, nazwa, zdanie, tagi, przyciski Kod / Na żywo; **galeria** (`ProjectGallery`: okładka i `gallery` w pasku przewijanym w bok jak karuzela na wizytówce — licznik, ‹ ›, każdy zrzut w tej samej ramce 16:10 z podpisem; klik otwiera lightbox na `<dialog>` z ‹ ›, strzałkami i `Esc`, bez JS link do pełnego pliku); sekcje dossier „O projekcie” (`description` i `features`) oraz „Case study”.
 - **Case study** to treść pliku MDX: kontekst, architektura, decyzje, czego się nauczyłem; może zawierać wzory (KaTeX, CSS ładowany tylko tam) i diagramy (Mermaid). Sekcja jest tylko przy niepustej treści. Case study są po polsku — strona EN pokazuje w tym miejscu link do polskiej.
-- Wpisy z `featured: true` zasilają karuzelę na wizytówce, kafel `featured` na dashboardzie, a wszystkie wpisy — komendę `open` w terminalu; wszystkie te miejsca linkują do strony szczegółów.
+- Wpisy z `featured: true` zasilają karuzelę na wizytówce, a wszystkie wpisy — komendę `open` w terminalu; oba miejsca linkują do strony szczegółów. Dawny kafel `featured` z karuzelą znika z publicznej siatki. Bieżąca praca w Dev Logu jest wybierana ręcznie i opisuje aktualny kierunek prac, zamiast powtarzać podsumowanie projektu.
 
 ### 3.3 Korepetycje (`/maths`)
 
@@ -163,66 +174,71 @@ Telefon i e-mail są w HTML zakodowane (base64) i składane w przeglądarce, tak
 **W przyszłości:**
 - matura rozszerzona w ofercie;
 - sekcje: opinie uczniów, FAQ;
-- tygodniowa dostępność i rezerwacja online przez Cal.com (embed lub API, decyzja §17);
+- tygodniowa dostępność i rezerwacja online przez Cal.com (embed lub API, decyzja decisions.md);
 - opcjonalna sekcja „Zadanie tygodnia” ze wzorem w KaTeX.
 
-### 3.4 Dashboard (`/dashboard`)
+### 3.4 Dashboard (`/dashboard`) — publiczny Dev Log i panel prywatny
 
-- **Ton:** najbardziej osobisty i gęsty, pełny styl „żywego dashboardu”.
-- **Dwa tryby**, na desktopie oba mieszczą się na jednym ekranie (publiczny od 1440×900, §7). Oba mają siatkę 6 kolumn:
+- **Publiczny Dev Log:** spokojny, osobisty kontekst do CV i projektów, z dominującą kartą bieżącej pracy. Zachowuje ciemne powierzchnie, czerwony akcent, etykiety mono, subtelną poświatę i istniejący `Tile`.
+- **Prywatny dashboard:** dotychczasowy gęsty panel operacyjny, bez zmiany układu, danych i ochrony. Mieści się na jednym ekranie od 1280×720 (design.md §4).
 
-| Tryb | Adres | Dla kogo | Dostęp |
+| Tryb | Adres PL / EN | Dla kogo | Dostęp |
 |---|---|---|---|
-| publiczny | `/dashboard` | odwiedzający | otwarty |
-| prywatny | `/dashboard/private` | ja | hasło na serwerze (patrz §14) |
+| publiczny Dev Log | `/dashboard` / `/en/dashboard` | odwiedzający | otwarty |
+| prywatny dashboard | `/dashboard/private` / `/en/dashboard/private` | ja | hasło na serwerze, `ownerGate` i `prerender = false` (patrz security.md) |
 
-Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłódką / „Widok publiczny”). W nawigacji jest tylko tryb publiczny.
+Adresy pozostają bez zmian; **Dev Log** jest nazwą w obu wersjach nawigacji. Między trybami przełącza cichy link pod siatką („Widok prywatny” z kłódką / powrót do „Dev Log”). W nawigacji jest tylko tryb publiczny.
 
-**Tryb publiczny** — karty w różnych kształtach, żeby siatka miała bentowy rytm, a nie równe rzędy:
-- to, co opisuje jedną rzecz, jest jedną kartą: czas, słońce i postęp to „Dzień”, pogoda i powietrze to „Pogoda”, a maszyna, usługi, transfer i blokada reklam to jeden „Homelab”;
-- kształt wynika z treści: GitHub jest szeroki i niski, bo wykres kontrybucji to długi pasek; muzyka jest wysoka i wąska jak okładka; homelab jest duży, bo ma najwięcej danych;
-- wyróżniony projekt dostaje najwięcej miejsca (3 kolumny, połowa wysokości), bo to jedyna karta, która coś „sprzedaje”: zrzut ekranu wypełnia większość karty, nazwa, stack i link mieszczą się w jednym pasku pod nim; kilka projektów to karuzela z kropkami;
-- sociale (Discord, Instagram, GitHub, LinkedIn) to cztery małe kafle 2×2: cały kafel jest przyciskiem w kolorach marki (gradient z tokenów `--brand-*`, biały tekst z kontrastem AA), z białym logo (Simple Icons) nad nazwą wersalikami, bez strzałki;
-- Muzyka, Czytam i projekt przełamują ścianę tekstu obrazem; WakaTime ma dwie kolumny na wykres tygodnia i pasek języków;
-- pojedyncza liczba (odliczanie) dostaje mały kafel — na desktopie o wysokości półrzędu, jak sociale;
-- cel (nazwa, pasek kroków i lista kroków z odhaczonymi) to wąska karta na jedną kolumnę, po lewej od GitHuba.
+**Wprowadzenie publiczne** — nad siatką, teksty przez i18n, jeden `h1`:
 
-Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od reszty.
+| Element | PL | EN |
+|---|---|---|
+| etykieta mono | `/ DEV LOG` | `/ DEV LOG` |
+| nagłówek `h1` | Poza CV. | Beyond the CV. |
+| podtytuł | Nad czym pracuję, czego się uczę i co gra w tle. | What I’m building, what I’m learning, and what’s playing in the background. |
+
+**Dokładnie pięć publicznych kafli**, w tej samej kolejności DOM, czytania i przechodzenia klawiaturą na każdym ekranie:
+
+| Kolejność / obszar | Rola | Zawartość |
+|---|---|---|
+| 1. `build` | Nad czym pracuję / Current work | ręcznie wybrana bieżąca praca, obecnie Telos (plugin do Claude Code, `figielak/telos`): nazwa, jedno zdanie o tym, czym jest projekt, jedno zdanie „W toku: …” o konkretnym zadaniu (nie opis projektu z `/projects`), ostatni commit repozytorium na żywo (`lastCommit` z `/api/github`: komunikat i kiedy, 4 stany), tagi technologii i przycisk „Kod ↗” jak na stronie projektów. Bez karuzeli i kopiowania opisu case study; największa i wizualnie dominująca karta |
+| 2. `waka` | Kodowanie / Coding | suma czasu bieżącego tygodnia (od poniedziałku, Europe/Warsaw) i krótki rozkład maksymalnie trzech nazwanych języków z resztą podpisaną „inne X%” (`/api/waka`, dotychczasowe filtrowanie kodu bez Markdownu). Bez słupków dziennych i czasu dziś; pusty tydzień jest poprawnym wynikiem, a brak języków wymaga spokojnego wyjaśnienia, bez sztucznego „Inne 100%” |
+| 3. `github` | GitHub | suma kontrybucji z jawnym okresem, roczna mapa aktywności na całą szerokość i link do profilu (`/api/github`). Bez streaka i licznika repozytoriów; to kontekst aktywności, nie ocena produktywności ani liczba commitów |
+| 4. `experiment` | Eksperymenty / Experiments | krótko o nauce i celu technicznym, początkowo istniejący homelab; link do opisu projektu zgodny z językiem. Treść redakcyjna oparta na udokumentowanych faktach, bez telemetrii infrastruktury |
+| 5. `music` | Po godzinach / After hours | mały akcent osobisty: bieżący lub ostatni utwór z Last.fm (`/api/music`), wykonawca i kompaktowa okładka. Bez top artystów. Opcjonalny 30-sekundowy podgląd iTunes tylko po kliknięciu, bez autoplay; bez URL podglądu nie ma przycisku |
+
+Karta `experiment` i tekst zadania w `build` są utrzymywane ręcznie (`src/lib/dev-log.ts` + i18n), bez CMS; jedyne dane na żywo w `build` to ostatni commit z istniejącego `/api/github`. Ostatni commit, GitHub, WakaTime i muzyka zachowują cztery stany (ładowanie, OK, nieaktualne, błąd) i stały rozmiar między stanami. Zerowa aktywność jest poprawnymi danymi; nieaktualny utwór nie może sugerować, że gra właśnie teraz. Najpierw mock, potem prawdziwe źródła (design.md §6).
+
+**Układ publiczny** — jawne `grid-template-areas`, bez wymuszania wysokości ekranu. Rozmiar kart wynika z treści i hierarchii; odstępy i wysokości tylko z tokenów (design.md §4).
 
 ```
-≥ 1024px (6 kolumn, 8 półrzędów; jeden ekran od 1440×900)
-"day      day      weather  music    lab      lab"    ×2
-"goal     github   github   music    lab      lab"    ×2
-"featured featured featured dc       ig       books"
-"featured featured featured gh       li       books"
-"featured featured featured waka     waka     books"
-"featured featured featured waka     waka     event"
+≥ 1024px (6 kolumn)
+"build build build build waka waka"
+"github github github github github github"
+"experiment experiment experiment music music music"
 
 640–1023px (4 kolumny)
-"day day weather music" / "goal github github music" /
-"featured ×4" ×2 / "dc ig gh li" / "lab ×4" ×2 /
-"event event books books" / "waka waka books books"
+"build      build      build build"
+"waka       waka       waka  waka"
+"github     github     github github"
+"experiment experiment music music"
 
-< 640px (2 kolumny: szerokie karty na cały rząd, małe parami)
-"day day" / "weather music" / "goal goal" / "github github" /
-"featured featured" / "dc ig" / "gh li" / "lab lab" / "waka waka" / "event books"
+< 640px (2 kolumny)
+"build      build"
+"waka       waka"
+"github     github"
+"experiment music"
 ```
 
-| Kafel | Grupa | Zawartość |
-|---|---|---|
-| `day` | lokalne | czas Europe/Warsaw co sekundę i data; wschód i zachód słońca, długość dnia; paski % dnia, miesiąca i roku — wszystko liczone lokalnie, bez API i bez kropki |
-| `weather` | lokalne | dwie sekcje z własnymi stanami: pogoda w Rzeszowie (`/api/weather`, Open-Meteo: temperatura, opis, miasto) i jakość powietrza (`/api/air`, GIOŚ, stacja Al. Piłsudskiego: poziom słownie, skala 6 stopni; PM2.5/PM10 tylko na telefonie i tablecie); jedna stopka pokazuje gorszą z sekcji. Ta sama pogoda jest w zajawce na wizytówce i w komendzie `weather` terminala |
-| `github` | praca | liczba kontrybucji, streak, repozytoria, legenda i „X min temu” w jednym rzędzie; pod nimi wykres roku na całą szerokość |
-| `featured` | praca | wyróżniony projekt: zrzut ekranu, nazwa, jedno zdanie, stack, „Zobacz →”; kilka projektów w karuzeli (wpisy z `featured: true` z kolekcji projektów, §3.2) |
-| `dc` `ig` `gh` `li` | kontakt | linki do profili: kafel w kolorach marki, białe logo i nazwa |
-| `waka` | praca | WakaTime, ciemny jak inne kafle, w kolejności ważności: suma tygodnia (duża liczba); 7 słupków pon–ndz z dzisiejszym w akcencie; pasek języków w kolorach GitHub Linguist (`--lang-*`) z 3 nazwami — bez Markdownu (to notatki i dokumentacja, nie kod), udziały liczone z samego kodu; czas dziś w stopce. Bez porównania ze średnią — spokojna niedziela to nie wiadomość. W wąskim kaflu najpierw znika trzeci język, potem nazwy |
-| `lab` | homelab | cztery sekcje: **maszyna** (w nagłówku sprzęt i liczba kontenerów — „Raspberry Pi 4 · ARM64 · kontenery: 11”; kolumna na CPU, RAM, każdy dysk i GPU, jeśli jest: duża wartość w %, pasek czerwony od 85% i pod nim temperatura CPU albo GB zajęte z całości; tylko bieżący odczyt, bez historii — §14), **usługi** (uptime hosta w nagłówku; aplikacje z `src/lib/services.ts` jako pigułki z ikoną i kropką up/down z Uptime Kumy, szara bez monitora — publicznie tylko nazwa i stan, bez adresów i czasów odpowiedzi), **transfer** samego homelaba (Wi-Fi Pi, nie całego domu) dziś ↓/↑ i łącznie od pierwszego uruchomienia agenta, **blokada reklam** (zablokowane dziś z liczby zapytań, sumy z 7 dni; AdGuard) |
-| `music` | życie | teraz słucham + top 3 artystów tygodnia (Last.fm); okładka jako tło całego kafla pod ciemnym gradientem, tekst na dole. Obok utworu okrągły przycisk ▶/❚❚ puszcza 30-sekundowy podgląd (iTunes Search API, bez klucza — Last.fm nie ma audio); serwer szuka po wykonawcy i tytule i bierze tylko wyraźne dopasowanie, a bez podglądu przycisku nie ma. Dźwięk ładuje się z CDN Apple dopiero po kliknięciu |
-| `books` | życie | aktualnie czytane książki z okładkami, na żywo z Hardcover (`/api/books`, półka „Currently Reading”, 4 stany; tytuł i okładka z wybranego wydania); po 3 na stronę, kliknięcie obraca kartę na kolejne 3 (§8), w nagłówku licznik „1/2” z ikoną obrotu zamiast strzałki; w wysokim wąskim kaflu (desktop) jedna pod drugą, w małym (telefon) tylko pierwsza ze strony |
-| `event` | życie | odliczanie do najbliższego ważnego wydarzenia (`src/lib/events.ts`) |
-| `goal` | życie | aktualny cel, edytowany w trybie prywatnym i czytany z Firestore (`/api/goal`) bez deployu; przed pierwszym zapisem `src/lib/goal.ts`: nazwa, termin „do MM.RRRR” w nagłówku, neutralny pasek wykonanych kroków z licznikiem „1/4” i lista kroków (wykonane odhaczone i przekreślone, następny w kolorze tekstu); gdy brakuje miejsca, najpierw znika pasek (1440×900), potem lista ustępuje linii „Dalej: …”; w niskim kaflu nazwa i pasek dzielą linię, a następny krok znika pierwszy |
+Bieżąca praca dominuje treścią i rozmiarem; na desktopie zajmuje cztery z sześciu kolumn. GitHub jest osobnym pasem na całą szerokość, żeby heatmapa miała duże kratki. Na telefonie trzy pierwsze karty zajmują całe rzędy, a eksperymenty i muzyka stoją obok siebie w dwóch kolumnach.
 
-**Tryb prywatny** — panel do zarządzania, tylko dla mnie. Statystyk PC nie pokazuję wcale; statystyki homelabu są publiczne, a w prywatnym dochodzą do nich nazwy usług i kontenerów oraz backup. Jeden ekran od 1280×720; rzędy w połówkach, pasek usług ma jedną.
+Karty są płaskie i nieprzezroczyste, bez poświaty w tle; każda ma etykietę, jedną główną wartość, 1–2 linie kontekstu i stopkę z akcją (design.md §4). Pod wprowadzeniem jest jedna linia „zaktualizowano X temu”, a kropki w rogach kart pojawiają się tylko przy problemie (design.md §2). Punktem odniesienia jest zajawka Dev Logu na wizytówce: jeden rytm, płaskie tło, jasne separatory. Publiczna strona może scrollować również na desktopie; nie rozciąga kart, by wypełnić viewport.
+
+**Usunięte wyłącznie z publicznej kompozycji:** dzień/zegar, pogoda i powietrze, cel, karuzela wyróżnionych projektów, cztery sociale, książki, odliczanie oraz operacyjny homelab (CPU/RAM/dyski, usługi, transfer i DNS). To historyczny zestaw widgetów dashboardu, a nie dodatkowe karty Dev Logu.
+
+Komponenty i integracje pozostają dostępne dla innych odbiorców. Zajawka na wizytówce nadal pokazuje godzinę, pogodę i muzykę; terminal zachowuje komendy i dane, a edytor celu w panelu prywatnym działa jak dotąd. `/api/github`, `/api/waka` i `/api/music` zachowują kontrakty, także pola niewyświetlane w Dev Logu. Pozostałe dotychczas publiczne endpointy (m.in. `/api/weather`, `/api/air`, `/api/books`, `/api/goal` i `/api/homelab/*`) nie są usuwane ani obejmowane nową ochroną. Usunięcie kafla nie zmienia uprawnień API; granice publiczne i prywatne nadal określa security.md.
+
+**Tryb prywatny** — panel do zarządzania, tylko dla mnie. Statystyk PC nie pokazuję wcale; bieżące statystyki homelabu i nazwy aplikacji z ich stanem pozostają dostępne przez publiczne API, choć nie ma ich w siatce Dev Logu. Prywatnie dochodzą m.in. historia CPU/RAM, szczegóły kontenerów i backup. Jeden ekran od 1280×720; rzędy w połówkach, pasek usług ma jedną.
 
 ```
 ≥ 1024px (6 kolumn, 7 półrzędów)
@@ -235,11 +251,11 @@ Rzędy liczę w połówkach, żeby sociale mogły być o połowę niższe od res
 < 640px:    svc / server / deploy / backup / site / lessons / expire / goal (każdy na cały rząd, 2 kolumny)
 ```
 
-Każdy kafel czyta własny `/api/private/*` za tym samym strażnikiem co strona (§14); tylko zużycie maszyny idzie z publicznego `/api/homelab/lab`.
+Każdy kafel czyta własny `/api/private/*` za tym samym strażnikiem co strona (security.md); tylko zużycie maszyny idzie z publicznego `/api/homelab/lab`.
 
 | Kafel | Zawartość |
 |---|---|
-| `svc` | pasek usług w jednej linii: pigułki-linki z `src/lib/services.ts` (domena z `HOMELAB_DOMAIN`, działają tylko przez Tailscale) z kropką up/down i średnim czasem odpowiedzi z Uptime Kumy, dostępność 30 dni w dymku; łączenie po nazwie monitora; `up` to status Kumy inny niż „down” (oczekujący i przerwa techniczna liczą się jako działające, jak w sekcji publicznej). „AdGuard” łączy trzy monitory (panel, DNS, rewrite), więc jego czas jest orientacyjny. Linki zostają przy błędzie. Przy błędzie lub nieaktualnych danych kropki są szare, a nieaktualny pasek pokazuje wiek danych — tak widać też awarię samej Kumy, która nie zgłosi się sama |
+| `svc` | pasek usług w jednej linii: pigułki-linki z `src/lib/services.ts` (domena z `HOMELAB_DOMAIN`, działają tylko przez Tailscale) z kropką up/down i średnim czasem odpowiedzi z Uptime Kumy, dostępność 30 dni w dymku; łączenie po nazwie monitora; `up` to status Kumy inny niż „down” (oczekujący i przerwa techniczna liczą się jako działające, jak w publicznych danych uptime). „AdGuard” łączy trzy monitory (panel, DNS, rewrite), więc jego czas jest orientacyjny. Linki zostają przy błędzie. Przy błędzie lub nieaktualnych danych kropki są szare, a nieaktualny pasek pokazuje wiek danych — tak widać też awarię samej Kumy, która nie zgłosi się sama |
 | `server` | CPU i RAM z ostatnich 24 h jako dwa osobne wykresy (co 5 min, neutralna linia z tłem, skala do okrągłej wartości nad maksimum podpisana u góry, przerwa w linii = agent offline; wspólna linia pod kursorem i dymek z godziną i obiema wartościami, opis tekstowy dla czytników ekranu); obok dyski, temperatura i kontenery po nazwie (lista przewija się w kaflu, gdy się nie mieści): kropka stanu (działa i zdrowy / restart, niezdrowy, zatrzymany / pauza), strzałka przy nowszym obrazie (Diun) |
 | `backup` | ostatni backup: kiedy, udany czy nie, rozmiar, snapshoty, narzędzie; nieudany, starszy niż 26 h albo brak kopii — na czerwono |
 | `deploy` | 3 ostatnie przebiegi workflow deployu z GitHub Actions: kropka statusu (trwający pulsuje, nieudany czerwony), commit, kiedy; wiersz prowadzi do runu |
@@ -250,309 +266,11 @@ Każdy kafel czyta własny `/api/private/*` za tym samym strażnikiem co strona 
 
 ---
 
-## 4. Zasady stylu bento
-
-- **Kafel:**
-  - tło `--surface`; na dashboardzie półprzezroczyste `--surface-glass`, przez które prześwituje rozmyta poświata akcentu (`--glow`) — dwie plamy powoli dryfujące pod siatką (`BaseLayout glow`, `BentoLayout alive`);
-  - obramowanie 1px `--border`;
-  - promień 20px;
-  - padding 20px (dashboard: 16px).
-- **Struktura każdego kafla:**
-  - etykieta (mono, uppercase, szara) u góry;
-  - treść lub duża liczba;
-  - detal lub akcja na dole.
-- **Klikalne kafle** mają strzałkę w prawym górnym albo dolnym rogu. **Strzałki w linkach:** ↗ prowadzi poza stronę (inna domena, plik jak PDF CV), → na inną podstronę tej witryny. Wyjątek: kafle sociali, które w całości są przyciskiem marki (§3.4).
-- **Hierarchia przez rozmiar:** najważniejsze treści dostają największe kafle.
-- **Akcent jest rzadki**, bo czerwień czyta się jak „błąd” — im rzadziej występuje, tym mocniej się wyróżnia. Używam go do:
-  - głównych CTA;
-  - potwierdzeń i bieżących wpisów (np. „Skopiowano ✓”, „obecnie” w edukacji);
-  - pojedynczych wyróżnień w tekście;
-  - małych ikon przy etykietach kart (np. logo GitHuba, Last.fm, książka);
-  - sygnalizowania prawdziwych problemów (§5);
-  - stonowanej, mocno rozmytej poświaty w tle dashboardu — tło, nie element interfejsu.
-
-  Paski postępu i zajętości oraz skala jakości powietrza są neutralne. Aktywna zakładka w nawigacji ma półprzezroczyste tło akcentu (`--nav-active`), bez animacji.
-
-  Maksymalnie 1–2 kafle na widok mogą mieć pełne akcentowe tło (np. CV, kontakt). W takim kaflu tekst, ikony i kropki są grafitowe (`--accent-foreground`), a `Tile` sam podmienia tokeny tekstu.
-- **Ikony interfejsu** (strzałki, akcje): jedna rodzina outline (Tabler), w kolorze tekstu. Wyjątek: ikona przy etykiecie karty (`Tile icon`) jest w kolorze akcentu.
-- **Kolor w treści — dozwolony, nie wymagany.** Interfejs (tła, ramki, tekst, akcent) zostaje grafitowy z jednym czerwonym akcentem. Treść może mieć pełny kolor tam, gdzie dodaje życia i informacji:
-  - prawdziwe loga marek i technologii w ich kolorach (np. Simple Icons w kolorze marki, logo uczelni, usług);
-  - okładki książek i albumów, zdjęcia, zrzuty ekranu projektów;
-  - grafiki, ilustracje, mapy, wykresy.
-
-  Zasady: kolor pochodzi z samego assetu (SVG/obraz), a nie z hexów w stylach komponentów; każdy element graficzny ma sensowny tekst alternatywny; nic kolorowego nie może zbić kontrastu tekstu poniżej AA. Tekst obok grafik nadal jest pełnoprawną treścią — grafika uzupełnia, nie zastępuje.
-- **Zdjęcia, okładki i zrzuty ekranu** mogą leżeć pod tekstem na ciemnym gradiencie (scrim) — u dołu albo z boku, po stronie tekstu:
-  - gradient zaczyna się przezroczysty i pod tekstem dochodzi do pełnego krycia (wzór: przezroczysty do 35%, `--featured-scrim-soft` na 60%, `--featured-scrim-solid` od 80%); słaby gradient na ruchliwym obrazie (zrzuty, wykresy) nie wystarcza, bo spod tekstu przebijają liczby i kratki;
-  - tekst na gradiencie musi mieć kontrast AA niezależnie od obrazka — stąd pełne krycie pod tekstem, a nie tylko przyciemnienie;
-  - kolory gradientu tylko z tokenów (`--scrim*`, `--featured-scrim-*`), nigdy hex/rgb w komponencie;
-  - przykłady: okładka w kaflu muzyki (gradient u dołu), karty wyróżnionych projektów na wizytówce (gradient z boku, na telefonie u dołu).
-
----
-
-## 5. Kolory
-
-Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailwind v4 `@theme` + zmienne CSS). **Nigdy nie wpisuję hexów w komponentach.**
-
-| Token | Wartość | Użycie |
-|---|---|---|
-| `--bg` | `#0E0E10` | tło strony (grafit, nie czysta czerń) |
-| `--surface` | `#161618` | tło kafla |
-| `--surface-hover` | `#1C1C1F` | kafel po najechaniu |
-| `--surface-inset` | `#111113` | elementy wewnątrz kafla (pigułki, paski) |
-| `--border` | `rgb(255 255 255 / 0.08)` | obramowanie kafla |
-| `--border-hover` | `rgb(255 255 255 / 0.16)` | obramowanie po najechaniu |
-| `--border-divider` | `rgb(255 255 255 / 0.15)` | włosowa linia między sekcjami dossier |
-| `--text` | `#EDEDEF` | tekst główny |
-| `--text-muted` | `#8B8B92` | opisy, etykiety |
-| `--text-subtle` | `#5C5C63` | najmniej ważne detale |
-| `--accent` | `#FF2445` | akcent: żywa czerwień, kontrast AA na tle (5,1:1 na `--bg`, 4,8:1 na `--surface`) |
-| `--accent-hover` | `#FF4560` | akcent po najechaniu |
-| `--accent-soft` | `rgb(255 36 69 / 0.12)` | tła wyróżnień, poświaty |
-| `--accent-foreground` | `#0E0E10` | tekst i ikony na pełnym tle akcentu (biały miałby tylko 3,8:1) |
-| `--status-ok` / `--status-down` | `#46A758` / `--accent` | kropki stanu: działa / problem |
-| `--status-ok-soft` / `--status-ok-border` | `--status-ok` z przezroczystością 0.1 / 0.3 | plakietka statusu w karcie profilu |
-| `--github-level-1…4` | zielenie GitHuba (ciemny motyw) | wykres kontrybucji; poziom 0 to `--surface-inset` |
-| `--brand-*` | gradienty w kolorach marek | kafle sociali (Discord, Instagram, GitHub, LinkedIn), biały tekst `--brand-foreground` z AA |
-| `--lang-*` | kolory GitHub Linguist | języki w kaflu WakaTime — kolor treści jak loga (§4); najciemniejsze rozjaśnione |
-| `--nav-active` | `rgb(255 36 69 / 0.22)` | tło aktywnej zakładki w nawigacji |
-| `--nav-glass` | `rgb(14 14 16 / 0.9)` | tło przyklejonej nawigacji na telefonie (§2) |
-| `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
-| `--spotlight` | `rgb(255 36 69 / 0.6)` | światło na ramkach kafli wokół kursora (dashboard) |
-| `--scrim` / `--scrim-soft` | `rgb(0 0 0 / 0.85)` / `rgb(0 0 0 / 0.5)` | gradient pod tekstem na okładkach (np. muzyka) |
-| `--featured-scrim-soft` / `--featured-scrim-solid` | `rgb(15 15 17 / 0.85)` / `rgb(15 15 17)` | gradient pod tekstem na zrzutach projektów; gotowe gradienty `--featured-scrim-side` (z boku) i `--featured-scrim-down` (w dół), §4 |
-| `--glow` | `rgb(255 36 69 / 0.28)` | rozmyta poświata pod kaflami dashboardu (tekst `--text-muted` na szkle zostaje ≥ 4,6:1) |
-
-Zasady:
-- **Kropki stanu: czerwień tylko przy problemie.** Czerwień czyta się jak „awaria”, więc gdyby świeciła wszędzie, prawdziwy problem zginąłby w tłumie.
-  - Kropka w rogu kafla (świeżość danych): świeże dane — `--text-subtle`, bez pulsu; nieaktualne dane i błąd — `--status-down` (czerwień). Kafle, które nie mogą być nieaktualne (zegar, zajawka dashboardu), nie mają kropki.
-  - Status rzeczy (usługi, deploy, „online”, „teraz gra”, status na wizytówce): działa — `--status-ok` (zielony); nie działa — `--status-down`; brak danych lub bezczynność — `--text-subtle`.
-  - Pulsują tylko rzeczy dziejące się teraz: status na wizytówce („Otwarty na staż”), „teraz gra”, trwający build.
-- **Paski** (postęp, CPU/RAM/dysk) mają neutralne wypełnienie `--text-muted`. Paski homelaba robią się czerwone (`--status-down`) od progu zajętości (85%). Bieżący stopień skali powietrza ma kolor `--text`.
-- Inne kolory semantyczne (np. skala jakości powietrza) są dozwolone, jeśli poprawiają czytelność — wtedy dodaję je jako tokeny.
-- Wykres kontrybucji GitHuba rysuję w oryginalnych zieleniach GitHuba (4 poziomy z ciemnego motywu, tokeny `--github-level-*`) — czyta się jak prawdziwy wykres z profilu.
-- Kolor treści (loga, okładki, zdjęcia, grafiki) opisuje §4 „Kolor w treści”.
-
----
-
-## 6. Typografia
-
-- **Główny font:** Satoshi w grubościach 400, 500 i 700, logo w nawigacji 900. Wersja variable (jeden plik, oś 300–900).
-  Satoshi pochodzi z Fontshare i prawdopodobnie nie ma go w Fontsource, więc hostuję go lokalnie (woff2, `font-display: swap`, preload).
-- **Mono:** Geist Mono (variable) przez Fontsource. Używam go do etykiet, liczb, statystyk, dat i terminala.
-- **Liczby** zawsze z `font-variant-numeric: tabular-nums`, żeby nie „skakały” przy aktualizacji.
-
-| Rola | Font | Rozmiar | Grubość | Uwagi |
-|---|---|---|---|---|
-| Etykieta kafla | mono | 11px | 500 | uppercase, `letter-spacing: 0.08em`, `--text-muted` |
-| Tekst | Satoshi | 14px | 400 | `--text-muted` w opisach |
-| Tytuł w kaflu | Satoshi | 16–18px | 500 | |
-| Nagłówek hero | Satoshi | 28–36px | 700 | |
-| Duża liczba | mono | 32–48px | 700 | |
-
----
-
-## 7. Siatka i responsywność
-
-Reguły poniżej dotyczą **widoku w bento**: dashboardu.
-**Wizytówka i korepetycje rządzą się własnymi zasadami** — patrz 3.1, 3.3 i podsumowanie na końcu tej sekcji. Projekty to lista (3.2): wiersze dossier na całą szerokość.
-
-- **Kolumny:** dashboard ma 6 kolumn (publiczny mieści się na jednym ekranie od 1440×900 dzięki `xl` i `tall` w `BentoLayout`, które dzielą wysokość ekranu na rzędy).
-- **Odstęp między kaflami:** 10px (poza dashboardem 12px).
-- **„Mieści się na jednym ekranie”** dotyczy desktopu. Publiczny dashboard mieści się bez scrolla od 1440×900 (docelowy widok), prywatny od 1280×720. Poniżej tego scroll jest dozwolony.
-- **Tablet (640–1024px):** dashboard przechodzi z 6 na 4 kolumny.
-- **Telefon (<640px):**
-  - siatka ma **2 kolumny** i kafle układają się od lewej do prawej, **nigdy jedna kolumna jeden pod drugim**;
-  - kafle szersze niż 2 kolumny zwężam do 2;
-  - małe kafle (social, zegar, pogoda, CV) zajmują 1×1 parami obok siebie.
-- Kolejność kafli na mobile ustawiam jawnie osobnymi `grid-template-areas` dla każdego breakpointu; nie polegam na kolejności w HTML.
-
-**Dossier (wizytówka i korepetycje) — trzy odstępstwa:**
-
-| Reguła bento | Dossier |
-|---|---|
-| siatka kolumn z `grid-template-areas` | dwie kolumny: 320px + reszta |
-| mieści się na jednym ekranie | scrolluje celowo, lewa kolumna jest przyklejona |
-| telefon zawsze 2 kolumny | poniżej 1024px jedna kolumna — strumień tekstu w dwóch kolumnach na telefonie byłby nieczytelny |
-
-Wspólne zostają: tokeny, `Tile`, etykiety mono, akcent, hover, focus i `prefers-reduced-motion`.
-
----
-
-## 8. Interakcje i animacje
-
-Na start:
-- **Hover na klikalnym kaflu:**
-  - obramowanie zmienia się na `--border-hover`;
-  - tło zmienia się na `--surface-hover`;
-  - kafel unosi się lekko (`translateY(-2px)`);
-  - pojawia się delikatny cień;
-  - przejście trwa 150–200ms z `ease-out`.
-- **Hover na nieklikalnym kaflu (tylko dashboard):** mniejszy niż klikalny — obramowanie `--border-hover` i uniesienie o 1px (`--lift-subtle`), bez cienia i zmiany tła.
-- **Intro dashboardu** (`src/scripts/intro.ts`, ok. 1,5 s; przy pierwszym wejściu w sesji i przy każdym kliknięciu „Dashboard” w nawigacji; bez intro przy reduced motion):
-  - kafle wjeżdżają kolejno po przekątnej od lewego górnego rogu, lekko z dołu; rozmycie tylko od 1024 px (na telefonach mogłoby przycinać);
-  - zaraz po pojawieniu się kafla ruszają animacje w środku: kratki GitHuba zapalają się falą od lewej, paski rosną od zera, liczby odliczają od 0 (1,2 s), okładka Muzyki się wyostrza;
-  - kafel czekający na dane odgrywa swoje animacje, gdy dane przyjdą;
-  - logo `figielak` wpisuje się litera po literze, potem zaczyna migać kursor;
-  - animowane jest tylko `opacity` i `transform`.
-- **Poświata dashboardu:** plamy dryfują w cyklach ok. 48 i 62 s.
-- **Światło przy kursorze (dashboard, tylko mysz):** ramki kafli w zasięgu kursora (`--spotlight-size`) lekko czerwienieją, także sąsiednich; światło płynie za kursorem z lekkim opóźnieniem jak fala (`src/scripts/spotlight.ts`). Bez kafla akcentowego; przy reduced motion bez opóźnienia.
-- **Obrót karty (Czytam):** kafel zwęża się do krawędzi, podmienia treść i rozszerza z powrotem (ok. 0,3 s). Płaski `scaleX`, nie `rotateY` — obrót 3D kafla ze szklanym tłem rozjaśnia poświatę w Chromium. Przy reduced motion treść zmienia się bez animacji.
-- **Nawigacja na telefonie** (§2): wysuwa się i chowa samym `transform` w ok. 200 ms (`--duration-nav`); przy reduced motion bez animacji.
-- **Pulsowanie kropki** (tylko rzeczy dziejące się teraz, patrz §5): łagodne, skala i przezroczystość, około 2s.
-- **Focus:** widoczny ring w kolorze akcentu (`:focus-visible`).
-- **`prefers-reduced-motion`:** wyłącza unoszenie, pulsowanie, dryf poświaty i animacje wejścia.
-
-**Terminal** (na całej stronie, `src/components/ui/Terminal.astro` + `src/scripts/terminal/`):
-- otwiera go klawisz `` ` `` (poza polami tekstowymi) albo przycisk `>_` w nawigacji — jedyna droga na ekranach dotykowych; zamyka ponownie `` ` ``, `Esc`, klik w tło lub `exit`;
-- panel zjeżdża z góry (ok. 45% wysokości, na telefonie 70%), tło kafla, reszta strony przyciemniona i zablokowana; fokus wraca tam, skąd przyszedł;
-- komendy to osobne moduły w `src/scripts/terminal/commands/` — nowa komenda to nowy plik; teksty w i18n (`term.*`);
-- komendy z danymi czytają te same `/api/*` co kafle i przy błędzie piszą spokojne „<źródło>: brak danych”;
-- output i historia zostają w `sessionStorage` na czas sesji; podpowiedź `` ` TERMINAL `` w stopce dashboardu (ukryta na dotyku).
-
-Bez efektu tilt (przechylania kafli w 3D za kursorem): dublowałby światło przy kursorze i uniesienie, a obrót 3D ze szklanym tłem rozjaśnia poświatę w Chromium.
-
----
-
-## 9. Dane na żywo
-
-### Architektura
-
-- Strona jest **statyczna domyślnie** (Astro). Kafle z danymi na żywo to małe wyspy w czystym TS (`<script>` + `src/scripts/live.ts`, bez frameworka): kafel z propem `endpoint` renderuje się w stanie ładowania i sam dociąga dane w przeglądarce.
-- Dane pobieram przez własne endpointy `/api/*` na serwerze Node w Cloud Run (Astro + `@astrojs/node`, trasy z `prerender = false`; wzór: `src/pages/api/health.ts`). Z przeglądarki **nigdy** nie odpytuję zewnętrznych API z kluczem.
-- Tokeny i klucze trzymam w **Secret Manager** i przekazuję do Cloud Run jako zmienne środowiskowe.
-- Cache odpowiedzi jest w pamięci instancji (`src/lib/server/cache.ts`); po zimnym starcie pierwsze żądanie pobiera dane od nowa.
-
-| Dane | Źródło | Odświeżanie / cache |
-|---|---|---|
-| Pogoda | Open-Meteo (bez klucza), centrum Rzeszowa; nieaktualne po 45 min | cache 15 min |
-| GitHub | GitHub GraphQL API (token po stronie serwera) | cache 1h |
-| Czas | lokalnie w przeglądarce | co sekundę |
-| Wizyty i statystyki strony (prywatne) | Cloudflare Web Analytics (beacon wstrzykiwany przez proxy, bez ciasteczek) przez GraphQL API, token Account Analytics: Read | cache 5 min |
-| Jakość powietrza | GIOŚ API v1 (bez klucza; stare `/pjp-api/rest` zwraca 410), stacja Rzeszów, Al. Piłsudskiego; `updatedAt` to czas pomiaru, nieaktualne po 3 h | cache 30 min |
-| Wschód i zachód słońca, % dnia/miesiąca/roku | liczone lokalnie (build + przeglądarka) | — |
-| Blokada reklam (DNS) | AdGuard Home (`/control/stats`, retencja 7 dni) przez push-agenta | przez push |
-| Transfer sieciowy | `/proc/net/dev` na Pi przez push-agenta (ruch homelaba, nie domu) | przez push |
-| Ostatnie deploye (prywatne) | GitHub Actions API (przebiegi `deploy.yml`, `GITHUB_TOKEN`) | cache 60 s |
-| Korepetycje (prywatne) | prywatny adres iCal kalendarza Google (`TUTORING_ICAL_URL`), rozwijany przez `ical.js`; płatności w Firestore | cache 10 min |
-| Wygasa (prywatne) | RDAP domeny, certyfikat z TLS, nagłówek tokenu GitHuba, verify tokenu Cloudflare, ręczne daty | cache 6 h |
-| Cel | Firestore (`site/goal`), zapis z trybu prywatnego | cache 60 s |
-| Historia CPU i RAM (prywatne) | zbierana przez stronę z pushy agenta: każdy odczyt `lab` wpada do 5-minutowego kubełka jako średnia, 24 h w dokumencie `homelab/history` (jeden odczyt i zapis Firestore na push) | cache 60 s |
-| Homelab | model **push**, opisany niżej | co 1–5 min |
-| Uptime usług | Uptime Kuma (`/metrics`: status, dostępność i czas odpowiedzi z 30 dni) przez push-agenta | przez push |
-| Teraz słucham / top artyści | Last.fm API | cache 30 s / 1h |
-| Podgląd utworu (30 s) | iTunes Search API (bez klucza), razem z utworem z Last.fm | ostatnie wyszukiwanie do zmiany utworu |
-| WakaTime | WakaTime API | cache 1h |
-| Czytam | Hardcover GraphQL API (token z zakresem `read:library` po stronie serwera; Hardcover nie pozwala używać go w przeglądarce); nieaktualne po 3 h | cache 1h |
-
-### Homelab: model push
-
-- Homelab jest dostępny **tylko przez Tailscale**. Nie wystawiam go publicznie i nie wystawiam endpointów Homepage/Homarr.
-- Agent na homelabie (kontener Dockera w osobnym repo homelaba, `network_mode: host`) co 60 s zbiera dane z `/proc`, AdGuarda i Uptime Kumy i wysyła zanonimizowany JSON:
-  - metodą POST na `/api/stats`, z tokenem `Authorization: Bearer` (`STATS_PUSH_TOKEN`);
-  - w sekcjach publicznych tylko liczby i ogólne rodzaje (`dns`, `media`…) — nazwy hostów, domeny, IP i nazwy monitorów zostają na Pi;
-  - sekcje prywatne (`monitors`, `containers`, `backup`) niosą nazwy monitorów i kontenerów — same słowa, bez kropek, dwukropków i ukośników, więc nie przejdzie przez nie host, domena, URL ani IP; trafiają do osobnego dokumentu `homelab/private`, czytanego przez `/api/private/homelab/*`; publiczny `/api/homelab/uptime` bierze z niego tylko nazwę i stan (up/down) aplikacji z listy w `src/lib/services.ts`;
-  - kontrakt (v1) opisuje `src/lib/server/homelab.ts`.
-- Sekcje (`lab`, `dns`, `traffic`, `services`) są niezależne: agent pomija tę, której źródło nie odpowiedziało, a endpoint odrzuca tylko błędną sekcję. Każda ma własny czas, więc przy awarii jednego źródła szarzeje tylko jego kafel.
-- Endpoint zapisuje ostatni odczyt w **Firestore** (jeden dokument, REST bez biblioteki klienta). Kafle czytają go przez `/api/homelab/{lab,dns,net,uptime}` (cache 30 s) i odświeżają się co około minutę.
-- **Limity zapisu:** Cloud Run skaluje się do zera i nie trzyma stanu w pamięci, więc odczyt musi trafić do bazy. Darmowy Firestore daje 20 tys. zapisów dziennie; wysyłka co 60 s to ok. 1440 zapisów.
-
-### Stany każdego kafla z danymi na żywo (obowiązkowe)
-
-| Stan | Wygląd |
-|---|---|
-| Ładowanie | szkielet w kształcie docelowej treści, z połyskiem przesuwającym się po kaflu; gdy przyjdą dane, treść płynnie się w niego wkleja |
-| OK | dane i szara kropka |
-| Nieaktualne (dane starsze niż próg, np. 10 min; GitHub, WakaTime i Hardcover odświeżane co godzinę — 3 h) | dane, czerwona kropka, „aktualizacja X min temu” |
-| Błąd lub brak danych | czerwona kropka i spokojny tekst zastępczy (np. „Homelab offline”) |
-
-Kafel nie może zmieniać rozmiaru między stanami. **Najpierw buduję kafle na danych testowych (mock), potem podpinam prawdziwe źródła.**
-
-**Kafle z kilkoma źródłami** (Pogoda: pogoda + powietrze; Homelab: maszyna, usługi, transfer) składają się z sekcji, z których każda ma własne 4 stany. Kropka kafla pokazuje najgorszy stan sekcji; sekcja z błędem pokazuje krótkie „Brak danych”, a „Homelab offline” pojawia się dopiero, gdy padną wszystkie sekcje. „Aktualizacja X min temu” sekcji widać tylko przy nieaktualnych danych.
-
----
-
-## 10. Stack i narzędzia
-
-- **Astro + MDX** z content collections dla projektów.
-- **Tailwind v4:** tokeny w `@theme`, zgodnie z sekcją 5.
-- **Fontsource** dla Geist Mono; Satoshi hostowany lokalnie.
-- **Sätteri (`@astrojs/markdown-satteri`) + KaTeX:** wzory w projektach i na `/maths`. Sätteri parsuje matematykę (`features: { math: true }`), a własny plugin `src/plugins/katex.js` renderuje ją KaTeX-em przy buildzie. CSS KaTeX ładuję tylko na stronach, które go używają.
-- **rehype-mermaid** (jeszcze niezainstalowany, instaluję go razem z pierwszym case study, które ma diagram — krok 3 w §16): diagramy w projektach. Domyślnie renderuje przy buildzie przez Playwright. Build idzie w GitHub Actions (obraz Dockera dostaje gotowy `dist/`), więc wystarczy doinstalować tam przeglądarkę; w razie problemów przechodzę na renderowanie po stronie klienta.
-- **Typst:** źródło CV (`cv/cv-pl.typ`, `cv/cv-en.typ`, wspólny układ w `cv/template.typ`), kompilowane lokalnie (`npm run cv`) do PDF w `public/cv/`; PDF-y są w repo, więc CI nie potrzebuje Typsta. Jedna strona A4, jasne tło (druk, ATS), Satoshi i Geist Mono (statyczne OTF w `cv/fonts/`, bo Typst nie czyta woff2), jeden czerwony akcent, klauzula RODO w stopce. Treść to kopia wizytówki — zmieniając doświadczenie lub umiejętności, poprawiam oba miejsca.
-- **Hosting:** **Google Cloud Run** (`europe-west1`, skalowanie do zera) za **Cloudflare**.
-  - Cloud Run uruchamia kontener z `Dockerfile`: prerenderowane strony + serwer Node dla `/api/*`.
-  - Cloudflare zostaje z przodu jako DNS z proxy: SSL Full (strict), przekierowania 301 subdomen, cache `/_astro/*`, limit żądań do trybu prywatnego.
-  - Region `europe-west1`, bo Cloud Run mapuje własne domeny tylko w części regionów (Warszawy wśród nich nie ma).
-  - Deploy: GitHub Actions przy pushu na `master` (`.github/workflows/deploy.yml`, Workload Identity Federation, bez kluczy JSON). Jednorazowa konfiguracja: `docs/deploy.md`.
-- **Analityka:** Cloudflare Web Analytics — strona i tak stoi za proxy Cloudflare, beacon nie używa ciasteczek, a dane czyta GraphQL API.
-- **Homelab:** Homepage lub Homarr, dostępne tylko przez Tailscale.
-
-Struktura (✱ — jeszcze nie istnieje):
-
-```
-src/
-  assets/        # avatar, okładki książek, loga marek, zrzuty projektów
-  components/
-    ui/          # Tile, TileLabel, LiveDot, Pill, IconLink, Nav, BentoLayout,
-                 # Dossier, ProfileCard, FeaturedCarousel, ProjectGallery, Terminal…
-    tiles/       # każdy kafel jako osobny komponent (homelab/ — jego sekcje)
-    views/       # treść widoków, wspólna dla PL i EN
-  layouts/       # BaseLayout
-  lib/           # dane statyczne (projects, books, events, services, contact)
-    mocks/       # dane testowe i typy kafli na żywo
-    server/      # klienci API, cache, Firestore, kontrakt homelaba
-  pages/
-    index.astro  maths.astro  dashboard.astro  dashboard/private.astro
-    projects/    # index.astro, [slug].astro (szczegóły projektu, case study tylko PL)
-    en/          # te same widoki po angielsku (bez /maths), też projects/[slug]
-    dev/         # galeria stanów kafli /dev/tiles (tylko w dev)
-    api/         # endpointy danych na żywo
-  content/projects/*.mdx   # schemat w src/content.config.ts
-  plugins/       # katex.js
-  scripts/       # live.ts, intro.ts, spotlight.ts, terminal/
-  i18n/          # pl.json, en.json
-  styles/        # tokens.css, global.css
-public/
-  fonts/  cv/     # PDF-y CV
-cv/              # źródła Typst i fonty CV
-docs/            # koncept.md (ten plik), deploy.md — konfiguracja Cloud Run i Cloudflare
-Dockerfile       # obraz dla Cloud Run
-```
-
----
-
-## 11. Języki (PL/EN)
-
-- Routing i18n w Astro:
-  - `pl` jako domyślny bez prefiksu;
-  - `en` pod `/en/...`.
-- Wszystkie teksty UI trzymam w plikach i18n, nigdy wpisane na sztywno w komponentach.
-- `/maths` na start tylko po polsku.
-- Przełącznik PL/EN w nawigacji zachowuje bieżący widok.
-
----
-
-## 12. Motywy
-
-- Motyw ustawiam atrybutem `data-theme` na `<html>`:
-  - `dark` (domyślny, jedyny na start);
-  - później `light`;
-  - później `crazy`.
-- Motyw to wyłącznie inny zestaw wartości tokenów. Komponenty nie wiedzą, który motyw jest aktywny.
-- Przełącznik jest w nawigacji od początku. Dopóki jest jeden motyw, może być nieaktywny albo ukryty.
-- Wybór zapamiętuję po stronie klienta i ustawiam skryptem inline przed renderem, bez mignięcia.
-- Jasny motyw w przyszłości wymaga ręcznego dopracowania:
-  - mocniejszych cieni;
-  - ciemniejszego akcentu dla kontrastu;
-  - sprawdzenia zdjęć i ikon.
-
----
-
-## 13. Kafle fun-to-have (po must-have)
+## 4. Kafle fun-to-have (po must-have)
 
 Usunięte: now page „Teraz” (zastąpiona edycją celu).
 
-Zrobione: top artyści, teraz słucham (Last.fm), WakaTime, książki, aktualny cel (`goal`, edytowany w trybie prywatnym), terminal na całej stronie (§8) i podgląd utworu w kaflu Muzyki (zamiast osobnego odtwarzacza, §3.4).
+Istniejące integracje: Last.fm (utwór i top artyści), WakaTime, Hardcover i cel (`goal`, edytowany w trybie prywatnym); terminal na całej stronie (design.md §5) i podgląd utworu. Publiczny Dev Log zachowuje tylko uproszczone GitHub, WakaTime i muzykę oraz dwie karty redakcyjne (§3.4). Książki, top artyści i podgląd celu należą do historycznej kompozycji dashboardu; usunięcie ich z tej strony nie usuwa integracji ani komend terminala.
 
 Na później:
 - Zdjęcia (fotografia)
@@ -563,68 +281,13 @@ Odrzucone: mapa podróży, losowy fun fact, licznik kaw, licznik kliknięć.
 
 ---
 
-## 14. Prywatność i bezpieczeństwo
+## 5. Co dalej
 
-- **Repozytorium jest publiczne** (`github.com/figielak/figielak.dev`). Wszystko, co trafia do commita — także do historii — jest jawne. Dlatego:
-  - dane osobowe (telefon, e-mail kontaktowy, adres), nazwy hostów i domeny homelabu, nazwa tailnetu, adresy IP, tokeny i klucze **nigdy** nie trafiają do kodu, dokumentacji ani wiadomości commitów;
-  - **wyjątek (decyzja 2026-09-25):** e-mail i telefon są wpisane w źródła CV (`cv/*.typ`) i w PDF-y w `public/cv/` — PDF i tak pokazuje je otwartym tekstem, więc ukrywanie ich w repo nic nie daje. Na stronach nadal idą przez `.env` i base64;
-  - wartości potrzebne przy buildzie czytam ze zmiennych środowiskowych: lokalnie z `.env` (poza gitem), w CI z GitHub Secrets; lista kluczy jest w `.env.example`, a kod ma neutralne wypełniacze, żeby build działał bez nich;
-  - sekrety serwera (`/api/*`) są w Secret Manager, nie w repo i nie w GitHub Variables;
-  - zanim zrobię commit, sprawdzam diff pod kątem powyższych danych; jeśli coś wycieknie, przepisuję historię i od razu zmieniam ujawniony sekret.
-- **Statystyk PC** nie pokazuję wcale — zdradzałyby, kiedy jestem przy komputerze. **Statystyki homelabu, uptime i ruch DNS** są publiczne: to serwer, który działa cały czas, więc nie zdradzają mojej obecności. Pokazuję liczby, nazwy aplikacji z ich stanem (decyzja 2026-09-27: nazwy i tak są publiczne na schemacie Homelaba, a stan nie zdradza obecności) — bez adresów i czasów odpowiedzi — a DNS jako sumy dzienne i tygodniowe — bez wykresu godzinowego, z którego widać, kiedy jestem w domu.
-- **Prywatny dashboard** (`/dashboard/private` i `/en/dashboard/private`) chroni **hasło sprawdzane na serwerze** (HTTP Basic Auth, `src/lib/owner.ts`). Cloudflare Zero Trust (Access) nie jest dostępny.
-  - Strony prywatne renderuje serwer (`prerender = false`), a nie plik statyczny. Dzięki temu sprawdzenie obejmuje każdą odmianę ścieżki i adres `*.run.app`, który omija Cloudflare.
-  - Hasło (`DASHBOARD_PASSWORD`) jest w Secret Manager i trafia do Cloud Run jako zmienna środowiskowa przy starcie, nie przy buildzie. Bez hasła serwer odmawia wszystkim (poza `astro dev`).
-  - Hasło jest długie i losowe. Reguła rate limiting w Cloudflare ogranicza próby zgadywania.
-  - Odpowiedzi mają `Cache-Control: private, no-store`. Strony mają `noindex` i nie trafiają do sitemapy.
-  - Ten sam strażnik chroni prywatne endpointy (`/api/private/*`), a ich odpowiedzi też mają `private, no-store`. Zapisy (`POST`) przyjmują tylko `application/json`, więc obca strona nie wyśle ich ani formularzem, ani `fetch` bez preflightu CORS.
-  - Imiona uczniów z kalendarza pojawiają się tylko w tych odpowiedziach.
-  - Historia CPU i RAM jest tylko prywatna: z jej rytmu widać, kiedy ktoś korzysta z serwera w domu — z tego samego powodu co brak godzinowego wykresu DNS.
-- **Linki do homelabu** (prawdziwe nazwy hostów) są tylko w trybie prywatnym i działają wyłącznie przez Tailscale. W trybie publicznym aplikacje są pigułkami bez linków.
-- **Tokeny i klucze** trzymam wyłącznie w zmiennych środowiskowych po stronie serwera. Endpoint `/api/stats`:
-  - wymaga tokenu (`STATS_PUSH_TOKEN`, porównanie w stałym czasie);
-  - ma limit żądań (reguła w Cloudflare, docs/deploy.md);
-  - waliduje dane: znane wersje, zakresy liczb, tylko znane rodzaje; do bazy trafiają wyłącznie znane pola.
+Fazy prac i bieżący stan prowadzi Telos (`.telos/ROADMAP.md`, `.telos/STATUS.md`), a historię zrobionych kroków — git. Tu zostaje tylko lista otwartych rzeczy na poziomie produktu:
 
----
-
-## 15. Dostępność i wydajność
-
-- Kontrast minimum WCAG AA; akcent sprawdzony na `--bg` i `--surface`.
-- Nawigacja klawiaturą, `:focus-visible`, teksty alternatywne dla zdjęć, `aria-live="polite"` dla aktualizowanych liczb.
-- Domyślnie zero JS; JS tylko w kaflach na żywo i interaktywnych.
-- Obrazy przez `astro:assets` (AVIF/WebP, właściwe rozmiary).
-- Cel: Lighthouse 95+ na wizytówce.
-
----
-
-## 16. Kolejność prac
-
-Stan na 2026-09-25: ✅ zrobione · 🟡 w toku · ⬜ nie zaczęte.
-
-1. ✅ **Fundament:** tokeny, fonty, `Tile` i komponenty UI, nawigacja, szkielet i18n, szkielet widoków.
-2. 🟡 **Wizytówka:** układ dossier, tożsamość, doświadczenie (prawdziwe pozycje), edukacja, umiejętności, języki, zdjęcie, linki, kopiowanie e-maila, wyróżnione projekty (karuzela z kolekcji projektów, ta sama lista co na dashboardzie), zajawka dashboardu (pogoda i muzyka na żywo) — gotowe. Zostało:
-   - CV z Typst jest gotowe (`cv/` → `public/cv/`, PL i EN); zostało dopisać do niego więcej konkretów (punkty z liczbami, projekty), gdy przybędzie treści.
-3. 🟡 **Projekty:** content collection, układ „wyróżniony + lista”, karuzela i kafel featured z kolekcji, trasa case study z CSS KaTeX — gotowe. Na liście: figielak.dev i Homelab. Zostało: treści case study (rehype-mermaid dochodzi razem z pierwszym diagramem), kolejne projekty (filtry od ok. 6).
-4. 🟡 **Korepetycje:** dossier z mini-bento, szybki kontakt, pasek na telefonie — gotowe. Teksty to szkic, cena do wpisania (`XX zł`). Na razie ukryte za planszą „W przygotowaniu” (`src/lib/tutoring.ts`, §3.3).
-5. ✅ **Dashboard na danych testowych:** tryb publiczny i prywatny, wszystkie kafle w 4 stanach (`/dev/tiles`). Publiczny przebudowany na karty w różnych kształtach z wyróżnionym projektem i socialami (§3.4); projekt na danych testowych do czasu kolekcji projektów.
-6. ✅ **Dane na żywo:** infrastruktura gotowa — Cloud Run za Cloudflare, deploy z GitHub Actions, serwer `/api/*` (`/api/health`), tryb prywatny za hasłem. Na żywo na produkcji: GitHub (`/api/github`), Last.fm z podglądem utworu (`/api/music`), WakaTime (`/api/waka`), pogoda (`/api/weather`), powietrze (`/api/air`), książki z Hardcover (`/api/books`), cel (`/api/goal`) i homelab (agent na Pi → `POST /api/stats` → Firestore → `/api/homelab/{lab,dns,net,uptime}`). Tryb prywatny jako panel (§3.4) jest wdrożony: usługi, serwer, backup, deploye, statystyki, korepetycje, wygasające rzeczy i edycja celu. Sekrety i zmienne Cloudflare Web Analytics (`cf-analytics-token`, `CF_ACCOUNT_ID`, `CF_WEB_ANALYTICS_SITE_TAG`) i iCal korepetycji (`tutoring-ical-url`) są ustawione. Data wygaśnięcia tokenu Hardcover (25.09.2027) w `src/lib/server/expiring.ts` jest potwierdzona. Agent wysyła już wszystkie sekcje, także prywatne `monitors`, `containers` i `backup` (restic).
-7. 🟡 **Dodatki:** kafle fun-to-have dla części z §13 są już na dashboardzie (muzyka z podglądem utworu, książki, odliczanie, cel, cel z edycją w trybie prywatnym). Gotowe: terminal na całej stronie, intro dashboardu, poświata, światło przy kursorze, obrót karty (§8). Nie zaczęte: jasny motyw, motyw „crazy”, rezerwacja na `/maths` (Cal.com), reszta kafli z §13 (zdjęcia, Snake, Konami code).
-
----
-
-## 17. Otwarte decyzje
-
-- [ ] Framework wysp: na razie czysty TS w `<script>` wystarcza; Preact dopiero, gdy potrzebny stan
-
-Podjęte (2026-09-25):
-- [x] Domyślny język wizytówki: polski (`/`), angielski pod `/en/`
-- [x] Akcent: `#FF2445` (decyzja 2026-09-26, zamiast `#E5484D` — żywszy przy tym samym odcieniu, AA z zapasem; porównanie kandydatów na `/dev/accent`)
-- [x] Mono: Geist Mono
-- [x] Miasto w kaflu pogody: Rzeszów
-- [x] Analityka: Cloudflare Web Analytics (nie Umami ani Plausible)
-- [x] Źródło deployów: GitHub Actions API
-- [x] Korepetycje: Google Calendar (iCal) + znacznik płatności w kaflu
-- [x] Rezerwacja korepetycji: Cal.com (decyzja 2026-09-26)
-- [x] Cel edytowany w trybie prywatnym (zamiast kafla „Teraz”, który usunięto)
-- [x] Treść kafli bez wypełniaczy: wydarzenia w `src/lib/events.ts`, książki z Hardcover, kroki celu ustawiane w trybie prywatnym (`src/lib/goal.ts` to tylko wartość sprzed pierwszego zapisu)
+- **Wizytówka:** dopisać do CV więcej konkretów (punkty z liczbami, projekty), gdy przybędzie treści.
+- **Projekty:** treści case study (rehype-mermaid dochodzi razem z pierwszym diagramem), kolejne projekty (filtry od ok. 6).
+- **Korepetycje:** teksty to szkic, cena do wpisania (`XX zł`); widok czeka za planszą „W przygotowaniu” (`src/lib/tutoring.ts`, §3.3); potem rezerwacja przez Cal.com.
+- **Motywy:** jasny i „crazy” (design.md §7).
+- **Dev Log:** wdrożyć kontrakt pięciu kart z §3.4, uprościć dane pomocnicze i zachować niezależność panelu prywatnego; zadania prowadzi faza `01-dev-log` w Telos.
+- **Kafle:** reszta z §4 — zdjęcia, Snake, Konami code; ewentualne miejsce wymaga osobnej decyzji, bez poszerzania zestawu pięciu kart Dev Logu.

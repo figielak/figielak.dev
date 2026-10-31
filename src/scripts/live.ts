@@ -1,5 +1,5 @@
 /**
- * Browser side of live tiles fed from /api/* (docs/koncept.md §9). A tile opts in
+ * Browser side of live tiles fed from /api/* (docs/architecture.md §3). A tile opts in
  * with `data-endpoint`; it is rendered as `loading` and this script switches
  * it to ok, stale or error — the same four states the server-rendered mocks
  * show, driven by the same attributes (LiveBody, LiveDot, LiveFooter).
@@ -72,6 +72,8 @@ export function watchLive<T>(root: HTMLElement, apply: (data: Payload<T>) => voi
 			const data = { ...json, updatedAt: new Date(json.updatedAt) } as Payload<T>;
 			apply(data);
 			updatedAt = data.updatedAt;
+			/* For a page-level "updated …" line (the Dev Log heading). */
+			root.dispatchEvent(new CustomEvent('live:updated', { bubbles: true, detail: updatedAt }));
 		} catch (error) {
 			console.warn(error);
 		}

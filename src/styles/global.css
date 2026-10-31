@@ -2,7 +2,7 @@
 @import './tokens.css';
 
 /*
- * Satoshi is not on Fontsource, so it is self-hosted (docs/koncept.md §6): one
+ * Satoshi is not on Fontsource, so it is self-hosted (docs/design.md §3): one
  * variable file with the whole 300–900 weight axis.
  */
 @font-face {
@@ -71,7 +71,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
-/* Numbers must not jitter as live tiles refresh (docs/koncept.md §6). */
+/* Numbers must not jitter as live tiles refresh (docs/design.md §3). */
 .tabular,
 [data-numeric] {
 	font-variant-numeric: tabular-nums;
@@ -122,6 +122,23 @@ body {
 	border-color: var(--accent-hover);
 }
 
+/* The main value of a Dev Log card: a name, a total or a track, one size and face for all. */
+.tile-value {
+	font-family: var(--font-mono);
+	font-size: var(--size-value);
+	font-weight: 700;
+	line-height: 1.15;
+	font-variant-numeric: tabular-nums;
+	overflow-wrap: anywhere;
+}
+
+/* In a one-column phone card the value steps down to the title size, so words stay whole. */
+@container (max-width: 260px) {
+	.tile-value {
+		font-size: var(--size-title);
+	}
+}
+
 /* Readable by screen readers only. */
 .visually-hidden {
 	position: absolute;
@@ -132,7 +149,7 @@ body {
 	white-space: nowrap;
 }
 
-/* Loading placeholder in the shape of the final content (docs/koncept.md §9). */
+/* Loading placeholder in the shape of the final content (docs/architecture.md §3). */
 .skeleton {
 	display: block;
 	border-radius: var(--radius-inset);

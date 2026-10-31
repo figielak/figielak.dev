@@ -3,36 +3,37 @@ title: figielak.dev
 year: 2026
 ongoing: true
 summary:
-  pl: Wizytówka i żywy dashboard z danymi z GitHuba, Last.fm, WakaTime, pogody i homelaba — serwer Node na Cloud Run za Cloudflare.
-  en: A profile and a live dashboard fed by GitHub, Last.fm, WakaTime, the weather and my homelab — a Node server on Cloud Run behind Cloudflare.
+  pl: Wizytówka, projekty i Dev Log z bieżącą pracą, aktywnością z GitHuba i WakaTime, eksperymentami oraz muzyką — Astro i API Node na Cloud Run.
+  en: A profile, projects and Dev Log with current work, GitHub and WakaTime activity, experiments and music — Astro and Node APIs on Cloud Run.
 tags: [Astro, TypeScript, Cloud Run, Firestore]
 links:
   repo: https://github.com/figielak/figielak.dev
   demo: /dashboard
-cover: ../../assets/projects/figielak-dev.jpg
 gallery:
+  - image: ../../assets/projects/figielak-dev.jpg
+    caption: { pl: 'Historyczny dashboard sprzed Dev Logu: dzień, pogoda, cel i GitHub', en: 'Historical dashboard before Dev Log: day, weather, goal and GitHub' }
   - image: ../../assets/projects/figielak-dev/dashboard-mobile.webp
-    caption: { pl: 'Dashboard na telefonie: dwie kolumny kafli', en: 'The dashboard on a phone: two columns of tiles' }
+    caption: { pl: 'Historyczny dashboard na telefonie, przed zmianą na pięć kart Dev Logu', en: 'Historical mobile dashboard, before the five-card Dev Log redesign' }
   - image: ../../assets/projects/figielak-dev/terminal.webp
     caption: { pl: 'Terminal na całej stronie, z danymi z tych samych API co kafle', en: 'A site-wide terminal, fed by the same APIs as the tiles' }
 description:
   pl: |
-    Strona ma kilka widoków dla różnych odbiorców: wizytówkę dla rekruterów, listę projektów i dashboard z danymi na żywo — pogodą, jakością powietrza, GitHubem, WakaTime, muzyką z Last.fm, czytanymi książkami i stanem mojego homelaba. Wszystkie dzielą jeden system wizualny: tokeny, kafle, typografię i jeden czerwony akcent.
+    Strona ma wizytówkę dla rekruterów, listę projektów i publiczny Dev Log. Pięć kart pokazuje bieżącą pracę, aktywność na GitHubie, czas z WakaTime, eksperymenty i muzykę z Last.fm. Wszystkie widoki dzielą jeden system wizualny: tokeny, kafle, typografię i jeden czerwony akcent.
 
-    Strony są statyczne (Astro), a dane dociągają małe wyspy w czystym TypeScripcie z własnych endpointów /api/*. Serwer Node działa na Cloud Run za Cloudflare i skaluje się do zera; klucze API zostają po stronie serwera, a każdy kafel ma cztery stany: ładowanie, dane, nieaktualne i błąd.
+    Strony są statyczne (Astro), a dane dociągają małe wyspy w czystym TypeScripcie z własnych endpointów /api/*. Serwer Node działa na Cloud Run za Cloudflare i skaluje się do zera; klucze API zostają po stronie serwera. Kafle z danymi mają cztery stany: ładowanie, dane, nieaktualne i błąd. Zajawka na wizytówce nadal pokazuje czas, pogodę i muzykę, a terminal zachowuje pozostałe integracje.
 
-    Homelab nie jest wystawiony do internetu — agent na Raspberry Pi sam wysyła co minutę zanonimizowane statystyki, które trafiają do Firestore. Za hasłem jest prywatny panel: usługi, backup, deploye, statystyki strony i to, co niedługo wygasa.
+    Homelab nie jest wystawiony do internetu — agent na Raspberry Pi sam wysyła co minutę zanonimizowane statystyki do API tej strony i Firestore. Prywatny dashboard za hasłem służy do obsługi usług, historii serwera, backupów, deployów i pozostałych danych operacyjnych. Istniejące publiczne API statystyk pozostają dostępne, ale Dev Log nie wyświetla telemetrii homelabu. Galeria zawiera historyczne zrzuty poprzedniego układu.
   en: |
-    The site has a few views for different readers: a profile for recruiters, a list of projects and a dashboard with live data — the weather, air quality, GitHub, WakaTime, music from Last.fm, the books I'm reading and the state of my homelab. They all share one visual system: tokens, tiles, typography and a single red accent.
+    The site has a profile for recruiters, a project list and a public Dev Log. Five cards show current work, GitHub activity, WakaTime totals, experiments and Last.fm music. All views share one visual system: tokens, tiles, typography and a single red accent.
 
-    Pages are static (Astro); small islands in plain TypeScript fetch the data from the site's own /api/* endpoints. The Node server runs on Cloud Run behind Cloudflare and scales to zero; API keys stay on the server, and every tile has four states: loading, data, stale and error.
+    Pages are static (Astro); small islands in plain TypeScript fetch the data from the site's own /api/* endpoints. The Node server runs on Cloud Run behind Cloudflare and scales to zero; API keys stay on the server. Live tiles have four states: loading, data, stale and error. The home teaser still shows time, weather and music, while the terminal retains the other integrations.
 
-    The homelab is not exposed to the internet — an agent on a Raspberry Pi pushes anonymised stats every minute, and they land in Firestore. Behind a password there is a private panel: services, backups, deploys, site stats and whatever expires soon.
+    The homelab is not exposed to the internet — an agent on a Raspberry Pi pushes anonymised stats every minute to this site's APIs and Firestore. A password-protected private dashboard handles services, server history, backups, deploys and other operational data. Existing public stats APIs remain available, while Dev Log displays no homelab telemetry. The gallery contains historical screenshots of the previous layout.
 featured: true
 order: 1
 features:
-  - { icon: cloud, pl: 'pogoda i powietrze', en: 'weather and air' }
+  - { icon: code, pl: 'bieżąca praca i eksperymenty', en: 'current work and experiments' }
   - { icon: music, pl: 'Last.fm na żywo', en: 'Last.fm, live' }
   - { icon: github, pl: 'GitHub i WakaTime', en: 'GitHub and WakaTime' }
-  - { icon: server, pl: 'statystyki homelaba', en: 'homelab stats' }
+  - { icon: lock, pl: 'prywatny panel operacyjny', en: 'private operations panel' }
 ---

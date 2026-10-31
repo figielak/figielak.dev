@@ -1,9 +1,9 @@
 /**
- * In-memory cache for /api/* (docs/koncept.md §9). Cloud Run scales to zero, so a
+ * In-memory cache for /api/* (docs/architecture.md §3). Cloud Run scales to zero, so a
  * cold instance simply fetches again — fine for data that is cheap to get.
  *
  * When a refresh fails, the last good value is served with its old
- * `updatedAt`, so the tile turns stale instead of failing (§9 states).
+ * `updatedAt`, so the tile turns stale instead of failing (docs/design.md §6).
  */
 interface Entry<T> {
 	value?: T;

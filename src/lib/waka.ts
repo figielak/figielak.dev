@@ -21,15 +21,10 @@ export function weekBars(days: number[]): WeekBar[] {
 	}));
 }
 
-/** The colour token of a language: `TypeScript` → `--lang-typescript`, `C++` → `--lang-cpp`. */
-export function languageColor(name: string): string {
-	const slug = name
-		.toLowerCase()
-		.replaceAll('++', 'pp')
-		.replaceAll('#', 'sharp')
-		.replace(/[^a-z0-9]/g, '');
-	return `var(--lang-${slug}, var(--lang-other))`;
-}
+/* One palette by rank, not by language: the accent for the leading one, greys
+   after it, and the dimmest for the rest of the week (docs/design.md §2). */
+const RANK_COLORS = ['var(--accent)', 'var(--text-muted)', 'var(--text-subtle)'];
+const REST_COLOR = 'var(--chart-rest)';
 
 export interface Segment {
 	name: string;
@@ -37,12 +32,13 @@ export interface Segment {
 	color: string;
 }
 
-/** The language bar: each language, then the rest of the week as "other". */
+/** The language bar: each language (sorted, largest first), then the rest of the week as "other". */
 export function languageSegments(languages: { name: string; percent: number }[], other: string): Segment[] {
 	const segments = languages
 		.filter((language) => language.percent > 0)
-		.map((language) => ({ ...language, color: languageColor(language.name) }));
+		.map((language, i) => ({ ...language, color: RANK_COLORS[i] ?? REST_COLOR }));
+	if (segments.length === 0) return [];
 	const rest = 100 - segments.reduce((sum, s) => sum + s.percent, 0);
-	if (rest > 0) segments.push({ name: other, percent: rest, color: 'var(--lang-other)' });
+	if (rest > 0) segments.push({ name: other, percent: rest, color: REST_COLOR });
 	return segments;
 }

@@ -1,7 +1,7 @@
 /**
  * Tutoring lessons for the private dashboard (docs/koncept.md §3.4): the next
  * ones from the calendar and past ones not marked as paid. Student names
- * appear only here, behind the password, never cached (§14).
+ * appear only here, behind the password, never cached (docs/security.md).
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 

@@ -7,11 +7,11 @@
   </picture>
 </a>
 
-<p>My personal site: a profile, projects and a <b>live dashboard</b>. Graphite, rounded tiles, one red accent.</p>
+<p>My personal site: a profile, projects and a <b>five-card Dev Log</b>. Graphite, rounded tiles, one red accent.</p>
 
 <p>
   <a href="https://figielak.dev/en/"><b>figielak.dev</b></a> ·
-  <a href="https://figielak.dev/en/dashboard">Dashboard</a> ·
+  <a href="https://figielak.dev/en/dashboard">Dev Log</a> ·
   <a href="https://figielak.dev/en/projects">Projects</a> ·
   <a href="https://figielak.dev/cv/cv-en.pdf">CV</a>
 </p>
@@ -24,34 +24,43 @@
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-FF2445?style=flat-square&labelColor=161618"></a>
 </p>
 
-<a href="https://figielak.dev/en/dashboard">
-  <img src=".github/assets/dashboard.webp" alt="The public dashboard: time and daylight, weather and air quality, Last.fm, homelab stats, current goal, GitHub contributions, featured project, social links, books, WakaTime and a countdown">
-</a>
+<details>
+<summary><b>Historical production screenshots — before the Dev Log redesign</b></summary>
+
+<p>These captures document the previous layout. The current source uses the five-card composition described below.</p>
+
+<img src=".github/assets/dashboard.webp" alt="Historical public dashboard before Dev Log: weather, homelab telemetry and the previous widget collection">
 
 <table>
   <tr>
     <td width="42%"><a href="https://figielak.dev/en/"><img src=".github/assets/home.webp" alt="Profile page: sticky identity card on the left, featured projects and experience on the right"></a></td>
     <td width="42%"><a href="https://figielak.dev/en/projects"><img src=".github/assets/projects.webp" alt="Projects page: one featured project and a list below it"></a></td>
-    <td width="16%"><img src=".github/assets/dashboard-mobile.webp" alt="The dashboard on a phone: two columns of tiles"></td>
+    <td width="16%"><img src=".github/assets/dashboard-mobile.webp" alt="Historical mobile dashboard before the five-card Dev Log"></td>
   </tr>
 </table>
+
+</details>
 
 </div>
 
 ## Highlights
 
-- **Live data, honestly shown.** Tiles read GitHub, Last.fm, WakaTime, Open-Meteo, GIOŚ (air quality)
-  and Hardcover through the site's own `/api/*` with server-side caching — no API keys in the
-  browser. Every live tile has four states (loading, OK, stale, error) and never changes size.
+- **A focused Dev Log.** Five ordered cards: current work, GitHub activity, weekly coding,
+  experiments and after-hours music. Current work leads; phones keep a two-column bento.
+- **Live data, honestly shown.** Dev Log reads GitHub, WakaTime and Last.fm through the site's
+  own `/api/*` with server-side caching — no API keys in the browser. Every live tile has four
+  states (loading, OK, stale, error) and keeps its size. The home teaser retains time, weather
+  and music; air quality, reading and the other integrations remain available to other consumers.
 - **Homelab over push, not pull.** An agent on a Raspberry Pi sends anonymised stats every
   minute; the homelab itself stays reachable only over Tailscale.
 - **Private panel** behind a server-side password: services, server history, backups, deploys,
-  site analytics, tutoring calendar, expiring tokens and the goal editor.
+  site analytics, tutoring calendar, expiring tokens and the goal editor. Stored goal data is
+  independent of the Dev Log's manually maintained current-work card.
 - **A terminal on every page** — press <kbd>`</kbd>. Each command is its own module.
 - **Static by default.** Pages are prerendered; JavaScript ships only with live and interactive
   tiles, in plain TypeScript without a framework.
-- **One design system, two layouts:** a bento grid for the dashboard, a two-column "dossier" for
-  the profile. Colours, radii and spacing come only from tokens.
+- **One design system, two layouts:** a bento grid for Dev Log and the private dashboard,
+  a two-column "dossier" for the profile. Colours, radii and spacing come only from tokens.
 - **Bilingual** (PL/EN) without an i18n library, `prefers-reduced-motion` respected, WCAG AA
   contrast, CV typeset in [Typst](https://typst.app).
 
@@ -71,11 +80,16 @@ flowchart LR
 |---|---|---|
 | Profile | [`/`](https://figielak.dev/en/) | recruiters and collaborators — who I am, what I do, how to reach me |
 | Projects | [`/projects`](https://figielak.dev/en/projects) | a featured project, a list and case studies in MDX |
-| Dashboard | [`/dashboard`](https://figielak.dev/en/dashboard) | live data: GitHub, WakaTime, homelab, music, books, weather in Rzeszów |
+| Dev Log | [`/dashboard`](https://figielak.dev/en/dashboard) | current work, GitHub activity, weekly coding, experiments and music |
 | Private dashboard | `/dashboard/private` | me — behind a password |
 | Tutoring | `/maths` | students and parents (Polish only, in preparation) |
 
 Polish lives at the root, English under `/en/`.
+
+The public Dev Log no longer mounts the former weather, homelab, goal, social, book or countdown
+widgets. Their integrations and existing endpoint access rules remain in place; removing a
+widget does not make its API private. The homelab project links to its repository and description,
+without advertising Dev Log as a telemetry demo.
 
 ## Stack
 
@@ -144,7 +158,7 @@ src/
   styles/      # tokens.css, global.css
 brand/         # logo: SVG, PNG, favicons, usage rules
 cv/            # CV sources in Typst and fonts (PDFs in public/cv/)
-docs/          # koncept.md, deploy.md
+docs/          # concept, design, architecture, security, decisions, deploy
 .github/       # deploy workflow and README assets
 Dockerfile     # Cloud Run image (packs the prebuilt dist/)
 ```
@@ -164,8 +178,10 @@ serves it at `figielak.dev`. One-time setup and troubleshooting: [docs/deploy.md
 
 </details>
 
-The project docs are in Polish: [docs/koncept.md](docs/koncept.md) is the source of truth for the
-design, views and rules, [AGENTS.md](AGENTS.md) covers working in the repo.
+The project docs are in Polish: [docs/koncept.md](docs/koncept.md) (vision and views),
+[design.md](docs/design.md), [architecture.md](docs/architecture.md),
+[security.md](docs/security.md) and [decisions.md](docs/decisions.md) are the source of truth;
+[AGENTS.md](AGENTS.md) covers working in the repo.
 
 ## License
 

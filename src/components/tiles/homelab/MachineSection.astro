@@ -5,13 +5,13 @@ import { percent, usedOf } from '../../../lib/units';
 import { MACHINE_PLACEHOLDER, type MachineStats } from '../../../lib/mocks/stats';
 
 /**
- * Machine usage pushed by the agent (docs/koncept.md §9): the hardware and the
+ * Machine usage pushed by the agent (docs/architecture.md §3): the hardware and the
  * container count on one line, then a column each for CPU, RAM and every
  * disk (GPU only when the machine has one) — the percentage large, a bar,
  * and under it what the percentage is of: CPU temperature, GB used of the
  * total. A bar turns red from ALERT_AT, so a nearly full disk or a busy CPU
  * stands out. Only the current reading: a history would show when someone
- * at home is using the server (§14).
+ * at home is using the server (docs/security.md).
  *
  * `showContainers={false}` leaves out the container count where a list of
  * the containers sits beside it: the agent counts all of them, the list

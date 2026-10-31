@@ -1,5 +1,5 @@
 /**
- * Mock Last.fm data until the endpoint exists (docs/koncept.md §9): the track
+ * Mock Last.fm data until the endpoint exists (docs/architecture.md §3): the track
  * playing now (or last played) and this week's top artists.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
@@ -58,4 +58,13 @@ export function mockMusic(state: LiveState = 'ok'): Music {
 			updatedAt: mockUpdatedAt(state),
 		},
 	};
+}
+
+/** Track edge cases for the dev gallery; the API keeps the same full payload. */
+export function mockMusicTrack(
+	track: Partial<NonNullable<Music['data']>['track']>,
+	state: 'ok' | 'stale' = 'ok',
+): Music {
+	const data = mockMusic(state).data!;
+	return { state, data: { ...data, track: { ...data.track, ...track } } };
 }

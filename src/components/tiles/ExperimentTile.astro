@@ -1,0 +1,66 @@
+---
+import Tile from '../ui/Tile.astro';
+import { experiment, type EditorialEntry } from '../../lib/dev-log';
+import { getLangFromUrl, useTranslations, type Lang } from '../../i18n';
+import { localizeLink } from '../../lib/projects';
+
+interface Props {
+	area?: string;
+	lang?: Lang;
+	entry?: EditorialEntry;
+}
+
+const { area, lang = getLangFromUrl(Astro.url), entry = experiment } = Astro.props;
+const t = useTranslations(lang);
+const href = entry.link ? localizeLink(entry.link.href, lang) : undefined;
+const external = Boolean(href && !href.startsWith('/'));
+---
+
+<Tile
+	area={area}
+	label={t('devLog.experiment.label')}
+	icon="seeding"
+	href={href}
+	external={external}
+	arrow={false}
+	class="experiment-tile"
+	lang={lang}
+>
+	<div class="experiment-content">
+		<h2 class="tile-value">{entry.title}</h2>
+		{entry.paragraphs.map((key) => <p>{t(key)}</p>)}
+	</div>
+	{href && entry.link && (
+		<span slot="footer" class="experiment-link">
+			{t(entry.link.label)}<span aria-hidden="true">{external ? '↗' : '→'}</span>
+		</span>
+	)}
+</Tile>
+
+<style>
+	.experiment-tile :global(.tile-header-end:empty) {
+		display: none;
+	}
+
+	.experiment-tile :global(.tile-label) {
+		min-width: 0;
+		overflow-wrap: anywhere;
+		line-height: 1.3;
+	}
+
+	.experiment-content {
+		display: grid;
+		gap: var(--space-sm);
+		overflow-wrap: anywhere;
+	}
+
+	p {
+		color: var(--text-muted);
+	}
+
+	.experiment-link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+	}
+</style>

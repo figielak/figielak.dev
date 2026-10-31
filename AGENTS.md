@@ -1,6 +1,11 @@
 # figielak.dev
 
-Wizja, widoki, styl i zasady projektu: @docs/koncept.md
+Wizja i widoki: @docs/koncept.md
+System wizualny: @docs/design.md
+
+Czytaj, gdy zadanie ich dotyczy: docs/architecture.md (stack, dane na żywo, homelab, i18n),
+docs/security.md (co może być publiczne — przed każdym commitem), docs/decisions.md
+(dlaczego tak, nowe decyzje z datą), docs/deploy.md (konfiguracja wdrożenia).
 
 ## Stack
 
@@ -11,14 +16,14 @@ rehype-mermaid, Typst (CV). Hosting: Google Cloud Run za Cloudflare
 ## Zasady
 
 - Kolory, promienie i odstępy interfejsu tylko z tokenów (src/styles/tokens.css). Nigdy hex/rgb w stylach komponentów.
-- Kolorowa treść (prawdziwe loga, okładki, zdjęcia, grafiki) jest dozwolona, nie wymagana — kolor niesie sam asset (docs/koncept.md §4).
+- Kolorowa treść (prawdziwe loga, okładki, zdjęcia, grafiki) jest dozwolona, nie wymagana — kolor niesie sam asset (docs/design.md §1).
 - Każdy kafel to osobny komponent w src/components/tiles/, zbudowany na `<Tile>`.
 - Kafle z danymi na żywo: najpierw mock, zawsze 4 stany (ładowanie, OK, nieaktualne, błąd), stały rozmiar.
-- **Repo jest publiczne.** Żadnych danych osobowych (poza e-mailem i telefonem w źródłach CV w `cv/` — decyzja właściciela), nazw hostów/domen homelabu, IP ani sekretów w kodzie, dokumentacji, commitach i ich wiadomościach. Wartości do builda idą przez `.env` / GitHub Secrets (`.env.example`), sekrety serwera przez Secret Manager. Przed każdym commitem sprawdź diff (docs/koncept.md §14).
+- **Repo jest publiczne.** Żadnych danych osobowych (poza e-mailem i telefonem w źródłach CV w `cv/` — decyzja właściciela), nazw hostów/domen homelabu, IP ani sekretów w kodzie, dokumentacji, commitach i ich wiadomościach. Wartości do builda idą przez `.env` / GitHub Secrets (`.env.example`), sekrety serwera przez Secret Manager. Przed każdym commitem sprawdź diff (docs/security.md).
 - Mobile: w widokach bento siatka 2 kolumny, nigdy jedna kolumna. Wizytówka i korepetycje są wyjątkiem (układ dossier, patrz docs/koncept.md 3.1 i 3.3).
 - Kod i nazwy po angielsku, teksty UI przez i18n (PL/EN).
 - Szanuj prefers-reduced-motion i kontrast AA.
-- Zapytaj, zanim dodasz nową zależność albo zmienisz coś, co jest sprzeczne z docs/koncept.md.
+- Zapytaj, zanim dodasz nową zależność albo zmienisz coś, co jest sprzeczne z dokumentacją w docs/ (koncept, design, architecture, security).
 
 ## Praca w repo
 
@@ -31,3 +36,16 @@ rehype-mermaid, Typst (CV). Hosting: Google Cloud Run za Cloudflare
 - Wartości czytane przy buildzie: `import.meta.env`; sekrety serwera czytane przy starcie: `process.env` (inaczej trafią do builda).
 - Deploy: push na `master` uruchamia `.github/workflows/deploy.yml`. Nie pushuj ani nie rób force pusha bez wyraźnej prośby. Commit tylko na prośbę.
 - Konfiguracja i typowe błędy wdrożenia: `docs/deploy.md`.
+
+<!-- telos:start v1 -->
+## Telos
+Project memory in `.telos/` — read only what the step needs:
+PROJECT.md (rules) · MAP.md (where things are) · STATUS.md (now/next) · ROADMAP.md (phases)
+· HISTORY.md (why; if present).
+- Locate code via MAP.md; never read the whole repo.
+- Never recreate paths or approaches listed in HISTORY.md §Delete-zone.
+- Outside `/telos:*` commands, work normally but don't edit `.telos/` unless asked.
+- `.telos/` files are written in English; reply in the user's language.
+- Commits: Conventional Commits, scope = task id (`feat(01-02): …`), else `quick`; stage
+  specific files only, never `--no-verify`, never push.
+<!-- telos:end -->

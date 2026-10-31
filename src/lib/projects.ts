@@ -1,7 +1,7 @@
 /**
  * Projects from the content collection (src/content/projects, docs/koncept.md §3.2),
  * in the shapes the views need: the /projects list, the featured strip on the
- * home page (§3.1), the featured tile on the dashboard (§3.4) and the terminal.
+ * home page (docs/koncept.md §3.1), the featured tile on the dashboard (docs/koncept.md §3.4) and the terminal.
  */
 import type { ImageMetadata } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';

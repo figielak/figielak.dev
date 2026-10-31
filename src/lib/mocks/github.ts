@@ -1,5 +1,5 @@
 /**
- * Mock GitHub stats until the GraphQL endpoint exists (docs/koncept.md §9).
+ * Mock GitHub stats until the GraphQL endpoint exists (docs/architecture.md §3).
  * Shape matches the future /api/github response.
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
@@ -13,6 +13,8 @@ export type Github = Live<{
 	contributions: number;
 	streakDays: number;
 	repos: number;
+	/** Latest commit of the current work's repository (Dev Log); null when GitHub has none. */
+	lastCommit: { message: string; date: string; url: string } | null;
 }>;
 
 const WEEKS = 53;
@@ -26,6 +28,7 @@ export const GITHUB_PLACEHOLDER: NonNullable<Github['data']> = {
 	contributions: 0,
 	streakDays: 0,
 	repos: 0,
+	lastCommit: null,
 	updatedAt: new Date(0),
 };
 
@@ -58,7 +61,21 @@ export function mockGithub(state: LiveState = 'ok'): Github {
 			contributions: 847,
 			streakDays: 12,
 			repos: 18,
-			updatedAt: mockUpdatedAt(state),
+			lastCommit: {
+				message: 'feat(06-01): add read-only telos budget size report',
+				date: new Date(Date.now() - 5 * 60 * 60_000).toISOString(),
+				url: 'https://github.com/figielak/telos',
+			},
+			// GitHub stays fresh for three hours, unlike the default ten-minute sources.
+			updatedAt: state === 'stale' ? new Date(Date.now() - 4 * 60 * 60_000) : mockUpdatedAt(state),
 		},
+	};
+}
+
+/** A quiet year is valid data, not an unavailable source. */
+export function mockQuietGithub(): Github {
+	return {
+		state: 'ok',
+		data: { ...GITHUB_PLACEHOLDER, weeks: emptyWeeks(), updatedAt: mockUpdatedAt('ok') },
 	};
 }

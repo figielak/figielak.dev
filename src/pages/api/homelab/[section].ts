@@ -1,5 +1,5 @@
 /**
- * Homelab data for the dashboard tiles (docs/koncept.md §9): the last push of the
+ * Homelab data for the dashboard tiles (docs/architecture.md §3): the last push of the
  * agent, read from Firestore and cached 30 s per instance. One endpoint per
  * tile, so every tile goes stale on its own when its section stops coming.
  *
@@ -24,7 +24,7 @@ type Tile = 'lab' | 'dns' | 'net' | 'uptime';
 
 /**
  * The apps by name with Kuma's up or down — nothing else from the private
- * monitors leaves this function: no addresses, no response times (§14).
+ * monitors leaves this function: no addresses, no response times (docs/security.md).
  */
 function apps(p: StoredPrivateSections) {
 	const byName = new Map((p.monitors?.monitors ?? []).map((monitor) => [monitor.name, monitor.up]));
