@@ -5,4 +5,4 @@
      NN-name must match the directory in phases/.
      Optional milestone headings "## M1 · Name"; a finished milestone collapses
      to "## M1 · Name — done (01–05)". -->
-- none
+- 01-dev-log [active] Turn the public dashboard into a focused Dev Log that complements the profile and projects · done when: PL and EN expose five ordered cards with a dominant current-work card, simplified resilient live data, two-column mobile bento and an unchanged working private panel

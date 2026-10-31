@@ -1,9 +1,9 @@
 # Status
 <!-- ≤ 40 lines. Maintained by `telos status set <key>=<value>`; never edit by hand.
      Holds pointers only: phase state lives in ROADMAP, task state in the task file. -->
-Phase: none
-Task: none
-Next: run /telos:map to map the existing code
+Phase: 01-dev-log
+Task: 01-01
+Next: /telos:do
 Blockers: none
 Awaiting user: none
 <!-- Blockers: "NN-MM: reason". Awaiting user: IDs only, e.g. "02:Q-01, 02:D-03" -->
