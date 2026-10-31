@@ -8,24 +8,24 @@ summary:
 tags: [Raspberry Pi, Linux, Docker, Tailscale]
 links:
   repo: https://github.com/figielak/homelab
-  demo: /dashboard
-cover: ../../assets/projects/homelab.png
 gallery:
+  - image: ../../assets/projects/homelab.png
+    caption: { pl: 'Historyczny schemat integracji: etykieta /dashboard oznacza poprzedni widok; agent nadal wysyła dane do API', en: 'Historical integration diagram: /dashboard labels the previous view; the agent still pushes data to the APIs' }
   - image: ../../assets/projects/homelab/dashboard-tile.webp
-    caption: { pl: 'Kafel Homelab na dashboardzie tej strony: maszyna, usługi, transfer i blokada reklam', en: "The Homelab tile on this site's dashboard: machine, services, traffic and ad blocking" }
+    caption: { pl: 'Historyczny kafel Homelab sprzed zmiany publicznego dashboardu na Dev Log', en: 'Historical Homelab tile before the public dashboard became Dev Log' }
 description:
   pl: |
     Domowy serwer na Raspberry Pi, na którym w kontenerach Dockera działają usługi: multimedia, pliki, DNS z blokadą reklam (AdGuard Home), monitoring (Uptime Kuma) i kopie zapasowe (restic). Ruch do usług idzie przez Caddy, a dostęp z zewnątrz jest tylko przez Tailscale — żaden port nie jest otwarty do internetu.
 
-    Cała konfiguracja jest w repozytorium razem z instrukcją odbudowy, więc serwer da się postawić od zera na nowej karcie. Własny agent co minutę zbiera zużycie maszyny, stan usług, transfer i statystyki DNS i wysyła je na dashboard tej strony — bez nazw hostów i adresów.
+    Cała konfiguracja jest w repozytorium razem z instrukcją odbudowy, więc serwer da się postawić od zera na nowej karcie. Własny agent co minutę zbiera zużycie maszyny, stan usług, transfer i statystyki DNS i wysyła je do API tej strony i Firestore — bez nazw hostów i adresów. Prywatny dashboard służy do obsługi serwera, a publiczny Dev Log zawiera tylko notatkę o eksperymencie i link do tego opisu. Dotychczasowe publiczne endpointy statystyk pozostają dostępne; Dev Log nie jest demonstracją telemetrii.
   en: |
     A home server on a Raspberry Pi running services in Docker containers: media, files, ad-blocking DNS (AdGuard Home), monitoring (Uptime Kuma) and backups (restic). Traffic to the services goes through Caddy, and access from outside is only over Tailscale — no port is open to the internet.
 
-    The whole configuration lives in a repo with rebuild instructions, so the server can be set up from scratch on a fresh card. My own agent collects machine usage, service status, traffic and DNS stats every minute and pushes them to this site's dashboard — without host names or addresses.
+    The whole configuration lives in a repo with rebuild instructions, so the server can be set up from scratch on a fresh card. My own agent collects machine usage, service status, traffic and DNS stats every minute and pushes them to this site's APIs and Firestore — without host names or addresses. The private dashboard handles server operations; the public Dev Log contains an experiment note linking to this description. Existing public stats endpoints remain available; Dev Log is no longer a telemetry demo.
 featured: true
 order: 2
 features:
   - { icon: lock, pl: 'bez otwartych portów', en: 'no ports open to the internet' }
   - { icon: notebook, pl: 'dokumentacja w Obsidianie', en: 'docs in Obsidian' }
-  - { icon: activity, pl: 'statystyki na tym dashboardzie', en: 'stats on this dashboard' }
+  - { icon: activity, pl: 'agent wysyłający statystyki', en: 'push-based metrics agent' }
 ---

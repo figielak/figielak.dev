@@ -5,8 +5,8 @@ import { getLangFromUrl, useTranslations } from '../../i18n';
 import { goal, GOAL_MAX_STEPS, GOAL_MAX_TITLE } from '../../lib/goal';
 
 /**
- * Edits the goal (docs/koncept.md §3.4) from the private dashboard: the public
- * goal tile reads what is saved here, so a change needs no deploy. The name
+ * Edits stored goal data (docs/koncept.md §3.4) from the private dashboard.
+ * The current-work card in Dev Log is maintained separately. The name
  * and a due date on the left, the steps on the right — tick one off, add or
  * remove it. Polish is required, English optional (falls back to Polish).
  *
