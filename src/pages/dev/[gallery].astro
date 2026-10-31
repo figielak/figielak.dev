@@ -20,15 +20,18 @@ import BackupTile from '../../components/tiles/BackupTile.astro';
 import ExpiringTile from '../../components/tiles/ExpiringTile.astro';
 import LessonsTile from '../../components/tiles/LessonsTile.astro';
 import GoalEditTile from '../../components/tiles/GoalEditTile.astro';
+import CurrentWorkTile from '../../components/tiles/CurrentWorkTile.astro';
+import ExperimentTile from '../../components/tiles/ExperimentTile.astro';
+import { currentWork, experiment } from '../../lib/dev-log';
 import { LIVE_STATES } from '../../lib/live';
 import { mockWeather } from '../../lib/mocks/weather';
-import { mockGithub } from '../../lib/mocks/github';
+import { mockGithub, mockQuietGithub } from '../../lib/mocks/github';
 import { mockLab } from '../../lib/mocks/stats';
 import { mockUptime } from '../../lib/mocks/uptime';
 import { mockAir } from '../../lib/mocks/air';
-import { mockWaka } from '../../lib/mocks/waka';
+import { mockWaka, mockWakaWithoutLanguages } from '../../lib/mocks/waka';
 import { mockDns, mockTraffic } from '../../lib/mocks/network';
-import { mockMusic } from '../../lib/mocks/music';
+import { mockMusic, mockMusicTrack } from '../../lib/mocks/music';
 import { mockBooks } from '../../lib/mocks/books';
 import { mockDeploy } from '../../lib/mocks/deploy';
 import { mockSite } from '../../lib/mocks/site';
@@ -49,6 +52,115 @@ export function getStaticPaths() {
 ---
 
 <BaseLayout title="Tiles — dev" description="Live tile states" wide>
+	<section class="editorial-examples" aria-label="Editorial tile examples">
+		{(['pl', 'en'] as const).map((lang) => (
+			<section class="editorial-group" data-editorial-lang={lang}>
+				<TileLabel>{lang} · editorial</TileLabel>
+				<div class="editorial-grid" data-editorial-case="standard">
+					<CurrentWorkTile lang={lang} />
+					<ExperimentTile lang={lang} />
+				</div>
+				<TileLabel>no link</TileLabel>
+				<div class="editorial-grid" data-editorial-case="no-link">
+					<CurrentWorkTile lang={lang} entry={{ ...currentWork, link: undefined }} />
+					<ExperimentTile lang={lang} entry={{ ...experiment, link: undefined }} />
+				</div>
+				<TileLabel>long titles and tags</TileLabel>
+				<div class="editorial-grid" data-editorial-case="long">
+					<CurrentWorkTile lang={lang} entry={{
+						...currentWork,
+						title: currentWork.title.repeat(8),
+						tags: [...currentWork.tags, 'TypeScript'.repeat(8)],
+					}} />
+					<ExperimentTile lang={lang} entry={{ ...experiment, title: experiment.title.repeat(8) }} />
+				</div>
+			</section>
+		))}
+	</section>
+	<section class="github-examples" aria-label="GitHub activity examples">
+		{LIVE_STATES.map((state) => (
+			<div class="github-example" data-github-case={state}>
+				<TileLabel>{state}</TileLabel>
+				<GithubTile github={mockGithub(state)} />
+			</div>
+		))}
+		<div class="github-example" data-github-case="quiet">
+			<TileLabel>quiet year</TileLabel>
+			<GithubTile github={mockQuietGithub()} />
+		</div>
+		<div class="github-example" data-github-case="live">
+			<TileLabel>live endpoint</TileLabel>
+			<GithubTile github={{ state: 'loading' }} endpoint="/api/github" />
+		</div>
+	</section>
+	<section class="waka-examples" aria-label="Coding activity examples">
+		{LIVE_STATES.map((state) => (
+			<div class="waka-example" data-waka-case={state}>
+				<TileLabel>{state}</TileLabel>
+				<WakaTile waka={mockWaka(state)} />
+			</div>
+		))}
+		<div class="waka-example" data-waka-case="empty">
+			<TileLabel>empty week</TileLabel>
+			<WakaTile waka={mockWakaWithoutLanguages()} />
+		</div>
+		<div class="waka-example" data-waka-case="empty-stale">
+			<TileLabel>stale empty week</TileLabel>
+			<WakaTile waka={mockWakaWithoutLanguages(0, 'stale')} />
+		</div>
+		<div class="waka-example" data-waka-case="filtered">
+			<TileLabel>activity without code languages</TileLabel>
+			<WakaTile waka={mockWakaWithoutLanguages(90)} />
+		</div>
+		<div class="waka-example" data-waka-case="zero-shares">
+			<TileLabel>rounded zero language shares</TileLabel>
+			<WakaTile waka={{
+				state: 'ok',
+				data: { ...mockWakaWithoutLanguages(90).data!, languages: [{ name: 'TypeScript', percent: 0 }] },
+			}} />
+		</div>
+		<div class="waka-example" data-waka-case="live">
+			<TileLabel>live endpoint</TileLabel>
+			<WakaTile waka={{ state: 'loading' }} endpoint="/api/waka" />
+		</div>
+	</section>
+	<section class="music-examples" aria-label="After-hours music examples">
+		{LIVE_STATES.map((state) => (
+			<div class="music-example" data-music-case={state}>
+				<TileLabel>{state}</TileLabel>
+				<MusicTile music={mockMusic(state)} />
+			</div>
+		))}
+		<div class="music-example" data-music-case="last">
+			<TileLabel>last played</TileLabel>
+			<MusicTile music={mockMusicTrack({ nowPlaying: false })} />
+		</div>
+		<div class="music-example" data-music-case="no-cover">
+			<TileLabel>missing cover</TileLabel>
+			<MusicTile music={mockMusicTrack({ coverUrl: undefined })} />
+		</div>
+		<div class="music-example" data-music-case="long">
+			<TileLabel>long metadata</TileLabel>
+			<MusicTile music={mockMusicTrack({
+				title: 'EverythingInItsRightPlace'.repeat(8),
+				artist: 'Radiohead'.repeat(16),
+				previewUrl: '/dev/music-preview.mp3',
+			})} />
+		</div>
+		<div class="music-example" data-music-case="preview">
+			<!-- The preview source is intercepted by browser QA. -->
+			<TileLabel>preview</TileLabel>
+			<MusicTile music={mockMusicTrack({ previewUrl: '/dev/music-preview.mp3' })} />
+		</div>
+		<div class="music-example" data-music-case="stale-now">
+			<TileLabel>stale live payload</TileLabel>
+			<MusicTile music={mockMusicTrack({ nowPlaying: true }, 'stale')} />
+		</div>
+		<div class="music-example" data-music-case="live">
+			<TileLabel>live endpoint</TileLabel>
+			<MusicTile music={{ state: 'loading' }} endpoint="/api/music" />
+		</div>
+	</section>
 	<div class="gallery">
 		{
 			LIVE_STATES.map((state) => (
@@ -139,6 +251,78 @@ export function getStaticPaths() {
 </BaseLayout>
 
 <style>
+	.github-examples,
+	.waka-examples,
+	.music-examples {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--grid-gap);
+		margin-bottom: var(--space-3xl);
+	}
+
+	.github-example,
+	.waka-example,
+	.music-example {
+		display: grid;
+		grid-template-rows: auto 1fr;
+		gap: var(--space-sm);
+	}
+
+	@media (max-width: 1023px) {
+		.github-examples,
+		.waka-examples,
+		.music-examples {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 639px) {
+		.github-example,
+		.waka-example {
+			grid-column: span 2;
+		}
+	}
+
+	.editorial-examples,
+	.editorial-group {
+		display: grid;
+		gap: var(--space-lg);
+	}
+
+	.editorial-examples {
+		margin-bottom: var(--space-3xl);
+	}
+
+	.editorial-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--grid-gap);
+	}
+
+	.editorial-grid > :global(.current-work-tile) {
+		grid-column: span 2;
+	}
+
+	@media (min-width: 640px) {
+		.editorial-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+
+		.editorial-grid > :global(.current-work-tile) {
+			grid-column: span 4;
+		}
+
+		.editorial-grid > :global(.experiment-tile) {
+			grid-column: span 2;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.editorial-grid {
+			grid-template-columns: repeat(6, minmax(0, 1fr));
+		}
+	}
+
 	.gallery {
 		display: grid;
 		/* About two dashboard columns wide, so the boxes match the real areas. */

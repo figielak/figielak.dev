@@ -9,10 +9,9 @@ import { dotState } from '../../lib/live';
 import { GITHUB_PLACEHOLDER, type Github } from '../../lib/mocks/github';
 
 /**
- * Contribution chart and headline numbers from the GitHub GraphQL API,
- * cached 1 h (docs/architecture.md §3): the numbers, the legend and "updated … ago" in
- * one row on top — no footer, so the year's chart under them gets the height
- * of a low tile — and the chart across the whole width, in four accent levels.
+ * A contribution total for the past year and its full 53-week heatmap,
+ * cached 1 h (docs/architecture.md §3). Activity is supporting context;
+ * repository and streak fields stay in the API for other clients.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser; without it, it shows `github` as given (mocks in /dev/tiles).
@@ -30,11 +29,7 @@ const { github, endpoint, area } = Astro.props;
 const t = useTranslations(getLangFromUrl(Astro.url));
 const d = github.data ?? GITHUB_PLACEHOLDER;
 
-const stats = [
-	{ value: d.contributions, label: t('github.contributions') },
-	{ value: d.streakDays, label: t('github.streak') },
-	{ value: d.repos, label: t('github.repos') },
-];
+const summaryTemplate = t('github.summary');
 ---
 
 <Tile
@@ -52,29 +47,17 @@ const stats = [
 
 	<LiveBody state={github.state} errorText={t('github.unavailable')}>
 		<div class="github">
-			<div class="github-top">
-				<dl class="github-stats">
-					{
-						stats.map((stat) => (
-							<div class="github-stat">
-								<dt class="github-label">{stat.label}</dt>
-								<dd class="github-value" data-skeleton data-count aria-live="polite">
-									{stat.value}
-								</dd>
-							</div>
-						))
-					}
-				</dl>
-				<LiveFooter live={github}>
-					<span class="contrib-legend">
-						{t('github.less')}
-						{[0, 1, 2, 3, 4].map((level) => <span class="contrib-day" data-level={level} />)}
-						{t('github.more')}
-					</span>
-				</LiveFooter>
-			</div>
+			<p class="github-stat">
+				<span class="github-value tile-value" data-skeleton data-count aria-live="polite">{d.contributions}</span>
+				<span class="github-label" data-skeleton>{t('github.contributions')}</span>
+			</p>
 
-			<div class="contrib" aria-hidden="true">
+			<div
+				class="contrib"
+				role="img"
+				aria-label={summaryTemplate.replace('{n}', String(d.contributions))}
+				data-summary-template={summaryTemplate}
+			>
 				{
 					d.weeks.map((week, col) => (
 						<span class="contrib-week" style={`--col: ${col}`}>
@@ -85,8 +68,17 @@ const stats = [
 					))
 				}
 			</div>
+			<div class="github-footer">
+				<span class="contrib-legend" aria-hidden="true">
+					{t('github.less')}
+					{[0, 1, 2, 3, 4].map((level) => <span class="contrib-day" data-level={level} />)}
+					{t('github.more')}
+				</span>
+				<LiveFooter live={github} staleOnly />
+			</div>
 		</div>
 	</LiveBody>
+	<span slot="footer">{t('github.profile')} ↗</span>
 </Tile>
 
 <script>
@@ -95,8 +87,12 @@ const stats = [
 
 	for (const tile of document.querySelectorAll<HTMLElement>('.github-tile[data-endpoint]')) {
 		watchLive<GithubData>(tile, (data) => {
-			const values = tile.querySelectorAll('.github-value');
-			[data.contributions, data.streakDays, data.repos].forEach((n, i) => setText(values[i], String(n)));
+			setText(tile.querySelector('.github-value'), String(data.contributions));
+			const chart = tile.querySelector<HTMLElement>('.contrib');
+			if (chart) {
+				const summary = (chart.dataset.summaryTemplate ?? '').replace('{n}', String(data.contributions));
+				chart.setAttribute('aria-label', summary);
+			}
 
 			const days = tile.querySelectorAll('.contrib .contrib-day');
 			data.weeks.flat().forEach((level, i) => days[i]?.setAttribute('data-level', String(level)));
@@ -105,59 +101,30 @@ const stats = [
 </script>
 
 <style>
-	/* A wide, low tile: the numbers in one row, the chart across under them. */
+	/* Reserve the same footprint for a quiet year, skeleton and unavailable data. */
 	.github {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		gap: var(--space-lg);
+		gap: var(--space-sm);
 		height: 100%;
+		min-height: calc(var(--dashboard-row-min) + var(--space-3xl));
 		min-width: 0;
 	}
 
-	.github-top {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-2xs) var(--space-2xl);
-		flex: none;
-	}
-
-	.github-top > :global(.live-footer) {
-		flex: 1;
-	}
-
-	.github-stats {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: var(--space-2xs) var(--space-2xl);
-		margin: 0;
-		flex: none;
-	}
-
-	/* Number, then its label on the same line (the markup keeps dt before dd),
-	   so the row stays one line high and the chart gets the height. */
 	.github-stat {
 		display: flex;
-		flex-direction: row-reverse;
-		align-items: baseline;
-		gap: var(--space-xs);
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-2xs);
+		margin: 0;
 	}
 
 	.github-value {
-		margin: 0;
-		font-family: var(--font-mono);
-		font-size: var(--size-title);
-		font-weight: 700;
-		line-height: 1.2;
-		font-variant-numeric: tabular-nums;
+		min-width: 4ch;
 	}
 
-
 	.github-label {
-		white-space: nowrap;
-		font-size: var(--size-label);
 		color: var(--text-muted);
 	}
 
@@ -165,34 +132,44 @@ const stats = [
 		display: grid;
 		grid-auto-flow: column;
 		grid-auto-columns: minmax(0, 1fr);
-		gap: var(--size-contrib-gap);
+		gap: var(--space-3xs);
 		min-width: 0;
 	}
 
 	.contrib-week {
 		display: grid;
 		grid-template-rows: repeat(7, auto);
-		gap: var(--size-contrib-gap);
+		gap: var(--space-3xs);
 	}
 
 	.contrib-day {
 		display: block;
 		aspect-ratio: 1;
-		border-radius: var(--space-2xs);
+		border-radius: var(--space-3xs);
 		background: var(--surface-inset);
 	}
 
 	.contrib-day[data-level='1'] {
-		background: var(--github-level-1);
+		background: var(--contrib-level-1);
 	}
 	.contrib-day[data-level='2'] {
-		background: var(--github-level-2);
+		background: var(--contrib-level-2);
 	}
 	.contrib-day[data-level='3'] {
-		background: var(--github-level-3);
+		background: var(--contrib-level-3);
 	}
 	.contrib-day[data-level='4'] {
-		background: var(--github-level-4);
+		background: var(--contrib-level-4);
+	}
+
+	.github-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-sm);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		color: var(--text-muted);
 	}
 
 	.contrib-legend {
@@ -205,11 +182,9 @@ const stats = [
 		width: var(--size-label);
 	}
 
-	/* Half a year fits a phone; the full year would shrink cells to dots. */
-	@media (max-width: 639px) {
-		.contrib-week:nth-child(-n + 26) {
-			display: none;
-		}
+	.github-footer > :global(.live-footer),
+	:global(.github-tile .live-body .live-error) {
+		color: var(--text-muted);
 	}
 
 	/* Dashboard intro: the chart lights up in a wave from the left, one

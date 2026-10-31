@@ -72,6 +72,8 @@ export function watchLive<T>(root: HTMLElement, apply: (data: Payload<T>) => voi
 			const data = { ...json, updatedAt: new Date(json.updatedAt) } as Payload<T>;
 			apply(data);
 			updatedAt = data.updatedAt;
+			/* For a page-level "updated …" line (the Dev Log heading). */
+			root.dispatchEvent(new CustomEvent('live:updated', { bubbles: true, detail: updatedAt }));
 		} catch (error) {
 			console.warn(error);
 		}

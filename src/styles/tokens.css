@@ -54,12 +54,12 @@
 	   (skeletons, empty bars). The subtle one is for non-essential detail. */
 	--accent-foreground-subtle: rgb(14 14 16 / 0.7);
 	--accent-inset: rgb(14 14 16 / 0.14);
-	/* GitHub contribution levels 1–4 in GitHub's own dark-theme greens, so the
-	   chart reads as the real one (docs/design.md §2). Level 0 is --surface-inset. */
-	--github-level-1: #0e4429;
-	--github-level-2: #006d32;
-	--github-level-3: #26a641;
-	--github-level-4: #39d353;
+	/* Contribution levels 1–4: the accent at rising strength, so the chart
+	   shares the one palette (docs/design.md §2). Level 0 is --surface-inset. */
+	--contrib-level-1: rgb(255 36 69 / 0.25);
+	--contrib-level-2: rgb(255 36 69 / 0.45);
+	--contrib-level-3: rgb(255 36 69 / 0.7);
+	--contrib-level-4: var(--accent);
 
 	/* Blurred accent glow behind the dashboard tiles (docs/design.md §1). At its
 	   peak under --surface-glass, --text-muted keeps 4.6:1; the accent there is
@@ -82,36 +82,8 @@
 	--brand-linkedin: linear-gradient(135deg, #0a66c2, #004182);
 	--brand-foreground: #ffffff;
 
-	/* Programming languages in the WakaTime tile: GitHub Linguist's colours,
-	   content colour like a logo (docs/design.md §1). Named after the language
-	   (lower case, `++` → `pp`, `#` → `sharp`); the darkest are lifted so they
-	   show on a tile. Anything else falls back to --lang-other. */
-	--lang-typescript: #3178c6;
-	--lang-javascript: #f1e05a;
-	--lang-python: #3572a5;
-	--lang-astro: #ff5a03;
-	--lang-css: #8c5fcf;
-	--lang-scss: #c6538c;
-	--lang-html: #e34c26;
-	--lang-go: #00add8;
-	--lang-rust: #dea584;
-	--lang-java: #b07219;
-	--lang-kotlin: #a97bff;
-	--lang-c: #8a8a8a;
-	--lang-cpp: #f34b7d;
-	--lang-csharp: #2fa31f;
-	--lang-php: #7480bf;
-	--lang-shell: #89e051;
-	--lang-bash: #89e051;
-	--lang-sql: #e38c00;
-	--lang-yaml: #cb171e;
-	--lang-markdown: #3b6fd6;
-	--lang-docker: #5f7f8a;
-	--lang-dockerfile: #5f7f8a;
-	--lang-typst: #239dad;
-	--lang-vue: #41b883;
-	--lang-svelte: #ff3e00;
-	--lang-other: var(--text-subtle);
+	/* The rest of a chart after its ranked parts (accent, then greys). */
+	--chart-rest: rgb(255 255 255 / 0.12);
 
 	/* Elevation */
 	--shadow-tile: 0 8px 24px rgb(0 0 0 / 0.32);
@@ -221,6 +193,8 @@
 	--size-hero: clamp(28px, 1.5rem + 1.6vw, 36px);
 	--size-number: clamp(32px, 1.5rem + 2.4vw, 48px);
 	--size-number-short: 36px;
+	/* The one main value of a Dev Log card, the same in all five (docs/design.md §3). */
+	--size-value: clamp(24px, 1.25rem + 0.6vw, 30px);
 	--tracking-label: 0.08em;
 
 	/* Terminal panel (docs/design.md §5): above the navigation and the skip link. */

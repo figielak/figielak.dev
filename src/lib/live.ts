@@ -36,6 +36,16 @@ export function minutesSince(date: Date): number {
 	return Math.max(1, Math.round((Date.now() - date.getTime()) / 60_000));
 }
 
+/** "5 min ago", "3 days ago" — in the page language, for times far older than a refresh. */
+export function timeAgo(date: Date, lang: string): string {
+	const sec = (date.getTime() - Date.now()) / 1000;
+	const format = new Intl.RelativeTimeFormat(lang, { numeric: 'auto', style: 'short' });
+	for (const [unit, size] of [['day', 86_400], ['hour', 3600], ['minute', 60]] as const) {
+		if (Math.abs(sec) >= size) return format.format(Math.round(sec / size), unit);
+	}
+	return format.format(0, 'minute');
+}
+
 /** Mock timestamp: fresh for `ok`, past the stale threshold for `stale`. */
 export function mockUpdatedAt(state: LiveState): Date {
 	const minutesAgo = state === 'stale' ? 25 : 2;

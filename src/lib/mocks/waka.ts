@@ -16,11 +16,7 @@ export const WAKA_PLACEHOLDER: NonNullable<Waka['data']> = {
 	todayMin: 0,
 	weekMin: 0,
 	days: [0, 0, 0, 0, 0],
-	languages: [
-		{ name: '—', percent: 0 },
-		{ name: '—', percent: 0 },
-		{ name: '—', percent: 0 },
-	],
+	languages: [],
 	updatedAt: new Date(0),
 };
 
@@ -40,7 +36,21 @@ export function mockWaka(state: LiveState = 'ok'): Waka {
 				{ name: 'CSS', percent: 6 },
 				{ name: 'Bash', percent: 2 },
 			],
-			updatedAt: mockUpdatedAt(state),
+			updatedAt: state === 'stale' ? new Date(Date.now() - 4 * 60 * 60_000) : mockUpdatedAt(state),
+		},
+	};
+}
+
+/** A quiet week or tracked activity with no code languages after filtering. */
+export function mockWakaWithoutLanguages(weekMin = 0, state: 'ok' | 'stale' = 'ok'): Waka {
+	return {
+		state,
+		data: {
+			todayMin: weekMin,
+			weekMin,
+			days: [weekMin],
+			languages: [],
+			updatedAt: state === 'stale' ? new Date(Date.now() - 4 * 60 * 60_000) : mockUpdatedAt(state),
 		},
 	};
 }

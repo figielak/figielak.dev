@@ -59,3 +59,12 @@ export function mockMusic(state: LiveState = 'ok'): Music {
 		},
 	};
 }
+
+/** Track edge cases for the dev gallery; the API keeps the same full payload. */
+export function mockMusicTrack(
+	track: Partial<NonNullable<Music['data']>['track']>,
+	state: 'ok' | 'stale' = 'ok',
+): Music {
+	const data = mockMusic(state).data!;
+	return { state, data: { ...data, track: { ...data.track, ...track } } };
+}

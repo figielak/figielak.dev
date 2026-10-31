@@ -9,15 +9,9 @@ import { dotState } from '../../lib/live';
 import { MUSIC_PLACEHOLDER, type Music } from '../../lib/mocks/music';
 
 /**
- * What I am listening to and this week's top artists from Last.fm
- * (docs/architecture.md §3). The cover fills the whole tile in full colour under a
- * dark scrim, with the text at the bottom (docs/design.md §1); without a cover the tile is
- * a plain one. A tall, narrow card: top artists, then the track at the bottom.
- * Beside the track a play button plays a 30-second preview when the server
- * found one (src/lib/server/preview.ts); without one there is no button.
- *
- * With `endpoint` the tile renders as loading and fills itself in the
- * browser, refreshing every 30 s; without it, it shows `music` as given.
+ * A compact after-hours track, with decorative cover art and an optional
+ * 30-second preview. Ranking data stays in /api/music for other consumers.
+ * With an endpoint the tile starts loading and refreshes every 30 seconds.
  */
 interface Props {
 	music: Music;
@@ -26,8 +20,7 @@ interface Props {
 }
 
 const { music, endpoint, area } = Astro.props;
-const lang = getLangFromUrl(Astro.url);
-const t = useTranslations(lang);
+const t = useTranslations(getLangFromUrl(Astro.url));
 const d = music.data ?? MUSIC_PLACEHOLDER;
 const playing = music.state === 'ok' && d.track.nowPlaying;
 const cover = music.data?.track.coverUrl;
@@ -43,59 +36,36 @@ const cover = music.data?.track.coverUrl;
 	data-cover={cover ? '' : undefined}
 >
 	<LiveDot slot="meta" state={dotState(music.state)} />
-
-	<div class="music-art" aria-hidden="true">
-		<img src={cover} alt="" />
-	</div>
-
 	<LiveBody state={music.state} errorText={t('music.unavailable')}>
-		<div class="music-frame">
-			<div class="music">
-				<div class="track">
-					<span class="track-text">
-						<span class="track-status" data-now={t('music.nowPlaying')} data-last={t('music.lastPlayed')}>
-							<span class="track-dot" hidden={!playing}><LiveDot state="up" pulse /></span>
-							<span class="track-status-text">{playing ? t('music.nowPlaying') : t('music.lastPlayed')}</span>
-						</span>
-						<span class="track-title" data-skeleton aria-live="polite">{d.track.title}</span>
-						<span class="track-artist" data-skeleton>{d.track.artist}</span>
-					</span>
-					<button
-						type="button"
-						class="track-play"
-						data-preview={d.track.previewUrl}
-						data-play={t('music.play')}
-						data-pause={t('music.pause')}
-						aria-label={t('music.play')}
-						title={t('music.play')}
-						hidden={!d.track.previewUrl}
-					>
-						<span class="track-play-icon" data-icon="play"><Icon name="player-play" size={16} /></span>
-						<span class="track-play-icon" data-icon="pause"><Icon name="player-pause" size={16} /></span>
-					</button>
-				</div>
-
-				<div class="top">
-					<span class="top-label">{t('music.top')}</span>
-					<ol class="top-list" data-template={t('music.plays')}>
-						{
-							d.topArtists.map((artist, i) => (
-								<li class="top-artist">
-									<span class="top-rank">{i + 1}</span>
-									<span class="top-name" data-skeleton>{artist.name}</span>
-									<span class="top-plays" data-skeleton data-count>
-										{t('music.plays').replace('{n}', String(artist.plays))}
-									</span>
-								</li>
-							))
-						}
-					</ol>
-				</div>
+		<div class="music">
+			<span class="music-art" data-skeleton aria-hidden="true">
+				<span class="music-fallback"><Icon name="music" size={24} /></span>
+				<img src={cover} alt="" />
+			</span>
+			<div class="track-text">
+				<span class="track-status" data-now={t('music.nowPlaying')} data-last={t('music.lastPlayed')}>
+					<span class="track-dot" hidden={!playing}><LiveDot state="up" pulse /></span>
+					<span class="track-status-text">{playing ? t('music.nowPlaying') : t('music.lastPlayed')}</span>
+				</span>
+				<span class="track-title tile-value" data-skeleton title={d.track.title} aria-live="polite">{d.track.title}</span>
+				<span class="track-artist" data-skeleton title={d.track.artist}>{d.track.artist}</span>
 			</div>
+			<button
+				type="button"
+				class="track-play"
+				data-preview={d.track.previewUrl}
+				data-play={t('music.play')}
+				data-pause={t('music.pause')}
+				aria-label={t('music.play')}
+				title={t('music.play')}
+				hidden={!d.track.previewUrl}
+			>
+				<span class="track-play-icon" data-icon="play"><Icon name="player-play" size={16} /></span>
+				<span class="track-play-icon" data-icon="pause"><Icon name="player-pause" size={16} /></span>
+			</button>
 		</div>
 	</LiveBody>
-
-	<LiveFooter slot="footer" live={music} />
+	<LiveFooter slot="footer" live={music} staleOnly />
 </Tile>
 
 <script>
@@ -131,161 +101,153 @@ const cover = music.data?.track.coverUrl;
 		audio.addEventListener('ended', () => setPlaying(false));
 	}
 
+
 	for (const tile of document.querySelectorAll<HTMLElement>('.music-tile[data-endpoint]')) {
-		watchLive<MusicData>(
-			tile,
-			({ track, topArtists }) => {
-				const cover = tile.querySelector<HTMLImageElement>('.music-art img');
-				if (cover && track.coverUrl && cover.getAttribute('src') !== track.coverUrl) cover.src = track.coverUrl;
-				tile.toggleAttribute('data-cover', Boolean(track.coverUrl));
+		let nowPlaying = false;
+		const body = tile.querySelector<HTMLElement>('.live-body');
+		const refreshStatus = () => {
+			const playing = body?.dataset.live === 'ok' && nowPlaying;
+			const status = tile.querySelector<HTMLElement>('.track-status');
+			const dot = tile.querySelector<HTMLElement>('.track-dot');
+			if (dot) dot.hidden = !playing;
+			setText(tile.querySelector('.track-status-text'), (playing ? status?.dataset.now : status?.dataset.last) ?? '');
+		};
+		/* Freshness can change after a failed poll, without another track payload. */
+		if (body) new MutationObserver(refreshStatus).observe(body, { attributes: true, attributeFilter: ['data-live'] });
 
-				const status = tile.querySelector<HTMLElement>('.track-status');
-				tile.querySelector<HTMLElement>('.track-dot')!.hidden = !track.nowPlaying;
-				const statusText = track.nowPlaying ? status?.dataset.now : status?.dataset.last;
-				setText(tile.querySelector('.track-status-text'), statusText ?? '');
-				setText(tile.querySelector('.track-title'), track.title);
-				setText(tile.querySelector('.track-artist'), track.artist);
+		watchLive<MusicData>(tile, ({ track }) => {
+			const cover = tile.querySelector<HTMLImageElement>('.music-art img');
+			if (cover) {
+				if (track.coverUrl) {
+					if (cover.getAttribute('src') !== track.coverUrl) cover.src = track.coverUrl;
+				} else cover.removeAttribute('src');
+			}
+			tile.toggleAttribute('data-cover', Boolean(track.coverUrl));
+			nowPlaying = track.nowPlaying;
+			refreshStatus();
+			setText(tile.querySelector('.track-title'), track.title);
+			setText(tile.querySelector('.track-artist'), track.artist);
+			tile.querySelector('.track-title')?.setAttribute('title', track.title);
+			tile.querySelector('.track-artist')?.setAttribute('title', track.artist);
 
-				const play = tile.querySelector<HTMLButtonElement>('.track-play');
-				if (play) {
-					play.dataset.preview = track.previewUrl ?? '';
-					if (track.previewUrl) play.hidden = false;
-					else if (!play.hasAttribute('data-playing')) play.hidden = true;
-				}
-
-				const list = tile.querySelector<HTMLElement>('.top-list');
-				tile.querySelectorAll('.top-artist').forEach((row, i) => {
-					const artist = topArtists[i];
-					setText(row.querySelector('.top-name'), artist?.name ?? '—');
-					setText(
-						row.querySelector('.top-plays'),
-						artist ? (list?.dataset.template ?? '{n}').replace('{n}', String(artist.plays)) : '',
-					);
-				});
-			},
-			30_000,
-		);
+			const play = tile.querySelector<HTMLButtonElement>('.track-play');
+			if (play) {
+				play.dataset.preview = track.previewUrl ?? '';
+				if (track.previewUrl) play.hidden = false;
+				else if (!play.hasAttribute('data-playing')) play.hidden = true;
+			}
+		}, 30_000);
 	}
 </script>
 
 <style>
-	/* The cover sits under the header, body and footer of the whole tile. */
 	:global(.music-tile) {
-		position: relative;
+		container-type: inline-size;
 	}
 
-	:global(.music-tile) > :global(.tile-header),
-	:global(.music-tile) > :global(.tile-footer),
-	.music-art ~ :global(.live-body) {
-		position: relative;
-		z-index: 1;
+	:global(.music-tile .tile-label) {
+		line-height: 1.3;
+	}
+
+	.music {
+		display: grid;
+		grid-template-columns: var(--size-book-cover) minmax(0, 1fr) var(--size-icon-button);
+		grid-template-areas: 'cover text play';
+		align-items: center;
+		gap: var(--space-lg);
+		height: 100%;
+		min-height: calc(var(--size-avatar) + var(--space-3xs));
+		min-width: 0;
 	}
 
 	.music-art {
-		display: none;
-		position: absolute;
-		inset: 0;
-		z-index: 0;
+		grid-area: cover;
+		position: relative;
+		width: var(--size-book-cover);
+		aspect-ratio: 1;
+		border-radius: var(--radius-inset);
+		background: var(--surface-inset);
+		overflow: hidden;
 	}
 
-	:global(.music-tile[data-cover]) .music-art {
-		display: block;
+	.music-fallback {
+		display: grid;
+		place-items: center;
+		height: 100%;
+		color: var(--text-muted);
 	}
 
 	.music-art img {
+		display: none;
+		position: absolute;
+		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 	}
 
-	/* Dashboard intro: the cover settles in, slightly larger at first, and on
-	   desktop sharpens out of a blur. */
-	:global(.tile[data-reveal]) .music-art img {
-		animation: music-art-in var(--duration-intro) var(--ease-out) both;
+	:global(.music-tile[data-cover]) .music-art img {
+		display: block;
 	}
 
-	@keyframes music-art-in {
-		from {
-			opacity: 0.6;
-			transform: scale(1.08);
-		}
+	:global(.music-tile[data-cover]) .music-fallback {
+		display: none;
 	}
 
-	@media (min-width: 1024px) {
-		:global(.tile[data-reveal]) .music-art img {
-			animation-name: music-art-in-blur;
-		}
+	.track-text {
+		grid-area: text;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2xs);
+		min-width: 0;
 	}
 
-	@keyframes music-art-in-blur {
-		from {
-			opacity: 0.6;
-			transform: scale(1.08);
-			filter: blur(var(--intro-blur));
-		}
-	}
-
-	/* Darker at the bottom under the text, a touch at the top for the label. */
-	.music-art::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(to top, var(--scrim) 0%, var(--scrim-soft) 65%, var(--scrim-soft) 100%);
-	}
-
-	/* Over a cover the subtle greys would drop below AA, so they step up. */
-	:global(.music-tile[data-cover]) :is(.track-status, .top-rank, .top-plays, .top-label) {
+	.track-status {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
 		color: var(--text-muted);
 	}
 
-	:global(.music-tile[data-cover]) .track-artist {
-		color: var(--text);
+	.track-dot {
+		display: inline-flex;
+		flex: none;
 	}
 
-	.music-frame {
-		height: 100%;
-		container-type: inline-size;
+	.track-dot[hidden] {
+		display: none;
 	}
 
-	/* A phone-narrow card keeps the artists' names and drops the play counts. */
-	@container (max-width: 220px) {
-		.top-plays {
-			display: none;
-		}
+	.track-title {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
+		overflow-wrap: anywhere;
 	}
 
-	.music {
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-		gap: var(--space-lg);
-		height: 100%;
-		min-width: 0;
-	}
-
-	.track {
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: var(--space-md);
-		min-width: 0;
+	.track-artist {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--text-muted);
 	}
 
 	.track-play {
-		flex: none;
+		grid-area: play;
 		display: inline-grid;
 		place-items: center;
-		width: var(--size-carousel-control);
-		height: var(--size-carousel-control);
+		width: var(--size-icon-button);
+		height: var(--size-icon-button);
 		padding: 0;
 		border: 1px solid var(--border-hover);
 		border-radius: var(--radius-pill);
 		background: var(--surface-inset);
 		color: var(--text);
 		cursor: pointer;
-		transition:
-			background-color var(--duration-hover) var(--ease-out),
-			border-color var(--duration-hover) var(--ease-out);
+		transition: background-color var(--duration-hover) var(--ease-out);
 	}
 
 	.track-play:hover {
@@ -302,85 +264,30 @@ const cover = music.data?.track.coverUrl;
 		display: inline-flex;
 	}
 
-	.track-text {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2xs);
-		min-width: 0;
-	}
-
-	.track-status {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-xs);
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
-		letter-spacing: var(--tracking-label);
-		text-transform: uppercase;
-		color: var(--text-subtle);
-	}
-
-	.track-title,
-	.track-artist,
-	.top-name {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	.track-title {
-		align-self: flex-start;
-		max-width: 100%;
-		font-size: var(--size-title);
-		font-weight: 500;
-	}
-
-	.track-artist {
-		align-self: flex-start;
-		max-width: 100%;
+	:global(.music-tile .tile-footer .live-footer),
+	:global(.music-tile .live-body .live-error) {
 		color: var(--text-muted);
 	}
 
-	/* Shown above the track, which closes the tile like a caption under the
-	   cover; the markup keeps the track first for screen readers. */
-	.top {
-		order: -1;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-xs);
-		padding-bottom: var(--space-md);
-		border-bottom: 1px solid var(--border);
+	:global(.tile[data-reveal]) .music-art img {
+		animation: music-art-in var(--duration-intro) var(--ease-out) both;
 	}
 
-	.top-label {
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
-		letter-spacing: var(--tracking-label);
-		text-transform: uppercase;
-		color: var(--text-subtle);
+	@keyframes music-art-in {
+		from { opacity: 0.6; transform: scale(1.08); }
 	}
 
-	.top-list {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2xs);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
+	@container (max-width: 260px) {
+		.music {
+			grid-template-columns: minmax(0, 1fr) var(--size-icon-button);
+			grid-template-areas: 'cover play' 'text text';
+			align-content: center;
+			gap: var(--space-md);
+			min-height: var(--size-avatar-lg);
+		}
 
-	.top-artist {
-		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
-		align-items: baseline;
-		gap: var(--space-md);
-	}
-
-	.top-rank,
-	.top-plays {
-		font-family: var(--font-mono);
-		font-size: var(--size-label);
-		font-variant-numeric: tabular-nums;
-		color: var(--text-subtle);
+		.music-art {
+			width: var(--size-book-cover-small);
+		}
 	}
 </style>

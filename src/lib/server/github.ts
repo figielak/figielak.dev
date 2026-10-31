@@ -9,7 +9,10 @@ export type GithubData = Omit<NonNullable<Github['data']>, 'updatedAt'>;
 
 const WEEKS = 53;
 
-const QUERY = `query ($login: String!) {
+const QUERY = `query ($login: String!, $repo: String!) {
+	repository(owner: $login, name: $repo) {
+		defaultBranchRef { target { ... on Commit { messageHeadline committedDate url } } }
+	}
 	user(login: $login) {
 		contributionsCollection {
 			contributionCalendar {
@@ -30,6 +33,9 @@ interface Day {
 
 interface Response {
 	data?: {
+		repository: {
+			defaultBranchRef: { target: { messageHeadline: string; committedDate: string; url: string } } | null;
+		} | null;
 		user: {
 			contributionsCollection: {
 				contributionCalendar: { totalContributions: number; weeks: { contributionDays: Day[] }[] };
@@ -73,7 +79,8 @@ function toWeeks(weeks: { contributionDays: Day[] }[]): ContributionLevel[][] {
 	return full;
 }
 
-export async function fetchGithub(login: string): Promise<GithubData> {
+/** `repo` is the current work's repository (src/lib/dev-log.ts); its latest commit goes to the Dev Log. */
+export async function fetchGithub(login: string, repo: string): Promise<GithubData> {
 	const response = await fetch('https://api.github.com/graphql', {
 		method: 'POST',
 		headers: {
@@ -81,7 +88,7 @@ export async function fetchGithub(login: string): Promise<GithubData> {
 			'Content-Type': 'application/json',
 			'User-Agent': 'figielak.dev',
 		},
-		body: JSON.stringify({ query: QUERY, variables: { login } }),
+		body: JSON.stringify({ query: QUERY, variables: { login, repo } }),
 		signal: AbortSignal.timeout(10_000),
 	});
 	if (!response.ok) throw new Error(`GitHub responded ${response.status}`);
@@ -91,10 +98,12 @@ export async function fetchGithub(login: string): Promise<GithubData> {
 	if (!user) throw new Error(`GitHub: ${body.errors?.map((e) => e.message).join('; ') ?? 'no user'}`);
 
 	const calendar = user.contributionsCollection.contributionCalendar;
+	const commit = body.data?.repository?.defaultBranchRef?.target;
 	return {
 		weeks: toWeeks(calendar.weeks),
 		contributions: calendar.totalContributions,
 		streakDays: streak(calendar.weeks.flatMap((week) => week.contributionDays)),
 		repos: user.repositories.totalCount,
+		lastCommit: commit ? { message: commit.messageHeadline, date: commit.committedDate, url: commit.url } : null,
 	};
 }

@@ -1,0 +1,170 @@
+---
+import Tile from '../ui/Tile.astro';
+import Pill from '../ui/Pill.astro';
+import Icon from '../ui/Icon.astro';
+import LiveBody from '../ui/LiveBody.astro';
+import { currentWork, type CurrentWorkEntry } from '../../lib/dev-log';
+import { getLangFromUrl, useTranslations, type Lang } from '../../i18n';
+import { localizeLink } from '../../lib/projects';
+import { timeAgo } from '../../lib/live';
+import { GITHUB_PLACEHOLDER, type Github } from '../../lib/mocks/github';
+
+/**
+ * The task in progress, written by hand, and the latest commit of its
+ * repository from /api/github (docs/koncept.md §3.4). Only the commit is live,
+ * with the four states; its own date says how old it is, and the GitHub card
+ * shows when the shared source went stale.
+ *
+ * With `endpoint` the commit renders as loading and fills itself in the
+ * browser; without it, it shows `github` as given (mocks in /dev/tiles).
+ */
+interface Props {
+	area?: string;
+	lang?: Lang;
+	entry?: CurrentWorkEntry;
+	github?: Github;
+	endpoint?: string;
+}
+
+const STALE_AFTER_MIN = 3 * 60;
+
+const {
+	area,
+	lang = getLangFromUrl(Astro.url),
+	entry = currentWork,
+	github = { state: 'loading' },
+	endpoint,
+} = Astro.props;
+const t = useTranslations(lang);
+const href = entry.link ? localizeLink(entry.link.href, lang) : undefined;
+const external = Boolean(href && !href.startsWith('/'));
+const commit = (github.data ?? GITHUB_PLACEHOLDER).lastCommit;
+---
+
+<Tile area={area} label={t('devLog.currentWork.label')} icon="code" class="current-work-tile" lang={lang}>
+	<div class="current-work">
+		<h2 class="tile-value">{entry.title}</h2>
+		<p class="context">{t(entry.summary)}</p>
+		<p class="context">{t(entry.task)}</p>
+		<div class="commit" data-endpoint={endpoint} data-stale-after={STALE_AFTER_MIN} data-lang={lang}>
+			<LiveBody state={github.state} errorText={t('state.noData')}>
+				<p class="commit-meta" data-skeleton>
+					{t('devLog.currentWork.commit')}
+					<span aria-hidden="true">·</span>
+					<time class="commit-date" datetime={commit?.date}>{commit ? timeAgo(new Date(commit.date), lang) : ' '}</time>
+				</p>
+				<p class="commit-message" data-skeleton title={commit?.message}>{commit?.message ?? ' '}</p>
+			</LiveBody>
+		</div>
+	</div>
+	<div slot="footer" class="current-work-footer">
+		<ul class="tags" role="list">
+			{entry.tags.map((tag) => <li><Pill>{tag}</Pill></li>)}
+		</ul>
+		{href && entry.link && (
+			<a class="button" href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>
+				<Icon name={external ? 'github' : 'notebook'} size={16} />
+				{t(entry.link.label)} {external ? '↗' : '→'}
+			</a>
+		)}
+	</div>
+</Tile>
+
+<script>
+	import { setText, watchLive } from '../../scripts/live';
+	import { timeAgo } from '../../lib/live';
+	import type { GithubData } from '../../lib/server/github';
+
+	for (const section of document.querySelectorAll<HTMLElement>('.current-work-tile .commit[data-endpoint]')) {
+		const lang = section.dataset.lang ?? 'pl';
+		let date: Date | undefined;
+		const refreshDate = () => date && setText(section.querySelector('.commit-date'), timeAgo(date, lang));
+		watchLive<GithubData>(section, ({ lastCommit }) => {
+			date = lastCommit ? new Date(lastCommit.date) : undefined;
+			section.querySelector('.commit-date')?.setAttribute('datetime', lastCommit?.date ?? '');
+			setText(section.querySelector('.commit-date'), date ? timeAgo(date, lang) : '');
+			setText(section.querySelector('.commit-message'), lastCommit?.message ?? '');
+			section.querySelector('.commit-message')?.setAttribute('title', lastCommit?.message ?? '');
+		});
+		setInterval(refreshDate, 60_000);
+	}
+</script>
+
+<style>
+	.current-work {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-sm);
+		min-width: 0;
+	}
+
+	.context {
+		color: var(--text-muted);
+	}
+
+	/* Reserves the meta line and one message line in every state. */
+	.commit {
+		margin-top: var(--space-md);
+		padding-top: var(--space-lg);
+		border-top: 1px solid var(--border);
+	}
+
+	.commit :global(.live-content) {
+		gap: var(--space-2xs);
+	}
+
+	.commit-meta {
+		align-self: flex-start;
+		display: inline-flex;
+		gap: var(--space-xs);
+		font-family: var(--font-mono);
+		font-size: var(--size-label);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.commit-message {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: var(--font-mono);
+		font-size: var(--size-small);
+	}
+
+	.commit :global(.live-error) {
+		place-items: center start;
+	}
+
+	.current-work-footer {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-md);
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-xs);
+		min-width: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.tags li {
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	.tags :global(.pill) {
+		max-width: 100%;
+		white-space: normal;
+		overflow-wrap: anywhere;
+	}
+
+	.current-work-footer .button {
+		gap: var(--space-xs);
+	}
+</style>

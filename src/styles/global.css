@@ -122,6 +122,23 @@ body {
 	border-color: var(--accent-hover);
 }
 
+/* The main value of a Dev Log card: a name, a total or a track, one size and face for all. */
+.tile-value {
+	font-family: var(--font-mono);
+	font-size: var(--size-value);
+	font-weight: 700;
+	line-height: 1.15;
+	font-variant-numeric: tabular-nums;
+	overflow-wrap: anywhere;
+}
+
+/* In a one-column phone card the value steps down to the title size, so words stay whole. */
+@container (max-width: 260px) {
+	.tile-value {
+		font-size: var(--size-title);
+	}
+}
+
 /* Readable by screen readers only. */
 .visually-hidden {
 	position: absolute;
