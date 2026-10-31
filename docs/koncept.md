@@ -201,34 +201,38 @@ Adresy pozostają bez zmian; **Dev Log** jest nazwą w obu wersjach nawigacji. M
 
 | Kolejność / obszar | Rola | Zawartość |
 |---|---|---|
-| 1. `build` | Nad czym pracuję / Current work | ręcznie wybrana bieżąca praca, początkowo figielak.dev: nazwa, 2–3 krótkie zdania o tym, co robię i po co, tagi technologii, opcjonalny link. Bez karuzeli i kopiowania opisu case study; największa i wizualnie dominująca karta |
-| 2. `github` | GitHub | suma kontrybucji z jawnym okresem, roczna mapa aktywności i link do profilu (`/api/github`). Bez streaka i licznika repozytoriów; to kontekst aktywności, nie ocena produktywności ani liczba commitów |
-| 3. `waka` | Kodowanie / Coding | suma czasu bieżącego tygodnia (od poniedziałku, Europe/Warsaw) i krótki rozkład maksymalnie trzech nazwanych języków (`/api/waka`, dotychczasowe filtrowanie kodu bez Markdownu). Bez słupków dziennych i czasu dziś; pusty tydzień jest poprawnym wynikiem, a brak języków wymaga spokojnego wyjaśnienia, bez sztucznego „Inne 100%” |
+| 1. `build` | Nad czym pracuję / Current work | ręcznie wybrana bieżąca praca, obecnie Telos (plugin do Claude Code, `figielak/telos`): nazwa, jedno zdanie o tym, czym jest projekt, jedno zdanie „W toku: …” o konkretnym zadaniu (nie opis projektu z `/projects`), ostatni commit repozytorium na żywo (`lastCommit` z `/api/github`: komunikat i kiedy, 4 stany), tagi technologii i przycisk „Kod ↗” jak na stronie projektów. Bez karuzeli i kopiowania opisu case study; największa i wizualnie dominująca karta |
+| 2. `waka` | Kodowanie / Coding | suma czasu bieżącego tygodnia (od poniedziałku, Europe/Warsaw) i krótki rozkład maksymalnie trzech nazwanych języków z resztą podpisaną „inne X%” (`/api/waka`, dotychczasowe filtrowanie kodu bez Markdownu). Bez słupków dziennych i czasu dziś; pusty tydzień jest poprawnym wynikiem, a brak języków wymaga spokojnego wyjaśnienia, bez sztucznego „Inne 100%” |
+| 3. `github` | GitHub | suma kontrybucji z jawnym okresem, roczna mapa aktywności na całą szerokość i link do profilu (`/api/github`). Bez streaka i licznika repozytoriów; to kontekst aktywności, nie ocena produktywności ani liczba commitów |
 | 4. `experiment` | Eksperymenty / Experiments | krótko o nauce i celu technicznym, początkowo istniejący homelab; link do opisu projektu zgodny z językiem. Treść redakcyjna oparta na udokumentowanych faktach, bez telemetrii infrastruktury |
 | 5. `music` | Po godzinach / After hours | mały akcent osobisty: bieżący lub ostatni utwór z Last.fm (`/api/music`), wykonawca i kompaktowa okładka. Bez top artystów. Opcjonalny 30-sekundowy podgląd iTunes tylko po kliknięciu, bez autoplay; bez URL podglądu nie ma przycisku |
 
-Karty `build` i `experiment` są statyczne, utrzymywane ręcznie, bez CMS i nowych API. GitHub, WakaTime i muzyka zachowują cztery stany (ładowanie, OK, nieaktualne, błąd) i stały rozmiar między stanami. Zerowa aktywność jest poprawnymi danymi; nieaktualny utwór nie może sugerować, że gra właśnie teraz. Najpierw mock, potem prawdziwe źródła (design.md §6).
+Karta `experiment` i tekst zadania w `build` są utrzymywane ręcznie (`src/lib/dev-log.ts` + i18n), bez CMS; jedyne dane na żywo w `build` to ostatni commit z istniejącego `/api/github`. Ostatni commit, GitHub, WakaTime i muzyka zachowują cztery stany (ładowanie, OK, nieaktualne, błąd) i stały rozmiar między stanami. Zerowa aktywność jest poprawnymi danymi; nieaktualny utwór nie może sugerować, że gra właśnie teraz. Najpierw mock, potem prawdziwe źródła (design.md §6).
 
 **Układ publiczny** — jawne `grid-template-areas`, bez wymuszania wysokości ekranu. Rozmiar kart wynika z treści i hierarchii; odstępy i wysokości tylko z tokenów (design.md §4).
 
 ```
 ≥ 1024px (6 kolumn)
-"build build build build github github"
-"waka  waka  experiment experiment music music"
+"build build build build waka waka"
+"github github github github github github"
+"experiment experiment experiment music music music"
 
 640–1023px (4 kolumny)
 "build      build      build build"
-"github     github     waka  waka"
+"waka       waka       waka  waka"
+"github     github     github github"
 "experiment experiment music music"
 
 < 640px (2 kolumny)
 "build      build"
-"github     github"
 "waka       waka"
+"github     github"
 "experiment music"
 ```
 
-Bieżąca praca dominuje treścią i rozmiarem; na desktopie zajmuje cztery z sześciu kolumn. Na telefonie trzy pierwsze karty zajmują całe rzędy, a eksperymenty i muzyka stoją obok siebie w dwóch kolumnach. Publiczna strona może scrollować również na desktopie; nie rozciąga kart, by wypełnić viewport.
+Bieżąca praca dominuje treścią i rozmiarem; na desktopie zajmuje cztery z sześciu kolumn. GitHub jest osobnym pasem na całą szerokość, żeby heatmapa miała duże kratki. Na telefonie trzy pierwsze karty zajmują całe rzędy, a eksperymenty i muzyka stoją obok siebie w dwóch kolumnach.
+
+Karty są płaskie i nieprzezroczyste, bez poświaty w tle; każda ma etykietę, jedną główną wartość, 1–2 linie kontekstu i stopkę z akcją (design.md §4). Pod wprowadzeniem jest jedna linia „zaktualizowano X temu”, a kropki w rogach kart pojawiają się tylko przy problemie (design.md §2). Punktem odniesienia jest zajawka Dev Logu na wizytówce: jeden rytm, płaskie tło, jasne separatory. Publiczna strona może scrollować również na desktopie; nie rozciąga kart, by wypełnić viewport.
 
 **Usunięte wyłącznie z publicznej kompozycji:** dzień/zegar, pogoda i powietrze, cel, karuzela wyróżnionych projektów, cztery sociale, książki, odliczanie oraz operacyjny homelab (CPU/RAM/dyski, usługi, transfer i DNS). To historyczny zestaw widgetów dashboardu, a nie dodatkowe karty Dev Logu.
 

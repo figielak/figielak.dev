@@ -8,7 +8,7 @@
 ## 1. Zasady stylu bento
 
 - **Kafel:**
-  - tło `--surface`; na dashboardzie półprzezroczyste `--surface-glass`, przez które prześwituje rozmyta poświata akcentu (`--glow`) — dwie plamy powoli dryfujące pod siatką (`BaseLayout glow`, `BentoLayout alive`);
+  - tło `--surface`; na prywatnym dashboardzie półprzezroczyste `--surface-glass`, przez które prześwituje rozmyta poświata akcentu (`--glow`) — dwie plamy powoli dryfujące pod siatką (`BaseLayout glow`, `BentoLayout alive`). Publiczny Dev Log ma pełne, nieprzezroczyste `--surface` na płaskim `--bg`, bez poświaty (jak wizytówka i projekty);
   - obramowanie 1px `--border`;
   - promień 20px;
   - padding 20px (dashboard: 16px).
@@ -24,7 +24,8 @@
   - pojedynczych wyróżnień w tekście;
   - małych ikon przy etykietach kart (np. logo GitHuba, Last.fm, książka);
   - sygnalizowania prawdziwych problemów (§2);
-  - stonowanej, mocno rozmytej poświaty w tle dashboardu — tło, nie element interfejsu.
+  - stonowanej, mocno rozmytej poświaty w tle prywatnego dashboardu — tło, nie element interfejsu;
+  - wykresów Dev Logu w jednej palecie: heatmapa GitHuba w akcencie o rosnącej sile, w pasku języków akcent tylko dla dominującego języka (§2).
 
   Paski postępu i zajętości oraz skala jakości powietrza są neutralne. Aktywna zakładka w nawigacji ma półprzezroczyste tło akcentu (`--nav-active`), bez animacji.
 
@@ -66,9 +67,9 @@ Na razie jeden motyw: **ciemny**. Wszystkie kolory definiuję jako tokeny (Tailw
 | `--accent-foreground` | `#0E0E10` | tekst i ikony na pełnym tle akcentu (biały miałby tylko 3,8:1) |
 | `--status-ok` / `--status-down` | `#46A758` / `--accent` | kropki stanu: działa / problem |
 | `--status-ok-soft` / `--status-ok-border` | `--status-ok` z przezroczystością 0.1 / 0.3 | plakietka statusu w karcie profilu |
-| `--github-level-1…4` | zielenie GitHuba (ciemny motyw) | wykres kontrybucji; poziom 0 to `--surface-inset` |
+| `--contrib-level-1…4` | akcent z kryciem 0.25 / 0.45 / 0.7 / 1 | wykres kontrybucji GitHuba; poziom 0 to `--surface-inset` |
 | `--brand-*` | gradienty w kolorach marek | kafle sociali (Discord, Instagram, GitHub, LinkedIn), biały tekst `--brand-foreground` z AA |
-| `--lang-*` | kolory GitHub Linguist | języki w kaflu WakaTime — kolor treści jak loga (§1); najciemniejsze rozjaśnione |
+| `--chart-rest` | `rgb(255 255 255 / 0.12)` | reszta wykresu po częściach z rangą, np. „inne” w pasku języków |
 | `--nav-active` | `rgb(255 36 69 / 0.22)` | tło aktywnej zakładki w nawigacji |
 | `--nav-glass` | `rgb(14 14 16 / 0.9)` | tło przyklejonej nawigacji na telefonie (koncept.md §2) |
 | `--surface-glass` | `rgb(22 22 24 / 0.55)` | półprzezroczysty kafel na dashboardzie (z rozmyciem tła `--glass-blur`) |
@@ -84,7 +85,8 @@ Zasady:
   - Pulsują tylko rzeczy dziejące się teraz: status na wizytówce („Otwarty na staż”), „teraz gra”, trwający build.
 - **Paski** (postęp, CPU/RAM/dysk) mają neutralne wypełnienie `--text-muted`. Paski homelaba robią się czerwone (`--status-down`) od progu zajętości (85%). Bieżący stopień skali powietrza ma kolor `--text`.
 - Inne kolory semantyczne (np. skala jakości powietrza) są dozwolone, jeśli poprawiają czytelność — wtedy dodaję je jako tokeny.
-- Wykres kontrybucji GitHuba rysuję w oryginalnych zieleniach GitHuba (4 poziomy z ciemnego motywu, tokeny `--github-level-*`) — czyta się jak prawdziwy wykres z profilu.
+- **Wykresy Dev Logu mają jedną paletę** (decyzja 2026-10-31): heatmapa GitHuba w akcencie o czterech stopniach krycia (`--contrib-level-*`); pasek języków koloruje rangą, nie językiem: dominujący `--accent`, drugi `--text-muted`, trzeci `--text-subtle`, reszta `--chart-rest` z podpisem „inne X%” w legendzie.
+- **Kropki świeżości w Dev Logu** pojawiają się tylko przy problemie (nieaktualne dane, błąd — czerwone); świeże dane nie mają kropki. Wiek danych pokazuje jedna linia „zaktualizowano X temu” pod wprowadzeniem (najnowsza odpowiedź którejkolwiek karty), a karta z nieaktualnymi danymi mówi o tym sama. Prywatny panel i zajawka zostają przy zasadzie wyżej.
 - Kolor treści (loga, okładki, zdjęcia, grafiki) opisuje §1 „Kolor w treści”.
 
 ---
@@ -103,6 +105,7 @@ Zasady:
 | Tytuł w kaflu | Satoshi | 16–18px | 500 | |
 | Nagłówek hero | Satoshi | 28–36px | 700 | |
 | Duża liczba | mono | 32–48px | 700 | |
+| Główna wartość karty Dev Logu | mono | 24–30px (`--size-value`), w karcie węższej niż 260px rozmiar tytułu | 700 | jedna na kartę, ta sama we wszystkich pięciu (`.tile-value`): nazwa, suma, liczba, tytuł utworu |
 
 ---
 
@@ -113,7 +116,8 @@ Reguły poniżej dotyczą **widoków bento**: publicznego Dev Logu i prywatnego 
 
 - **Kolumny:** 6 od 1024px, 4 na tablecie (640–1023px), **2 na telefonie (<640px)**. Kolejność obszarów jest jawna dla każdego breakpointu, zgodnie z koncept.md §3.4; nie polegam na automatycznym rozmieszczaniu.
 - **Publiczny Dev Log — wysokość z treści:** wprowadzenie i pięć kart mogą scrollować na każdym ekranie. Bez `fill`, `tall` i `dense` wymuszających wypełnienie viewportu lub kompresję treści. Nie obowiązuje dawny cel „jeden ekran od 1440×900”.
-- **Hierarchia publiczna:** dominująca bieżąca praca (`build`), potem GitHub, WakaTime, eksperymenty i muzyka; taki sam porządek DOM, czytania i tabulacji. Desktop: `build` ×4 + GitHub ×2, niżej WakaTime ×2 + eksperymenty ×2 + muzyka ×2. Tablet: `build` ×4, potem GitHub ×2 + WakaTime ×2, następnie eksperymenty ×2 + muzyka ×2. Telefon: `build`, GitHub i WakaTime po dwa pola w osobnych rzędach, eksperymenty i muzyka po jednym polu obok siebie. Dwa tory siatki zostają także tam, gdzie karta zajmuje całą szerokość.
+- **Hierarchia publiczna:** dominująca bieżąca praca (`build`), potem WakaTime, GitHub, eksperymenty i muzyka; taki sam porządek DOM, czytania i tabulacji. Desktop: `build` ×4 + WakaTime ×2, niżej GitHub na całą szerokość (×6, większe kratki heatmapy), na dole eksperymenty ×3 + muzyka ×3. Tablet: `build`, WakaTime i GitHub po ×4 w osobnych rzędach (WakaTime układa wtedy języki obok sumy), potem eksperymenty ×2 + muzyka ×2. Telefon: `build`, WakaTime i GitHub po dwa pola w osobnych rzędach, eksperymenty i muzyka po jednym polu obok siebie. Dwa tory siatki zostają także tam, gdzie karta zajmuje całą szerokość.
+- **Jednolita budowa karty Dev Logu:** etykieta mono, jedna główna wartość (`.tile-value`, §3), 1–2 linie kontekstu, stopka z akcją. Karty nie mają sztywnych `min-height` w widoku; rząd wyrównuje się do najwyższej karty, a stały rozmiar stanów zapewnia rezerwa wewnątrz kafla.
 - **Oddech w Dev Logu:** odstępy między kartami `--space-lg`, padding `--tile-padding`, odstęp wprowadzenia od siatki `--space-3xl`; wewnątrz kart odpowiednie wartości skali `--space-*`. Kolory, promienie i odstępy wyłącznie z tokenów, bez nowych wartości w komponentach. Zachowuję ciemne powierzchnie, czerwony akcent, mono i subtelną poświatę (§1–3).
 - **Stałe rozmiary danych na żywo:** GitHub, WakaTime i muzyka mają dla danego breakpointu taki sam rozmiar we wszystkich czterech stanach (§6). Wysokość rezerwuje miejsce na treść i komunikaty; nie wynika z aktualnej odpowiedzi API. Długie nazwy i tagi mieszczą się w karcie bez poziomego przewijania strony.
 - **Prywatny dashboard — dotychczasowy kontrakt:** jeden ekran od 1280×720, gęsty układ, odstęp `--space-md` (10px), padding `--tile-padding-dense` (16px), rzędy w połówkach i pasek usług o wysokości półrzędu. Zachowuje `fill` i dotychczasowe rozmiary; niżej scroll jest dozwolony. Zmiana Dev Logu nie zmienia prywatnych obszarów ani wspólnego zachowania `BentoLayout`.

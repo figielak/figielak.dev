@@ -29,6 +29,7 @@
 | 2026-09-26 | Akcent `#FF2445` zamiast `#E5484D` | żywszy przy tym samym odcieniu, AA z zapasem; porównanie kandydatów na `/dev/accent` |
 | 2026-09-26 | Rezerwacja korepetycji: Cal.com | koncept.md §3.3 |
 | 2026-09-27 | Publicznie nazwy aplikacji homelaba z ich stanem (bez adresów i czasów odpowiedzi) | nazwy i tak są publiczne na schemacie Homelaba, a stan nie zdradza obecności (security.md) |
+| 2026-10-31 | Dev Log czytelniej: płaskie karty bez poświaty, jedna paleta wykresów (akcent zamiast zieleni GitHuba i kolorów Linguist), kropki tylko przy problemie, jedno „zaktualizowano”, GitHub na całą szerokość, w „Nad czym pracuję” zadanie w toku i ostatni commit zamiast opisu projektu | szkło nad poświatą obniżało kontrast, pięć palet i powtórzony opis z `/projects` dawały szum; zajawka na wizytówce czytała się lepiej (koncept.md §3.4, design.md §2–4) |
 
 ---
 

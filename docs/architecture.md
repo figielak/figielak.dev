@@ -73,7 +73,7 @@ Dockerfile       # obraz dla Cloud Run
 | Dane | Źródło | Odświeżanie / cache |
 |---|---|---|
 | Pogoda | Open-Meteo (bez klucza), centrum Rzeszowa; nieaktualne po 45 min | cache 15 min |
-| GitHub | GitHub GraphQL API (token po stronie serwera) | cache 1h |
+| GitHub (+ ostatni commit repozytorium bieżącej pracy, `lastCommit`) | GitHub GraphQL API (token po stronie serwera) | cache 1h |
 | Czas | lokalnie w przeglądarce | co sekundę |
 | Wizyty i statystyki strony (prywatne) | Cloudflare Web Analytics (beacon wstrzykiwany przez proxy, bez ciasteczek) przez GraphQL API, token Account Analytics: Read | cache 5 min |
 | Jakość powietrza | GIOŚ API v1 (bez klucza; stare `/pjp-api/rest` zwraca 410), stacja Rzeszów, Al. Piłsudskiego; `updatedAt` to czas pomiaru, nieaktualne po 3 h | cache 30 min |
