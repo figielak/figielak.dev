@@ -16,7 +16,7 @@
   - etykieta (mono, uppercase, szara) u góry;
   - treść lub duża liczba;
   - detal lub akcja na dole.
-- **Klikalne kafle** mają strzałkę w prawym górnym albo dolnym rogu. **Strzałki w linkach:** ↗ prowadzi poza stronę (inna domena, plik jak PDF CV), → na inną podstronę tej witryny. Wyjątek: kafle sociali, które w całości są przyciskiem marki (koncept.md §3.4).
+- **Klikalne kafle** mają strzałkę w prawym górnym albo dolnym rogu. **Strzałki w linkach:** ↗ prowadzi poza stronę (inna domena, plik jak PDF CV), → na inną podstronę tej witryny. Wyjątek: istniejące kafle sociali, które w całości są przyciskiem marki; nie należą do publicznego Dev Logu.
 - **Hierarchia przez rozmiar:** najważniejsze treści dostają największe kafle.
 - **Akcent jest rzadki**, bo czerwień czyta się jak „błąd” — im rzadziej występuje, tym mocniej się wyróżnia. Używam go do:
   - głównych CTA;
@@ -108,26 +108,24 @@ Zasady:
 
 ## 4. Siatka i responsywność
 
-Reguły poniżej dotyczą **widoku w bento**: dashboardu.
+Reguły poniżej dotyczą **widoków bento**: publicznego Dev Logu i prywatnego dashboardu.
 **Wizytówka i korepetycje rządzą się własnymi zasadami** — patrz koncept.md §3.1, §3.3 i podsumowanie na końcu tej sekcji. Projekty to lista (koncept.md §3.2): wiersze dossier na całą szerokość.
 
-- **Kolumny:** dashboard ma 6 kolumn (publiczny mieści się na jednym ekranie od 1440×900 dzięki `xl` i `tall` w `BentoLayout`, które dzielą wysokość ekranu na rzędy).
-- **Odstęp między kaflami:** 10px (poza dashboardem 12px).
-- **„Mieści się na jednym ekranie”** dotyczy desktopu. Publiczny dashboard mieści się bez scrolla od 1440×900 (docelowy widok), prywatny od 1280×720. Poniżej tego scroll jest dozwolony.
-- **Tablet (640–1024px):** dashboard przechodzi z 6 na 4 kolumny.
-- **Telefon (<640px):**
-  - siatka ma **2 kolumny** i kafle układają się od lewej do prawej, **nigdy jedna kolumna jeden pod drugim**;
-  - kafle szersze niż 2 kolumny zwężam do 2;
-  - małe kafle (social, zegar, pogoda, CV) zajmują 1×1 parami obok siebie.
-- Kolejność kafli na mobile ustawiam jawnie osobnymi `grid-template-areas` dla każdego breakpointu; nie polegam na kolejności w HTML.
+- **Kolumny:** 6 od 1024px, 4 na tablecie (640–1023px), **2 na telefonie (<640px)**. Kolejność obszarów jest jawna dla każdego breakpointu, zgodnie z koncept.md §3.4; nie polegam na automatycznym rozmieszczaniu.
+- **Publiczny Dev Log — wysokość z treści:** wprowadzenie i pięć kart mogą scrollować na każdym ekranie. Bez `fill`, `tall` i `dense` wymuszających wypełnienie viewportu lub kompresję treści. Nie obowiązuje dawny cel „jeden ekran od 1440×900”.
+- **Hierarchia publiczna:** dominująca bieżąca praca (`build`), potem GitHub, WakaTime, eksperymenty i muzyka; taki sam porządek DOM, czytania i tabulacji. Desktop: `build` ×4 + GitHub ×2, niżej WakaTime ×2 + eksperymenty ×2 + muzyka ×2. Tablet: `build` ×4, potem GitHub ×2 + WakaTime ×2, następnie eksperymenty ×2 + muzyka ×2. Telefon: `build`, GitHub i WakaTime po dwa pola w osobnych rzędach, eksperymenty i muzyka po jednym polu obok siebie. Dwa tory siatki zostają także tam, gdzie karta zajmuje całą szerokość.
+- **Oddech w Dev Logu:** odstępy między kartami `--space-lg`, padding `--tile-padding`, odstęp wprowadzenia od siatki `--space-3xl`; wewnątrz kart odpowiednie wartości skali `--space-*`. Kolory, promienie i odstępy wyłącznie z tokenów, bez nowych wartości w komponentach. Zachowuję ciemne powierzchnie, czerwony akcent, mono i subtelną poświatę (§1–3).
+- **Stałe rozmiary danych na żywo:** GitHub, WakaTime i muzyka mają dla danego breakpointu taki sam rozmiar we wszystkich czterech stanach (§6). Wysokość rezerwuje miejsce na treść i komunikaty; nie wynika z aktualnej odpowiedzi API. Długie nazwy i tagi mieszczą się w karcie bez poziomego przewijania strony.
+- **Prywatny dashboard — dotychczasowy kontrakt:** jeden ekran od 1280×720, gęsty układ, odstęp `--space-md` (10px), padding `--tile-padding-dense` (16px), rzędy w połówkach i pasek usług o wysokości półrzędu. Zachowuje `fill` i dotychczasowe rozmiary; niżej scroll jest dozwolony. Zmiana Dev Logu nie zmienia prywatnych obszarów ani wspólnego zachowania `BentoLayout`.
+- **Weryfikacja bento na buildzie:** 1280×720, 1440×900, szerokość 800px i 390px; bez nakładania, ucinania treści i poziomego overflow. Na telefonie nigdy jeden tor siatki.
 
-**Dossier (wizytówka i korepetycje) — trzy odstępstwa:**
+**Dossier (wizytówka i korepetycje) — własny układ:**
 
-| Reguła bento | Dossier |
+| Reguła | Dossier |
 |---|---|
-| siatka kolumn z `grid-template-areas` | dwie kolumny: 320px + reszta |
-| mieści się na jednym ekranie | scrolluje celowo, lewa kolumna jest przyklejona |
-| telefon zawsze 2 kolumny | poniżej 1024px jedna kolumna — strumień tekstu w dwóch kolumnach na telefonie byłby nieczytelny |
+| siatka bento z `grid-template-areas` | dwie kolumny: 320px + reszta |
+| wysokość | scrolluje celowo, lewa kolumna jest przyklejona |
+| telefon zawsze 2 kolumny w bento | poniżej 1024px jedna kolumna — strumień tekstu w dwóch kolumnach na telefonie byłby nieczytelny |
 
 Wspólne zostają: tokeny, `Tile`, etykiety mono, akcent, hover, focus i `prefers-reduced-motion`.
 
@@ -143,15 +141,15 @@ Na start:
   - pojawia się delikatny cień;
   - przejście trwa 150–200ms z `ease-out`.
 - **Hover na nieklikalnym kaflu (tylko dashboard):** mniejszy niż klikalny — obramowanie `--border-hover` i uniesienie o 1px (`--lift-subtle`), bez cienia i zmiany tła.
-- **Intro dashboardu** (`src/scripts/intro.ts`, ok. 1,5 s; przy pierwszym wejściu w sesji i przy każdym kliknięciu „Dashboard” w nawigacji; bez intro przy reduced motion):
+- **Intro dashboardu** (`src/scripts/intro.ts`, ok. 1,5 s; przy pierwszym wejściu w sesji i przy każdym kliknięciu „Dev Log” w nawigacji; bez intro przy reduced motion):
   - kafle wjeżdżają kolejno po przekątnej od lewego górnego rogu, lekko z dołu; rozmycie tylko od 1024 px (na telefonach mogłoby przycinać);
-  - zaraz po pojawieniu się kafla ruszają animacje w środku: kratki GitHuba zapalają się falą od lewej, paski rosną od zera, liczby odliczają od 0 (1,2 s), okładka Muzyki się wyostrza;
+  - zaraz po pojawieniu się kafla ruszają animacje w środku: kratki GitHuba zapalają się falą od lewej, widoczne paski rosną od zera, liczby odliczają od 0 (1,2 s), okładka muzyki się wyostrza; animowane są tylko elementy obecne w danym widoku, bez przywracania usuniętych widgetów;
   - kafel czekający na dane odgrywa swoje animacje, gdy dane przyjdą;
   - logo `figielak` wpisuje się litera po literze, potem zaczyna migać kursor;
   - animowane jest tylko `opacity` i `transform`.
 - **Poświata dashboardu:** plamy dryfują w cyklach ok. 48 i 62 s.
 - **Światło przy kursorze (dashboard, tylko mysz):** ramki kafli w zasięgu kursora (`--spotlight-size`) lekko czerwienieją, także sąsiednich; światło płynie za kursorem z lekkim opóźnieniem jak fala (`src/scripts/spotlight.ts`). Bez kafla akcentowego; przy reduced motion bez opóźnienia.
-- **Obrót karty (Czytam):** kafel zwęża się do krawędzi, podmienia treść i rozszerza z powrotem (ok. 0,3 s). Płaski `scaleX`, nie `rotateY` — obrót 3D kafla ze szklanym tłem rozjaśnia poświatę w Chromium. Przy reduced motion treść zmienia się bez animacji.
+- **Obrót istniejącej karty (Czytam, poza kompozycją Dev Logu):** kafel zwęża się do krawędzi, podmienia treść i rozszerza z powrotem (ok. 0,3 s). Płaski `scaleX`, nie `rotateY` — obrót 3D kafla ze szklanym tłem rozjaśnia poświatę w Chromium. Przy reduced motion treść zmienia się bez animacji.
 - **Nawigacja na telefonie** (koncept.md §2): wysuwa się i chowa samym `transform` w ok. 200 ms (`--duration-nav`); przy reduced motion bez animacji.
 - **Pulsowanie kropki** (tylko rzeczy dziejące się teraz, patrz §2): łagodne, skala i przezroczystość, około 2s.
 - **Focus:** widoczny ring w kolorze akcentu (`:focus-visible`).

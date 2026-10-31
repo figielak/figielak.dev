@@ -2,7 +2,7 @@
 id: 01-01
 title: Document the public Dev Log design contract
 type: doc
-status: approved    # draft | approved | in-progress | done | blocked | reverted
+status: done        # draft | approved | in-progress | done | blocked | reverted
 critical: false
 effort: normal      # normal | hard
 depends: []
@@ -44,11 +44,14 @@ Define the focused public Dev Log from the supplied redesign brief before changi
 - Align related statements in koncept.md §1–3.2, §4 and §5 and design.md §5; describe retained integrations accurately and record old dashboard widgets as historical where needed.
 
 ## Acceptance
-- [ ] `npm run build` → exit 0
-- [ ] The design contract names exactly five public tiles, routes, copy, priority order and layouts.
-- [ ] The public page need not fill the viewport; its private counterpart keeps the existing contract.
-- [ ] Retained public APIs and removed public UI are distinguished without claiming new access protection.
+- [x] `npm run build` → exit 0
+- [x] The design contract names exactly five public tiles, routes, copy, priority order and layouts.
+- [x] The public page need not fill the viewport; its private counterpart keeps the existing contract.
+- [x] Retained public APIs and removed public UI are distinguished without claiming new access protection.
 
 ## Result
-<!-- filled by do: 3–5 lines (audit: ≤ 10, findings + proposed follow-ups)
-     last line always: "Deviations: none" or "Deviations: path — why" -->
+Documented five ordered public tiles, PL/EN routes and introduction, dominant current work and explicit 6/4/2-column layouts.
+Defined content-led public sizing and token spacing; preserved the private layout, access rules, API contracts, terminal and home teaser.
+Verification: telos accept 01-01 PASS; build exit 0; three temporary documentation checks passed (7 relative links, tile order, responsive areas); no new test files.
+The original subtitle was absent from the repository; supplied working PL/EN copy and asked the user for the original wording.
+Deviations: none

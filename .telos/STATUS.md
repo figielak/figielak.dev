@@ -2,7 +2,7 @@
 <!-- ≤ 40 lines. Maintained by `telos status set <key>=<value>`; never edit by hand.
      Holds pointers only: phase state lives in ROADMAP, task state in the task file. -->
 Phase: 01-dev-log
-Task: 01-01
+Task: 01-02
 Next: /telos:do
 Blockers: none
 Awaiting user: none
@@ -15,4 +15,4 @@ Awaiting user: none
 
 ## Recent
 <!-- max 3, newest first: "- NN-MM done: one line" -->
-- none
+- 01-01 done: Documented the five-card public Dev Log contract and preserved private behavior
