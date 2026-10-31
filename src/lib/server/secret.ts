@@ -1,4 +1,4 @@
-/** Constant-time comparison of secrets: the password and push tokens (docs/koncept.md §14). */
+/** Constant-time comparison of secrets: the password and push tokens (docs/security.md). */
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 /** Hashing first gives equal-length buffers, so the comparison is constant-time. */

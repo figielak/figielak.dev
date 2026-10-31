@@ -5,7 +5,7 @@
  * which is how the bar finds each one's status.
  *
  * The domain comes from HOMELAB_DOMAIN at build time: the repository is
- * public and must not reveal homelab host names (docs/koncept.md §14).
+ * public and must not reveal homelab host names (docs/security.md).
  */
 import type { IconName } from '../components/ui/Icon.astro';
 

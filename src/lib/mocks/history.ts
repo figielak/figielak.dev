@@ -2,7 +2,7 @@
  * CPU and RAM of the homelab over the last 24 hours (docs/koncept.md §3.4), in
  * 5-minute buckets, oldest first. Collected by the site from the agent's
  * pushes (src/lib/server/history.ts); private, since the rhythm of use shows
- * when someone is at home (§14).
+ * when someone is at home (docs/security.md).
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 

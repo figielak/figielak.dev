@@ -1,10 +1,10 @@
 /**
  * Homelab uptime and service status as the uptime tile shows them, and mocks
- * for /dev/tiles and `astro dev`. Live data: /api/homelab/uptime (docs/koncept.md §9).
+ * for /dev/tiles and `astro dev`. Live data: /api/homelab/uptime (docs/architecture.md §3).
  */
 import { mockUpdatedAt, type Live, type LiveState } from '../live';
 
-/** Generic service kinds — no host names on a public page (docs/koncept.md §14). */
+/** Generic service kinds — no host names on a public page (docs/security.md). */
 export const SERVICE_KINDS = ['media', 'files', 'dns', 'backup'] as const;
 export type ServiceKind = (typeof SERVICE_KINDS)[number];
 
@@ -24,7 +24,7 @@ export interface ServiceStatus {
 /**
  * One homelab app by name (src/lib/services.ts) and whether Uptime Kuma sees it
  * up; null when it has no monitor. Only the name and the state are public —
- * no addresses or response times (docs/koncept.md §14).
+ * no addresses or response times (docs/security.md).
  */
 export interface AppStatus {
 	name: string;

@@ -1,6 +1,6 @@
 import type { Command } from '../types';
 
-/* Every theme the concept plans; only the ones in `data.themes` exist yet (§12). */
+/* Every theme the concept plans; only the ones in `data.themes` exist yet (docs/design.md §7). */
 const PLANNED = ['dark', 'light'];
 
 export default {

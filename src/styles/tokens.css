@@ -1,10 +1,10 @@
 /*
  * Design tokens — the single source of colour, radius, spacing and type.
- * See docs/koncept.md §4–§8. Components must never hardcode a hex, rgb or px value
+ * See docs/design.md §1–§5. Components must never hardcode a hex, rgb or px value
  * that belongs here.
  *
  * A theme is nothing but a different set of values for these tokens; no
- * component ever knows which theme is active (docs/koncept.md §12).
+ * component ever knows which theme is active (docs/design.md §7).
  */
 
 :root,
@@ -32,7 +32,7 @@
 	--text-muted: #8b8b92;
 	--text-subtle: #5c5c63;
 
-	/* Status dots (docs/koncept.md §5): green for up / active, red only for a
+	/* Status dots (docs/design.md §2): green for up / active, red only for a
 	   problem — down, stale or missing data. Fresh data stays --text-subtle. */
 	--status-ok: #46a758;
 	/* Status badge on the profile card: tint and edge of --status-ok. */
@@ -55,13 +55,13 @@
 	--accent-foreground-subtle: rgb(14 14 16 / 0.7);
 	--accent-inset: rgb(14 14 16 / 0.14);
 	/* GitHub contribution levels 1–4 in GitHub's own dark-theme greens, so the
-	   chart reads as the real one (docs/koncept.md §5). Level 0 is --surface-inset. */
+	   chart reads as the real one (docs/design.md §2). Level 0 is --surface-inset. */
 	--github-level-1: #0e4429;
 	--github-level-2: #006d32;
 	--github-level-3: #26a641;
 	--github-level-4: #39d353;
 
-	/* Blurred accent glow behind the dashboard tiles (docs/koncept.md §4). At its
+	/* Blurred accent glow behind the dashboard tiles (docs/design.md §1). At its
 	   peak under --surface-glass, --text-muted keeps 4.6:1; the accent there is
 	   only icons, charts and dots, which need 3:1. */
 	--glow: rgb(255 36 69 / 0.28);
@@ -70,7 +70,7 @@
 	/* Sheen sweeping over a tile that waits for its data. */
 	--shimmer: rgb(255 255 255 / 0.05);
 
-	/* Scrim over photos and covers, so text on them keeps AA contrast (§4). */
+	/* Scrim over photos and covers, so text on them keeps AA contrast (docs/design.md §1). */
 	--scrim: rgb(0 0 0 / 0.85);
 	--scrim-soft: rgb(0 0 0 / 0.5);
 
@@ -83,7 +83,7 @@
 	--brand-foreground: #ffffff;
 
 	/* Programming languages in the WakaTime tile: GitHub Linguist's colours,
-	   content colour like a logo (docs/koncept.md §4). Named after the language
+	   content colour like a logo (docs/design.md §1). Named after the language
 	   (lower case, `++` → `pp`, `#` → `sharp`); the darkest are lifted so they
 	   show on a tile. Anything else falls back to --lang-other. */
 	--lang-typescript: #3178c6;
@@ -192,7 +192,7 @@
 		var(--featured-scrim-solid) 80%
 	);
 	--gallery-column: 460px;
-	/* Project detail page (§3.2): a wider column than a case study's text, the
+	/* Project detail page (docs/koncept.md §3.2): a wider column than a case study's text, the
 	   gallery strip with the next shot peeking in, every shot in the same frame. */
 	--project-detail-width: 960px;
 	--project-slide-width: 88%;
@@ -223,7 +223,7 @@
 	--size-number-short: 36px;
 	--tracking-label: 0.08em;
 
-	/* Terminal panel (docs/koncept.md §8): above the navigation and the skip link. */
+	/* Terminal panel (docs/design.md §5): above the navigation and the skip link. */
 	--z-terminal: 100;
 	/* Phone navigation pinned to the top: above the page, under the terminal. */
 	--z-nav: 50;
@@ -273,7 +273,7 @@
 }
 
 /* Short desktop screens (1280×720): the dashboard's four rows leave a 1×1
-   tile too little height for a 48px number and a line under it (§7). */
+   tile too little height for a 48px number and a line under it (docs/design.md §4). */
 @media (min-width: 1024px) and (max-height: 820px) {
 	:root {
 		--size-number: var(--size-number-short);

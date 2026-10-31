@@ -12,7 +12,7 @@ import { EXPIRING_PLACEHOLDER, EXPIRY_WARN_DAYS, type Expiring, type ExpiryItem 
 /**
  * What expires and when (docs/koncept.md §3.4): the domain, the certificate and
  * the API tokens, soonest first. Anything due within EXPIRY_WARN_DAYS or
- * past is red — a real problem coming (§5). Private dashboard only.
+ * past is red — a real problem coming (docs/design.md §2). Private dashboard only.
  *
  * With `endpoint` the tile renders as loading and fills itself in the
  * browser; without it, it shows `expiring` as given. The rows are built from
@@ -201,7 +201,7 @@ const left = (item: ExpiryItem) => {
 		color: var(--text);
 	}
 
-	/* Due soon or past: a real problem coming (docs/koncept.md §5). */
+	/* Due soon or past: a real problem coming (docs/design.md §2). */
 	.expiry[data-soon] :is(.expiry-icon, .expiry-left) {
 		color: var(--status-down);
 	}

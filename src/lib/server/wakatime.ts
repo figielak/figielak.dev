@@ -1,5 +1,5 @@
 /**
- * Coding time from WakaTime for the dashboard (docs/koncept.md §9): today, each
+ * Coding time from WakaTime for the dashboard (docs/architecture.md §3): today, each
  * day of this week since Monday and the week's top languages. WAKATIME_API_KEY is a
  * server secret read at runtime.
  */
